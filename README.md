@@ -1,5 +1,6 @@
 # fafoom-dev
-Continuing development of genetic algorithm for biomolecules in different environments
+**Continuing development of genetic algorithm for biomolecules in different environments.**
+
 ﻿# Fafoom - Flexible algorithm for optimization of molecules 
 
 Fafoom is a tool for sampling the conformational space of organic molecules. Fafoom is intended to work with FHI-aims (Fritz Haber Institute ab initio molecular simulations package).
