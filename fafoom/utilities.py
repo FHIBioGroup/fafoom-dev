@@ -28,7 +28,9 @@ from rdkit.Chem import AllChem
 from operator import itemgetter
 
 # Flow-handling
-
+# In Bohr
+VDW_radii = {'H': 3.1000,'He': 2.6500,'Li': 4.1600,'Be': 4.1700,'B':  3.8900,'C':  3.5900,'N':  3.3400,'O':  3.1900,'F':  3.0400,'Ne': 2.9100,'Na': 3.7300,'Mg': 4.2700,'Al': 4.3300,'Si': 4.2000,'P':  4.0100,'S':  3.8600,'Cl': 3.7100,'Ar': 3.5500,'K':  3.7100,'Ca': 4.6500,'Sc': 4.5900,'Ti': 4.5100,'V':  4.4400,'Cr': 3.9900,'Mn': 3.9700,'Fe': 4.2300,'Co': 4.1800,'Ni': 3.8200,'Cu': 3.7600,'Zn': 4.0200,'Ga': 4.1900,'Ge': 4.2000,'As': 4.1100,'Se': 4.0400,'Br': 3.9300,'Kr': 3.8200,'Rb': 3.7200,'Sr': 4.5400,'Y':  4.8151,'Zr': 4.53,'Nb': 4.2365,'Mo': 4.099,'Tc': 4.076,'Ru': 3.9953,'Rh': 3.95,'Pd': 3.6600,'Ag': 3.8200,'Cd': 3.9900,'In': 4.2319,'Sn': 4.3030,'Sb': 4.2760,'Te': 4.2200,'I':  4.1700,'Xe': 4.0800,'Cs': 3.78,'Ba': 4.77,'La': 3.14,'Ce': 3.26,'Pr': 3.28,'Nd': 3.3,'Pm': 3.27,'Sm': 3.32,'Eu': 3.40,'Gd': 3.62,'Tb': 3.42,'Dy': 3.26,'Ho': 3.24,'Er': 3.30,'Tm': 3.26,'Yb': 3.22,'Lu': 3.20,'Hf': 4.21,'Ta': 4.15,'W':  4.08,'Re': 4.02,'Os': 3.84,'Ir': 4.00,'Pt': 3.92,'Au': 3.86,'Hg': 3.98,'Tl': 3.91,'Pb': 4.31,'Bi': 4.32,'Po': 4.097,'At': 4.07,'Rn': 4.23,'Fr': 3.90,'Ra': 4.98,'Ac': 2.75,'Th': 2.85,'Pa': 2.71,'U':  3.00,'Np': 3.28,'Pu': 3.45,'Am': 3.51,'Cm': 3.47,'Bk': 3.56,'Cf': 3.55,'Es': 3.76,'Fm': 3.89,'Md': 3.93,'No': 3.78}
+bohrtoang=0.52917721
 
 def backup(filename, obj):
     """ Write the representation of an object (or objects) to a file."""
@@ -261,8 +263,8 @@ def distance(x, y):
     """"Calculate distance between two points in 3D."""
     return np.sqrt((x[0]-y[0])**2+(x[1]-y[1])**2+(x[2]-y[2])**2)
 
-
-def check_geo_sdf(sdf_string, cutoff1, cutoff2):
+#~ , cutoff1, cutoff2
+def check_geo_sdf(sdf_string):
     """Check geometry from a sdf_string for clashes.
 
     Args:
@@ -275,13 +277,17 @@ def check_geo_sdf(sdf_string, cutoff1, cutoff2):
         ValueError: if distance cutoffs are non-positive
     """
 
-    if cutoff1 <= 0 or cutoff2 <= 0:
-        raise ValueError("Distance cutoff needs to be a positive float")
+    #~ if cutoff1 <= 0 or cutoff2 <= 0:
+        #~ raise ValueError("Distance cutoff needs to be a positive float")
     atoms, bonds = get_ind_from_sdfline(sdf_string.split('\n')[3])
     coordinates = np.zeros((atoms, 3))
     bonds_list = []
+    atoms_names = []
     for i in range(4, atoms+4):
         coordinates[i-4][0:3] = sdf_string.split('\n')[i].split()[0:3]
+#
+        atoms_names.append(sdf_string.split('\n')[i].split()[3])
+#
     for i in range(atoms+4, atoms+bonds+4):
         e1, e2 = get_ind_from_sdfline(sdf_string.split('\n')[i])
         bonds_list.append([e1, e2])
@@ -295,13 +301,19 @@ def check_geo_sdf(sdf_string, cutoff1, cutoff2):
     for x in range(atoms):
         for y in range(x+1, atoms):
             if [x+1, y+1] not in bonds_list and [y+1, x+1] not in bonds_list:
-                if dist[x][y] < cutoff1:
+                #~ print (VDW_radii[atoms_names[x]]+VDW_radii[atoms_names[y]])/1.88973
+                #~ print x, y
+                #~ print atoms_names[x], atoms_names[y]
+                #~ if dist[x][y] < cutoff1:   (VDW_radii[atoms_names[x]]+VDW_radii[atoms_names[y]])/1.88973
+                if dist[x][y] < VDW_radii[atoms_names[x]]*bohrtoang or dist[x][y] < VDW_radii[atoms_names[y]]*bohrtoang:
+                    
                     check = False
                     return check
-            else:
-                if dist[x][y] > cutoff2:
-                    check = False
-                    return check
+ 
+            #~ else:
+                #~ if dist[x][y] > cutoff2:
+                    #~ check = False
+                    #~ return check
     return check
 
 
