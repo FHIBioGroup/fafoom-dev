@@ -148,10 +148,10 @@ class MoleculeDescription:
         setattr(self, "dof_names", dof_names)
 
     def create_template_sdf(self):
-    #~ self.distance_cutoff_1,
-                                                #~ self.distance_cutoff_2
         """Assign new attribute (template_sdf_string) to the object."""
-        self.template_sdf_string = template_sdf(self.smiles)
+        self.template_sdf_string = template_sdf(self.smiles,
+                                                self.distance_cutoff_1,
+                                                self.distance_cutoff_2)
 
 
 class Structure:
@@ -276,8 +276,8 @@ class Structure:
 
     def is_geometry_valid(self):
         """Return True if the geometry is valid."""
-        #~ , self.mol_info.distance_cutoff_1, self.mol_info.distance_cutoff_2
-        check = check_geo_sdf(self.sdf_string)
+        check = check_geo_sdf(self.sdf_string, self.mol_info.distance_cutoff_1,
+                              self.mol_info.distance_cutoff_2)
         return check
 
     def __eq__(self, other):
