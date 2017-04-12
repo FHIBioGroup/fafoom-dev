@@ -101,8 +101,8 @@ def create_dof_object(type_of_deg, positions):
     if type_of_deg == "pyranosering":
         return PyranoseRing(positions)
 
-
-def template_sdf(smiles, distance_cutoff_1, distance_cutoff_2):
+#~ , distance_cutoff_1, distance_cutoff_2
+def template_sdf(smiles):
     """Create a template sdf string and writes it to file.
 
     Args(required):
@@ -122,7 +122,8 @@ def template_sdf(smiles, distance_cutoff_1, distance_cutoff_2):
         AllChem.UFFOptimizeMolecule(mol)
         Chem.SDWriter('mol.sdf').write(mol)
         sdf_string = Chem.MolToMolBlock(mol)
-        check = check_geo_sdf(sdf_string, distance_cutoff_1, distance_cutoff_2)
+        #~ , distance_cutoff_1, distance_cutoff_2
+        check = check_geo_sdf(sdf_string)
         if check:
             sdf_check = False
             Chem.SDWriter('mol.sdf').write(mol)
