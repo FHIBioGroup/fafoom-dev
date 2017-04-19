@@ -48,8 +48,7 @@ def dihedral_measure(sdf_string, position):
                 ig(0)(position), ig(1)(position),
                 ig(2)(position), ig(3)(position)))
     return float('{0:.2f}'.format(val))
-
-
+   
 def dihedral_set(sdf_string, position, value):
     """ Set the dihedral angle.
 

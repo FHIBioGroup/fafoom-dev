@@ -26,6 +26,7 @@ from rdkit import Chem
 from rdkit.Chem import AllChem
 
 from operator import itemgetter
+from rdkit.Chem import rdMolTransforms
 
 # Flow-handling
 # In Bohr
@@ -462,3 +463,64 @@ def mirror_sdf(sdf_string):
             c.append(''.join(sdf_form[i])+'\n')
     mirror_sdf_string = ''.join(c)
     return mirror_sdf_string
+
+#***********************************************************************
+'''
+Return list of atom positions from sdf string. 
+Example: 
+
+atoms_positions(str3d.sdf_string)
+
+will return list of coordinates [[X1, Y1, Z1],[X2, Y2, Z2],...[Xn, Yn, Zn]]
+'''   
+def atoms_positions(sdf_string):
+    atoms_list = []
+    mol = Chem.MolFromMolBlock(sdf_string, removeHs=False)
+    for i in range(0, mol.GetNumAtoms()):
+        pos = mol.GetConformer().GetAtomPosition(i)
+        atoms_list.append([pos.x, pos.y, pos.z])
+    return atoms_list
+#=======================================================================
+
+#***********************************************************************
+'''
+Return position of the center of the box circumscribed on the molecule.
+Coordinates of the center are the average value between max and min 
+coordinates of the molecule in each direction. 
+Example: 
+
+centreofthebox(atoms_positions(str3d.sdf_string))  
+
+will return list of coordinates [X, Y, Z] which is the center of the box.
+'''   
+def centreofthebox(atoms_list):
+    Xs = []
+    Ys = []
+    Zs = []
+    for i in range(len(atoms_list)):
+        Xs.append(float(atoms_list[i][0]))
+        Ys.append(float(atoms_list[i][1]))
+        Zs.append(float(atoms_list[i][2]))  
+    centX = (np.average([max(Xs),min(Xs)]))
+    centY = (np.average([max(Ys),min(Ys)]))
+    centZ = (np.average([max(Zs),min(Zs)]))
+    centreofthebox = [centX, centY, centZ]
+    return centreofthebox 
+#=======================================================================
+
+#***********************************************************************
+'''
+Return centroid of the polyhedron made of the molecule's atoms from 
+sdf string of the molecule.
+Example:
+
+centroid(str3d.sdf_string)
+
+will return list of coordinates [X, Y, Z]. Not equal to center of the box.
+'''   
+def centroid(sdf_string):
+    mol = Chem.MolFromMolBlock(sdf_string, removeHs=False)
+    pos = mol.GetConformer()
+    centroid = rdMolTransforms.ComputeCentroid(pos, ignoreHs=False) 
+    return [centroid.x, centroid.y, centroid.z]
+#=======================================================================
