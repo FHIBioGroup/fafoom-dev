@@ -1,9 +1,16 @@
 import numpy as np
-import sys
+import sys, os, re, shutil
 
+from fafoom import *
 from fafoom import MoleculeDescription, Structure, selection, print_output,\
     remover_dir, set_default, file2dict
 import fafoom.run_utilities as run_util
+from utilities import atoms_positions, centreofthebox
+from visual import draw_picture
+
+
+from rdkit import Chem
+from rdkit.Chem import AllChem
 
 # Decide for restart or a simple run.
 opt = run_util.simple_or_restart()
@@ -22,6 +29,27 @@ energy_function = run_util.detect_energy_function(params)
 cnt_max = 200
 population, blacklist = [], []
 min_energy = []
+
+
+
+#***********************************************************************
+"""
+Creation of the folders for valid and invalid structures. 
+It helps to visually inspect produced structures. 
+"""
+
+if os.path.exists(os.path.join(os.getcwd(),'invalid')):
+    shutil.rmtree(os.path.join(os.getcwd(),'invalid'))
+    os.mkdir(os.path.join(os.getcwd(),'invalid'))
+else:
+    os.mkdir(os.path.join(os.getcwd(),'invalid'))   
+    
+if os.path.exists(os.path.join(os.getcwd(),'valid')):
+    shutil.rmtree(os.path.join(os.getcwd(),'valid'))
+    os.mkdir(os.path.join(os.getcwd(),'valid'))
+else:
+    os.mkdir(os.path.join(os.getcwd(),'valid'))
+#=======================================================================
 
 if opt == "simple":
     mol = MoleculeDescription(p_file)
@@ -44,11 +72,19 @@ if opt == "simple":
         print_output("New trial")
         str3d = Structure(mol)
         str3d.generate_structure()
+        aims_object = AimsObject(os.path.join(os.getcwd(),'adds')) #Need for creation of the input file. Does not affect the algoritm.
         if not str3d.is_geometry_valid():
-            print_output("The geometry of "+str(str3d)+" is invalid.")
+            print_output("The geometry of "+str(str3d)+" is invalid. Copied to /invalid")
+            aims_object.generate_input(str3d.sdf_string) #generates input
+            shutil.copy('geometry.in', os.path.join(os.getcwd(),'invalid','geometry_'+str(cnt)+'.in')) #copy invalid geometry to "invalid" folder
             cnt += 1
             continue
         if str3d not in blacklist:
+            print_output("The geometry of "+str(str3d)+" is valid, copied to /valid")
+            aims_object.generate_input(str3d.sdf_string) #generates input
+            os.mkdir(os.path.join(os.getcwd(),'valid',str(cnt)+'_geometry')) # creates the folder for particular structure inside th "valid" folder
+            shutil.copy('geometry.in',os.path.join(os.getcwd(), 'valid', str(cnt)+'_geometry','geometry.in')) # copy input to self-titled folder
+############            draw_picture(os.path.join(os.getcwd(), 'valid', str(cnt)+'_geometry','geometry.in'), image_write = 'yes') # Part of post-processing module. Under construction. Produce nice image with PyMol
             name = "initial_%d" % (len(population))
             # Perform the local optimization
             run_util.optimize(str3d, energy_function, params, name)

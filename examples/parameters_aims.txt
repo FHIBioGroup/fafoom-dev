@@ -7,8 +7,6 @@ smarts_torsion= "[*]~[!$(*#*)&!D1]-&!@[!$(*#*)&!D1]~[*]"
 smarts_cistrans= "C~[$(C=O)]-[$(NC)]~[C]"
 filter_smarts_torsion= "C~[$(C=O)]-[$(NC)]~[C]"
 rmsd_type="cartesian"
-distance_cutoff_1=1.2
-distance_cutoff_2=2.15
 rmsd_cutoff_uniq=0.25
 chiral=True
 
@@ -26,7 +24,7 @@ max_mutations_torsion= 3
 
 energy_function = "FHI-aims"
 sourcedir= "adds"
-aims_call= "mpirun -n 4  aims.071914_7.scalapack.mpi.x"
+aims_call= "aims.160328_3.serial.x"
 max_iter= 30
 iter_limit_conv= 20
 energy_diff_conv= 0.001
