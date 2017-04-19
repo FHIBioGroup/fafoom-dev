@@ -85,6 +85,16 @@ if opt == "simple":
             os.mkdir(os.path.join(os.getcwd(),'valid',str(cnt)+'_geometry')) # creates the folder for particular structure inside th "valid" folder
             shutil.copy('geometry.in',os.path.join(os.getcwd(), 'valid', str(cnt)+'_geometry','geometry.in')) # copy input to self-titled folder
 ############            draw_picture(os.path.join(os.getcwd(), 'valid', str(cnt)+'_geometry','geometry.in'), image_write = 'yes') # Part of post-processing module. Under construction. Produce nice image with PyMol
+
+            print str3d.sdf_string
+            #~ print str3d
+#            print atoms_positions(str3d.sdf_string)
+#            print centreofthebox(atoms_positions(str3d.sdf_string))
+#            print atoms_shift(atoms_positions(str3d.sdf_string), centreofthebox(atoms_positions(str3d.sdf_string)))
+#            print centreofthebox(atoms_shift(atoms_positions(str3d.sdf_string), centreofthebox(atoms_positions(str3d.sdf_string))))
+            new = apply_coord_translation(str3d.sdf_string, atoms_shift(atoms_positions(str3d.sdf_string), centreofthebox(atoms_positions(str3d.sdf_string))))
+            str3d.sdf_string = new
+            print str3d.sdf_string
             name = "initial_%d" % (len(population))
             # Perform the local optimization
             run_util.optimize(str3d, energy_function, params, name)

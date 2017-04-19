@@ -466,7 +466,7 @@ def mirror_sdf(sdf_string):
 
 #***********************************************************************
 '''
-Return list of atom positions from sdf string. 
+Returns list of atom positions from sdf string. 
 Example: 
 
 atoms_positions(str3d.sdf_string)
@@ -484,7 +484,7 @@ def atoms_positions(sdf_string):
 
 #***********************************************************************
 '''
-Return position of the center of the box circumscribed on the molecule.
+Returns position of the center of the box circumscribed on the molecule.
 Coordinates of the center are the average value between max and min 
 coordinates of the molecule in each direction. 
 Example: 
@@ -510,7 +510,7 @@ def centreofthebox(atoms_list):
 
 #***********************************************************************
 '''
-Return centroid of the polyhedron made of the molecule's atoms from 
+Returns centroid of the polyhedron made of the molecule's atoms from 
 sdf string of the molecule.
 Example:
 
@@ -524,3 +524,39 @@ def centroid(sdf_string):
     centroid = rdMolTransforms.ComputeCentroid(pos, ignoreHs=False) 
     return [centroid.x, centroid.y, centroid.z]
 #=======================================================================
+
+#***********************************************************************
+'''
+Returns list of shifted coordinates.
+Example how to shift center of the box circumscribed on the molecule 
+to the origin:
+
+coordinates = atoms_positions(str3d.sdf_string)
+to_origin = centreofthebox(coordinates)
+new_coordinates = atoms_shift(coordinates, to_origin)
+
+'''   
+def atoms_shift(list_atoms, shift):
+    new_coordinates = []
+    for i in range(len(list_atoms)):
+        new_coordinates.append([list_atoms[i][0] - shift[0], list_atoms[i][1] - shift[1], list_atoms[i][2] - shift[2]])
+    return new_coordinates
+#=======================================================================
+
+#***********************************************************************
+'''
+Returns sdf_string with substituted coordinates.
+Example:
+
+str3d.sdf_string = apply_coord_translation(str3d.sdf_string, new_coordinates)
+
+will return updated sdf_string with new coordinates.
+'''   
+def apply_coord_translation(sdf_string, new_coordinates):
+    mol = Chem.MolFromMolBlock(sdf_string, removeHs=False)
+    for i in range(0, mol.GetNumAtoms()):
+        pos = mol.GetConformer().GetAtomPosition(i)
+        mol.GetConformer().SetAtomPosition(i, new_coordinates[i])
+    new = Chem.MolToMolBlock(mol)
+    return new
+#=======================================================================   
