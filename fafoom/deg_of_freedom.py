@@ -26,11 +26,19 @@ from measure import (
     dihedral_measure,
     dihedral_set,
     pyranosering_measure,
-    pyranosering_set
+    pyranosering_set,
+    centroid_measure,
+    centroid_set
 )
 
 from genetic_operations import mutation
 
+from rdkit import Chem
+from rdkit.Chem import AllChem
+
+from operator import itemgetter
+from rdkit.Chem import rdMolTransforms
+from utilities import *
 
 class DOF:
 
@@ -40,6 +48,77 @@ class DOF:
     def common_function():
         pass
 
+class Centroid(DOF):
+    '''Find and handle centre of the molecule. '''
+    values_options = range(-10, 10, 1)
+    @staticmethod
+    def find(smiles, positions=None):
+        if positions is None:
+            mol = Chem.MolFromSmiles(smiles)
+            if mol is None:
+                raise ValueError("The smiles is invalid")
+            pattern_cent = Chem.MolFromSmarts(smiles)
+            cent = list(mol.GetSubstructMatches(pattern_cent))
+            positions = cleaner(cent)
+        return positions
+
+    def __init__(self, positions):
+        """Initialaize the Centroid object from the positions."""
+        self.name = 'Centroid'        
+        self.type = "centroid"
+        self.positions = positions
+
+    def apply_on_string(self, string, values_to_set=None):
+        if values_to_set is not None:
+            self.values = values_to_set
+        string = centroid_set(string, self.values)
+        return string
+
+    def get_random_values(self):
+        """Generate a random value for position of the Centroid object"""
+        self.values = [choice(Centroid.values_options) for i in range(3)]
+
+    def get_weighted_values(self, weights):
+        if len(weights) == len(Centroid.values_options):
+            self.values = [Centroid.values_options[find_one_in_list(sum(
+                           weights), weights)]
+                           for i in range(len(self.positions))]
+        else:
+            self.values = [choice(Centroid.values_options)
+                           for i in range(len(self.positions))]        
+
+    def mutate_values(self, max_mutations=None, weights=None):
+
+        if max_mutations is None:
+            max_mutations = max(1, int(math.ceil(len(self.values)/2.0)))
+
+        self.values = mutation(self.values, max_mutations,
+                               Centroid.values_options, weights, periodic=False)
+
+    def update_values(self, string):
+        self.values = centroid_measure(string)
+
+    def is_equal(self, other, threshold, chiral=False):
+        values = []
+        tmp = []
+        for i in get_vec(self.values, other.values):
+            if i == 0:
+                tmp.append(0)
+            else:
+                tmp.append(1)
+        values.append(sum(tmp)/len(tmp))
+        if hasattr(other, "initial_values"):
+            tmp = []
+            for i in get_vec(self.values, other.initial_values):
+                if i == 0:
+                    tmp.append(0)
+                else:
+                    tmp.append(1)
+            values.append(sum(tmp)/len(tmp))
+        if min(values) > threshold:
+            return False
+        else:
+            return True
 
 class Torsion(DOF):
     """ Find, create and handle rotatable bonds"""
@@ -93,6 +172,7 @@ class Torsion(DOF):
 
     def __init__(self, positions):
         """Initialaize the Torsion object from the positions."""
+        self.name = 'Torsion'
         self.type = "torsion"
         self.positions = positions
 
@@ -283,6 +363,7 @@ class PyranoseRing(DOF):
         return positions
 
     def __init__(self, positions):
+        self.name = 'PyranoseRing'
         self.type = "pyranosering"
         self.positions = positions
 
@@ -361,9 +442,10 @@ class CisTrans(DOF):
             pattern_cistrans = Chem.MolFromSmarts(smarts_cistrans)
             cistrans = list(mol.GetSubstructMatches(pattern_cistrans))
             positions = cleaner(cistrans)
-        return positions
+        return positions      
 
     def __init__(self, positions):
+        self.name = 'CisTrans'
         self.type = "cistrans"
         self.positions = positions
 
@@ -421,3 +503,33 @@ class CisTrans(DOF):
             return False
         else:
             return True
+#=======================================================================
+#~ '''
+#~ For test of the module only
+#~ '''
+
+#~ smiles = 'CC(=O)N[C@H](C(=O)NC)C'
+#~ obj = Centroid(smiles)
+#~ mol = Chem.MolFromSmiles(obj.positions)
+#~ AllChem.EmbedMolecule(mol)
+#~ string = Chem.MolToMolBlock(mol)
+
+#~ print 'Initial coordinates:'
+#~ print sdf2xyz(string)
+#~ print 'Initial centroid:'
+#~ print centroid_measure(string)
+#~ obj.get_random_values()
+#~ print 'Centroid will be set to:'
+#~ print obj.values
+#~ string = obj.apply_on_string(string, obj.values)
+#~ print 'Final coordinates:'
+#~ print sdf2xyz(string)
+#~ print 'Final centroid:'
+#~ print centroid_measure(string)
+#***********************************************************************
+
+
+
+
+
+

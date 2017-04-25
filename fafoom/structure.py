@@ -58,7 +58,8 @@ class MoleculeDescription:
             new_names_dict = {'smile': 'smiles',
                               'smart_torsion': 'smarts_torsion',
                               'filter_smart_torsion': 'filter_smarts_torsion',
-                              'smart_cistrans': 'smarts_cistrans'}
+                              'smart_cistrans': 'smarts_cistrans',
+                              'centroid': 'centroids'}
             for key in new_names_dict:
                 try:
                     params[new_names_dict[key]] = params.pop(key)
@@ -269,11 +270,12 @@ class Structure:
                     dof.get_weighted_values(weights)
                 else:
                     dof.get_random_values()
+                    print 'Initial values for {} are {}'.format(dof.name ,dof.values) 
                 new_string = dof.apply_on_string(new_string)
         self.sdf_string = new_string
         for dof in self.dof:
             dof.update_values(self.sdf_string)
-
+            print 'Updated values for {} are {}'.format(dof.name, dof.values)
     def is_geometry_valid(self):
         """Return True if the geometry is valid."""
         #~ , self.mol_info.distance_cutoff_1, self.mol_info.distance_cutoff_2

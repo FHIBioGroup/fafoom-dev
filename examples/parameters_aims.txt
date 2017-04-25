@@ -1,15 +1,15 @@
 [Molecule]
 
 smiles="CC(=O)N[C@H](C(=O)NC)C"
-optimize_torsion=True
 optimize_cistrans=True
+optimize_torsion=True
 smarts_torsion= "[*]~[!$(*#*)&!D1]-&!@[!$(*#*)&!D1]~[*]"
 smarts_cistrans= "C~[$(C=O)]-[$(NC)]~[C]"
 filter_smarts_torsion= "C~[$(C=O)]-[$(NC)]~[C]"
 rmsd_type="cartesian"
 rmsd_cutoff_uniq=0.25
 chiral=True
-
+optimize_centroid=True
 [GA settings]
 
 energy_var=0.001

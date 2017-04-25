@@ -5,12 +5,14 @@ from fafoom import *
 from fafoom import MoleculeDescription, Structure, selection, print_output,\
     remover_dir, set_default, file2dict
 import fafoom.run_utilities as run_util
-from utilities import atoms_positions, centreofthebox
 from visual import draw_picture
 
 
 from rdkit import Chem
 from rdkit.Chem import AllChem
+
+from measure import centroid_measure
+from utilities import sdf2xyz
 
 # Decide for restart or a simple run.
 opt = run_util.simple_or_restart()
@@ -29,7 +31,6 @@ energy_function = run_util.detect_energy_function(params)
 cnt_max = 200
 population, blacklist = [], []
 min_energy = []
-
 
 
 #***********************************************************************
@@ -72,6 +73,7 @@ if opt == "simple":
         print_output("New trial")
         str3d = Structure(mol)
         str3d.generate_structure()
+        print '\n{}'.format(sdf2xyz(str3d.sdf_string))
         aims_object = AimsObject(os.path.join(os.getcwd(),'adds')) #Need for creation of the input file. Does not affect the algoritm.
         if not str3d.is_geometry_valid():
             print_output("The geometry of "+str(str3d)+" is invalid. Copied to /invalid")
@@ -85,16 +87,6 @@ if opt == "simple":
             os.mkdir(os.path.join(os.getcwd(),'valid',str(cnt)+'_geometry')) # creates the folder for particular structure inside th "valid" folder
             shutil.copy('geometry.in',os.path.join(os.getcwd(), 'valid', str(cnt)+'_geometry','geometry.in')) # copy input to self-titled folder
 ############            draw_picture(os.path.join(os.getcwd(), 'valid', str(cnt)+'_geometry','geometry.in'), image_write = 'yes') # Part of post-processing module. Under construction. Produce nice image with PyMol
-
-            print str3d.sdf_string
-            #~ print str3d
-#            print atoms_positions(str3d.sdf_string)
-#            print centreofthebox(atoms_positions(str3d.sdf_string))
-#            print atoms_shift(atoms_positions(str3d.sdf_string), centreofthebox(atoms_positions(str3d.sdf_string)))
-#            print centreofthebox(atoms_shift(atoms_positions(str3d.sdf_string), centreofthebox(atoms_positions(str3d.sdf_string))))
-            new = apply_coord_translation(str3d.sdf_string, atoms_shift(atoms_positions(str3d.sdf_string), centreofthebox(atoms_positions(str3d.sdf_string))))
-            str3d.sdf_string = new
-            print str3d.sdf_string
             name = "initial_%d" % (len(population))
             # Perform the local optimization
             run_util.optimize(str3d, energy_function, params, name)

@@ -22,13 +22,33 @@ import numpy as np
 from rdkit import Chem
 from rdkit.Chem import rdMolTransforms
 
-from utilities import get_vec, tor_rmsd, xyz2sdf
+from utilities import get_vec, tor_rmsd, xyz2sdf, sdf2xyz
 
 
 def ig(x):
     return itemgetter(x)
 
+def centroid_measure(sdf_string):
+    mol = Chem.MolFromMolBlock(sdf_string, removeHs=False)
+    pos = mol.GetConformer()
+    centroid = rdMolTransforms.ComputeCentroid(pos, ignoreHs=True) 
+    return [centroid.x, centroid.y, centroid.z]
 
+def centroid_set(sdf_string, values_to_set):
+    atoms_list = []
+    mol = Chem.MolFromMolBlock(sdf_string, removeHs=False)
+    for i in range(0, mol.GetNumAtoms()):
+        pos = mol.GetConformer().GetAtomPosition(i)
+        atoms_list.append([pos.x, pos.y, pos.z])
+    new_coordinates = []
+    shift = [values_to_set[0] - centroid_measure(sdf_string)[0], values_to_set[1] - centroid_measure(sdf_string)[1], values_to_set[2] - centroid_measure(sdf_string)[2]]
+    for i in range(len(atoms_list)):
+        new_coordinates.append([atoms_list[i][0] + shift[0], atoms_list[i][1] + shift[1], atoms_list[i][2] + shift[2]])
+    for i in range(0, mol.GetNumAtoms()):
+        mol.GetConformer().SetAtomPosition(i, new_coordinates[i])
+    sdf_string = Chem.MolToMolBlock(mol)
+    return sdf_string
+    
 def dihedral_measure(sdf_string, position):
     """ Measure the dihedral angle.
 

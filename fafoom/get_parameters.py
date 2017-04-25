@@ -18,7 +18,7 @@
 from __future__ import division
 from rdkit import Chem
 from rdkit.Chem import AllChem
-from deg_of_freedom import Torsion, CisTrans, PyranoseRing
+from deg_of_freedom import Torsion, CisTrans, PyranoseRing, Centroid
 from utilities import check_geo_sdf
 
 
@@ -84,6 +84,13 @@ def get_positions(type_of_deg, smiles, **kwargs):
         else:
             return PyranoseRing.find(smiles)
 
+    if type_of_deg == "centroid":
+        if 'list_of_centroid' in kwargs:
+            return Centroid.find(smiles,
+                                     positions=kwargs['list_of_centroid'])
+        else:
+            return Centroid.find(smiles)
+
 
 def create_dof_object(type_of_deg, positions):
     """Initialize the degree of freedom from the positions
@@ -100,6 +107,8 @@ def create_dof_object(type_of_deg, positions):
         return CisTrans(positions)
     if type_of_deg == "pyranosering":
         return PyranoseRing(positions)
+    if type_of_deg == "centroid":
+        return Centroid(positions)
 
 #~ , distance_cutoff_1, distance_cutoff_2
 def template_sdf(smiles):
