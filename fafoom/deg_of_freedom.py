@@ -70,13 +70,13 @@ class Centroid(DOF):
 
     def apply_on_string(self, string, values_to_set=None):
         if values_to_set is not None:
-            self.values = values_to_set
+            self.values = np.array(values_to_set)
         string = centroid_set(string, self.values)
         return string
 
     def get_random_values(self):
         """Generate a random value for position of the Centroid object"""
-        self.values = [choice(Centroid.values_options) for i in range(3)]
+        self.values = np.array([choice(Centroid.values_options) for i in range(3)])
 
     def get_weighted_values(self, weights):
         if len(weights) == len(Centroid.values_options):
@@ -84,8 +84,8 @@ class Centroid(DOF):
                            weights), weights)]
                            for i in range(len(self.positions))]
         else:
-            self.values = [choice(Centroid.values_options)
-                           for i in range(len(self.positions))]        
+            self.values = np.array([choice(Centroid.values_options)
+                           for i in range(len(self.positions))])        
 
     def mutate_values(self, max_mutations=None, weights=None):
 

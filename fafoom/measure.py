@@ -32,18 +32,17 @@ def centroid_measure(sdf_string):
     mol = Chem.MolFromMolBlock(sdf_string, removeHs=False)
     pos = mol.GetConformer()
     centroid = rdMolTransforms.ComputeCentroid(pos, ignoreHs=True) 
-    return [centroid.x, centroid.y, centroid.z]
+    return np.array([centroid.x, centroid.y, centroid.z])
 
 def centroid_set(sdf_string, values_to_set):
     atoms_list = []
     mol = Chem.MolFromMolBlock(sdf_string, removeHs=False)
     for i in range(0, mol.GetNumAtoms()):
         pos = mol.GetConformer().GetAtomPosition(i)
-        atoms_list.append([pos.x, pos.y, pos.z])
+        atoms_list.append(np.array([pos.x, pos.y, pos.z]))
     new_coordinates = []
-    shift = [values_to_set[0] - centroid_measure(sdf_string)[0], values_to_set[1] - centroid_measure(sdf_string)[1], values_to_set[2] - centroid_measure(sdf_string)[2]]
-    for i in range(len(atoms_list)):
-        new_coordinates.append([atoms_list[i][0] + shift[0], atoms_list[i][1] + shift[1], atoms_list[i][2] + shift[2]])
+    shift = values_to_set - centroid_measure(sdf_string)
+    new_coordinates = [i+shift for i in atoms_list]
     for i in range(0, mol.GetNumAtoms()):
         mol.GetConformer().SetAtomPosition(i, new_coordinates[i])
     sdf_string = Chem.MolToMolBlock(mol)
