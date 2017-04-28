@@ -28,7 +28,8 @@ from measure import (
     pyranosering_measure,
     pyranosering_set,
     centroid_measure,
-    centroid_set
+    centroid_set,
+    centre_of_mass
 )
 
 from genetic_operations import mutation
@@ -511,9 +512,12 @@ class CisTrans(DOF):
 #~ smiles = 'CC(=O)N[C@H](C(=O)NC)C'
 #~ obj = Centroid(smiles)
 #~ mol = Chem.MolFromSmiles(obj.positions)
+#~ mol = Chem.AddHs(mol)
 #~ AllChem.EmbedMolecule(mol)
 #~ string = Chem.MolToMolBlock(mol)
 
+#~ print centre_of_mass(string)
+#~ print centroid_measure(string)
 #~ print 'Initial coordinates:'
 #~ print sdf2xyz(string)
 #~ print 'Initial centroid:'

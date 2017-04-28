@@ -28,6 +28,12 @@ from utilities import get_vec, tor_rmsd, xyz2sdf, sdf2xyz
 def ig(x):
     return itemgetter(x)
 
+def centre_of_mass(sdf_string):
+    mol = Chem.MolFromMolBlock(sdf_string, removeHs=False)    
+    pos = mol.GetConformer()
+    coords_and_masses = np.array([np.array([pos.GetAtomPosition(i).x, pos.GetAtomPosition(i).y, pos.GetAtomPosition(i).z, mol.GetAtomWithIdx(i).GetMass()]) for i in range(mol.GetNumAtoms())])        #Return Atom Masses.
+    return np.average(coords_and_masses[:,:3], axis=0, weights=coords_and_masses[:,3])
+        
 def centroid_measure(sdf_string):
     mol = Chem.MolFromMolBlock(sdf_string, removeHs=False)
     pos = mol.GetConformer()
