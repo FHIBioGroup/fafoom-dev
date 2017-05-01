@@ -22,15 +22,7 @@ from random import choice
 from rdkit import Chem
 
 from utilities import ig, cleaner, get_vec, tor_rmsd, find_one_in_list
-from measure import (
-    dihedral_measure,
-    dihedral_set,
-    pyranosering_measure,
-    pyranosering_set,
-    centroid_measure,
-    centroid_set,
-    centre_of_mass
-)
+from measure import *
 
 from genetic_operations import mutation
 
@@ -509,15 +501,16 @@ class CisTrans(DOF):
 #~ For test of the module only
 #~ '''
 
-#~ smiles = 'CC(=O)N[C@H](C(=O)NC)C'
-#~ obj = Centroid(smiles)
-#~ mol = Chem.MolFromSmiles(obj.positions)
-#~ mol = Chem.AddHs(mol)
-#~ AllChem.EmbedMolecule(mol)
-#~ string = Chem.MolToMolBlock(mol)
+smiles = 'CC(=O)N[C@H](C(=O)NC)C'
+obj = Centroid(smiles)
+mol = Chem.MolFromSmiles(obj.positions)
+mol = Chem.AddHs(mol)
+AllChem.EmbedMolecule(mol)
+string = Chem.MolToMolBlock(mol)
 
-#~ print centre_of_mass(string)
+print get_centre_of_mass(string)
 #~ print centroid_measure(string)
+print get_tensor_of_inertia(string)
 #~ print 'Initial coordinates:'
 #~ print sdf2xyz(string)
 #~ print 'Initial centroid:'

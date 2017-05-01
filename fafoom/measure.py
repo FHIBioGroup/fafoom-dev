@@ -28,11 +28,41 @@ from utilities import get_vec, tor_rmsd, xyz2sdf, sdf2xyz
 def ig(x):
     return itemgetter(x)
 
-def centre_of_mass(sdf_string):
+def get_coords(sdf_string):
     mol = Chem.MolFromMolBlock(sdf_string, removeHs=False)    
-    pos = mol.GetConformer()
+    pos = mol.GetConformer()   
+    coords = np.array([np.array([pos.GetAtomPosition(i).x, pos.GetAtomPosition(i).y, pos.GetAtomPosition(i).z]) for i in range(mol.GetNumAtoms())])        #Return Atom Masses.
+    return coords   
+
+def get_coords_and_masses(sdf_string):
+    mol = Chem.MolFromMolBlock(sdf_string, removeHs=False)    
+    pos = mol.GetConformer()   
     coords_and_masses = np.array([np.array([pos.GetAtomPosition(i).x, pos.GetAtomPosition(i).y, pos.GetAtomPosition(i).z, mol.GetAtomWithIdx(i).GetMass()]) for i in range(mol.GetNumAtoms())])        #Return Atom Masses.
-    return np.average(coords_and_masses[:,:3], axis=0, weights=coords_and_masses[:,3])
+    return coords_and_masses
+    
+def get_centre_of_mass(sdf_string):
+    coords_and_masses = get_coords_and_masses(sdf_string)
+    center_of_mass = np.average(coords_and_masses[:,:3], axis=0, weights=coords_and_masses[:,3]) 
+    return center_of_mass
+
+def get_tensor_of_inertia(sdf_string):
+    mol = Chem.MolFromMolBlock(sdf_string, removeHs=False)    
+    center = get_centre_of_mass(sdf_string)
+    coords_and_masses = get_coords_and_masses(sdf_string)
+    #Diagonal elements:
+    Ixx = np.sum([coords_and_masses[i][3]*((coords_and_masses[i][1] - center[1])**2+(coords_and_masses[i][2]**2 - center[2])) for i in range(mol.GetNumAtoms())])
+    Iyy = np.sum([coords_and_masses[i][3]*((coords_and_masses[i][0] - center[0])**2+(coords_and_masses[i][2]**2 - center[2])) for i in range(mol.GetNumAtoms())])
+    Izz = np.sum([coords_and_masses[i][3]*((coords_and_masses[i][0] - center[0])**2+(coords_and_masses[i][1]**2 - center[1])) for i in range(mol.GetNumAtoms())])
+    #Off-diagonal elements:
+    Ixy = np.sum([coords_and_masses[i][3]*(coords_and_masses[i][0]*coords_and_masses[i][1]**2) for i in range(mol.GetNumAtoms())])
+    Ixz = np.sum([coords_and_masses[i][3]*(coords_and_masses[i][0]*coords_and_masses[i][2]**2) for i in range(mol.GetNumAtoms())])
+    Iyz = np.sum([coords_and_masses[i][3]*(coords_and_masses[i][1]*coords_and_masses[i][2]**2) for i in range(mol.GetNumAtoms())])
+    Iyx = Ixy
+    Izx = Ixz
+    Izy = Iyz
+    
+    tensor_of_inertia = np.matrix([[Ixx,Ixy,Ixz],[Iyx, Iyy, Iyz],[Izx, Izy, Izz]])
+    return tensor_of_inertia
         
 def centroid_measure(sdf_string):
     mol = Chem.MolFromMolBlock(sdf_string, removeHs=False)
