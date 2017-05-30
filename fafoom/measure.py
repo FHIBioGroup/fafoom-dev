@@ -19,14 +19,213 @@ from __future__ import division
 from operator import itemgetter
 import numpy as np
 
+import os
 from rdkit import Chem
+from rdkit.Chem import AllChem
 from rdkit.Chem import rdMolTransforms
-
+from numpy.linalg import inv
 from utilities import get_vec, tor_rmsd, xyz2sdf, sdf2xyz
+
+
+massdic={"1.008":1836.1527, "12.011":22033.8324, "14.007":25706.1378, "15.999":29377.341}
 
 
 def ig(x):
     return itemgetter(x)
+
+'''Rotation around arbitrary axis in space'''
+
+def unit_vector(vector):
+    """ Returns the unit vector of the vector.  """
+    return vector / np.linalg.norm(vector)
+
+def angle_between(v1, v2):
+    '''Returns angle between two vectors'''
+    v1_u = unit_vector(v1)
+    v2_u = unit_vector(v2)
+    return np.arccos(np.dot(v1_u, v2_u))*180./np.pi
+
+def translate(point, coord):
+    translated = coord[:] - point[:]
+    return translated
+
+def translate_back(point, coord):
+    translated = coord[:] + point[:]
+    return translated 
+
+def unit(vec):
+    mag = np.sqrt(vec[0]**2 + vec[1]**2 + vec[2]**2)
+    unit = np.array([vec[0]/mag, vec[1]/mag, vec[2]/mag])
+    return unit
+
+def mult_quats(q_1, q_2):
+    Q_q_2 = np.array([[q_2[0], q_2[1], q_2[2], q_2[3]],
+                     [-q_2[1], q_2[0], -q_2[3], q_2[2]],
+                     [-q_2[2], q_2[3], q_2[0], -q_2[1]],
+                     [-q_2[3], -q_2[2], q_2[1], q_2[0]]])
+    q_3 = np.dot(q_1, Q_q_2)
+    return q_3
+    
+def unit_quaternion(q):
+    ones = np.ones((1,4))
+    ones[:,0] = np.cos(q[0]*np.pi/180/2)
+    vec = np.array([q[1], q[2], q[3]])
+    vec = unit_vector(vec)
+    ones[:,1:] = vec*np.sin(q[0]*np.pi/180/2)
+    quaternion = ones[0]
+    return quaternion 
+
+def rotation_quat(coord, q):
+    q = unit_quaternion(q)
+    R_q = np.array([[1 - 2*q[2]**2 - 2*q[3]**2, 2*q[1]*q[2] - 2*q[0]*q[3], 2*q[1]*q[3] + 2*q[0]*q[2]],
+                    [2*q[2]*q[1] + 2*q[0]*q[3], 1 - 2*q[3]**2 - 2*q[1]**2, 2*q[2]*q[3] - 2*q[0]*q[1]],
+                    [2*q[3]*q[1] - 2*q[0]*q[2], 2*q[3]*q[2] + 2*q[0]*q[1], 1 - 2*q[1]**2 - 2*q[2]**2]])
+    rotated = np.dot(R_q, coord.transpose()) 
+    return rotated.transpose()
+
+def Rotation(coord, point, quaternion):
+    trans = translate(point, coord)
+    rotate = rotation_quat(trans, quaternion)
+    final = translate_back(point, rotate)
+    return np.array(final)
+
+def produce_quaternion(angle, vector):
+    ones = np.ones((1,4))
+    ones[:,0] = angle
+    ones[:,1:] = unit_vector(vector[:])
+    quaternion = ones[0]
+    return quaternion      
+
+def produce_coords_and_masses(coords, masses):
+	zeros = np.zeros((len(coords), 4))
+	zeros[:,:3] = coords[:]
+	zeros[:,3] = masses[:]
+	return zeros
+
+def check_eigens(vectors):
+    v_0 = unit_vector(vectors[0])
+    v_1 = unit_vector(vectors[1])
+    v_2 = unit_vector(vectors[2])
+    crossp = np.cross(v_0, v_1)
+    val = np.dot(crossp, v_2.T)
+    if val > 0:
+        return vectors
+    else:
+        vectors[2] = -vectors[2]
+        return  vectors
+
+def check_eigens_twice(obtained, desired):
+    if np.dot(obtained[0], desired[0]) < 0:
+        obtained[0] = -obtained[0]
+    if np.dot(obtained[1], desired[1]) < 0:
+        obtained[1] = -obtained[1]
+    if np.dot(obtained[2], desired[2]) < 0:
+        obtained[2] = -obtained[2]
+    return obtained
+    
+def quaternion_measure(coords_and_masses, atom_1_indx, atom_2_indx,):
+    orient_vec = unit_vector(coords_and_masses[atom_2_indx][:3] - coords_and_masses[atom_1_indx][:3])
+    origin = np.array([0, 0, 0])                                        
+    x_axis = np.array([1, 0, 0])
+    y_axis = np.array([0, 1, 0])
+    z_axis = np.array([0, 0, 1])   	
+    masses = coords_and_masses[:,3]                                     # Obtain masses of the atoms.          
+    center = get_centre_of_mass(coords_and_masses)                      # Obtain center of mass of the molecule.
+    inertia_tensor = get_tensor_of_inertia(coords_and_masses)           # Obtain inertia tensor.   
+    eigval_1 = get_eigens(inertia_tensor)[0]                            # Eigenvalues of the inertia tensor.
+    eigvec_1 = get_eigens(inertia_tensor)[1].T                          # Eigenvectors for inertia tensor. In column-like style!!! Have to be TRANSPOSED!!!
+    z_index = np.argmax(eigval_1)                                       # Choose index for eigenvector with highest eigenvalue. Will align it to z direction, so longest axes of molecule will be perependicular to z axis.           
+    x_index = np.argmin(eigval_1)                                       # Choose index for eigenvector with lowest eigenvalue. Will align it to z direction, so longest axes of molecule will be perependicular to z axis.           
+    if np.dot(unit_vector(eigvec_1[z_index]), orient_vec) < 0:
+        eigvec_1[z_index] = -eigvec_1[z_index]
+    ang_1 = angle_between(eigvec_1[z_index], z_axis)                    # Angle is in degrees!
+    vec_1 = np.cross(eigvec_1[z_index], z_axis)                         # Vector to rotate around.
+    quat_1 = produce_quaternion(ang_1, vec_1)                            # Produce unit quaternion for rotation, simply consists of angle and vector.
+    rotated_1 = Rotation(coords_and_masses[:,:3], center, quat_1)       # Coordinates of the molecule after aligning perpendicular to z axis.
+    new_coords = produce_coords_and_masses(rotated_1, masses)
+    orient_vec_2 = unit_vector(new_coords[atom_2_indx][:3] - new_coords[atom_1_indx][:3])
+    eigs_after = get_eigens(get_tensor_of_inertia(new_coords))[1].T
+    if np.dot(unit_vector(eigs_after[x_index]), orient_vec_2) < 0:
+        eigs_after[x_index] = -eigs_after[x_index]     
+    angle_x = angle_between(eigs_after[x_index], x_axis)
+    if np.dot(np.cross(unit_vector(eigs_after[x_index]), x_axis), z_axis) > 0:
+        angle_x[0,0] = -angle_x[0,0]  
+    quaternion_of_the_molecule = np.array([angle_x[0,0], eigvec_1[z_index, 0], eigvec_1[z_index, 1], eigvec_1[z_index, 2]])
+    return quaternion_of_the_molecule
+
+def tune_orientation(coords_and_masses, atom_1_indx, atom_2_indx):
+    center = get_centre_of_mass(coords_and_masses)
+    vector = unit_vector(coords_and_masses[atom_2_indx][:3] - coords_and_masses[atom_1_indx][:3])
+    print 'Initial vector {}'.format(unit_vector(coords_and_masses[atom_2_indx][:3] - coords_and_masses[atom_1_indx][:3]))  
+      
+    if vector[0] >= 0 and vector[1] >= 0 and vector[2] >= 0:
+        print 'Good tuned\n'
+        return coords_and_masses
+        
+    if vector[0] < 0 and vector[1] >= 0 and vector[2] >= 0:
+        final_coords = Rotation(coords_and_masses[:,:3], center, np.array([180, 0, 0, 1]))
+        print 'Updated vector {}\n'.format(unit_vector(final_coords[atom_2_indx] - final_coords[atom_1_indx]))
+        return produce_coords_and_masses(final_coords, coords_and_masses[:,3])
+    if vector[0] >= 0 and vector[1] < 0 and vector[2] >= 0:
+        print 'Good tuned\n'
+        return coords_and_masses
+    if vector[0] >= 0 and vector[1] >= 0 and vector[2] < 0:
+        final_coords = Rotation(coords_and_masses[:,:3], center, np.array([180, 1, 0, 0]))
+        print 'Updated vector {}\n'.format(unit_vector(final_coords[atom_2_indx] - final_coords[atom_1_indx]))
+        return produce_coords_and_masses(final_coords, coords_and_masses[:,3])
+        
+    if vector[0] < 0 and vector[1] < 0 and vector[2] >= 0:#
+        final_coords = Rotation(coords_and_masses[:,:3], center, np.array([180, 0, 0, 1]))
+        print 'Updated vector {}\n'.format(unit_vector(final_coords[atom_2_indx] - final_coords[atom_1_indx])) ###
+        return produce_coords_and_masses(final_coords, coords_and_masses[:,3])
+    if vector[0] < 0 and vector[1] >= 0 and vector[2] < 0:#
+        final_coords = Rotation(coords_and_masses[:,:3], center, np.array([180, 0, 1, 0]))
+        print 'Updated vector {}\n'.format(unit_vector(final_coords[atom_2_indx] - final_coords[atom_1_indx])) ###
+        return produce_coords_and_masses(final_coords, coords_and_masses[:,3])
+    if vector[0] >= 0 and vector[1] < 0 and vector[2] < 0:#
+        final_coords = Rotation(coords_and_masses[:,:3], center, np.array([180, 1, 0, 0]))
+        print 'Updated vector {}\n'.format(unit_vector(final_coords[atom_2_indx] - final_coords[atom_1_indx])) ###
+        return produce_coords_and_masses(final_coords, coords_and_masses[:,3])
+        
+    if vector[0] < 0 and vector[1] < 0 and vector[2] < 0:
+        coords_1 = Rotation(coords_and_masses[:,:3], center, np.array([180, 0, 0, 1]))
+        final_coords = Rotation(coords_1, center, np.array([180, 1, 0, 0]))
+        
+        print 'Updated vector {}\n'.format(unit_vector(final_coords[atom_2_indx] - final_coords[atom_1_indx]))
+        return produce_coords_and_masses(final_coords, coords_and_masses[:,3])
+
+
+
+def align_to_axes(coords_and_masses, atom_1_indx, atom_2_indx): #Will align...  	
+    center = get_centre_of_mass(coords_and_masses)                                          
+    quaternion = quaternion_measure(coords_and_masses, atom_1_indx, atom_2_indx)
+    desired_dir = np.array([0, 0, 1])
+    vec = np.cross(quaternion[1:], desired_dir)
+    angle = angle_between(quaternion[1:], desired_dir) 
+    quat_1 = produce_quaternion(angle, vec)
+    rotation_1 = Rotation(coords_and_masses[:,:3], center, quat_1)
+    angle_2 = -quaternion[0]
+    quat_2 = produce_quaternion(angle_2, np.array([0, 0, 1]))
+    rotation_2 = Rotation(rotation_1, center, quat_2)
+    rotated = produce_coords_and_masses(rotation_2, coords_and_masses[:,3])
+    print 'Quaternion_measure after aligning {}'.format(quaternion_measure(rotated, atom_1_indx, atom_2_indx))
+    return rotated    
+
+quat_set = np.array([1, -1, -1, 1])		
+def quaternion_set(coords_and_masses, q_b):
+    center = get_centre_of_mass(coords_and_masses)
+    aligned = align_to_axes(coords_and_masses)
+    first_rot = produce_quaternion(q_b[0], np.array([0, 0, 1]))
+    rotation_1 = Rotation(aligned[:,:3], center, first_rot)
+    rotated_1 = produce_coords_and_masses(rotation_1, coords_and_masses[:,3])
+    angle_2 = angle_between(np.array([0, 0, 1]), q_b[1:])
+    vec_2 = np.cross(np.array([0, 0, 1]), q_b[1:])
+    quat_2 = produce_quaternion(angle_2, vec_2)
+    rotated_2 = Rotation(rotation_1, center, quat_2)
+    result_2 = produce_coords_and_masses(rotated_2, coords_and_masses[:,3])
+    print 'Result quaternion \n{}\n'.format(quaternion_measure(result_2))
+    #~ print 'Resulted Eigens \n{}\n'.format(get_eigens(get_tensor_of_inertia(result_2))[1])
+    return result_2
 
 def get_coords(sdf_string):
     mol = Chem.MolFromMolBlock(sdf_string, removeHs=False)    
@@ -40,30 +239,71 @@ def get_coords_and_masses(sdf_string):
     coords_and_masses = np.array([np.array([pos.GetAtomPosition(i).x, pos.GetAtomPosition(i).y, pos.GetAtomPosition(i).z, mol.GetAtomWithIdx(i).GetMass()]) for i in range(mol.GetNumAtoms())])        #Return Atom Masses.
     return coords_and_masses
     
-def get_centre_of_mass(sdf_string):
+def get_centre_of_mass_from_sdf(sdf_string):
     coords_and_masses = get_coords_and_masses(sdf_string)
     center_of_mass = np.average(coords_and_masses[:,:3], axis=0, weights=coords_and_masses[:,3]) 
     return center_of_mass
 
-def get_tensor_of_inertia(sdf_string):
-    mol = Chem.MolFromMolBlock(sdf_string, removeHs=False)    
-    center = get_centre_of_mass(sdf_string)
-    coords_and_masses = get_coords_and_masses(sdf_string)
-    #Diagonal elements:
-    Ixx = np.sum([coords_and_masses[i][3]*((coords_and_masses[i][1] - center[1])**2+(coords_and_masses[i][2]**2 - center[2])) for i in range(mol.GetNumAtoms())])
-    Iyy = np.sum([coords_and_masses[i][3]*((coords_and_masses[i][0] - center[0])**2+(coords_and_masses[i][2]**2 - center[2])) for i in range(mol.GetNumAtoms())])
-    Izz = np.sum([coords_and_masses[i][3]*((coords_and_masses[i][0] - center[0])**2+(coords_and_masses[i][1]**2 - center[1])) for i in range(mol.GetNumAtoms())])
-    #Off-diagonal elements:
-    Ixy = np.sum([coords_and_masses[i][3]*(coords_and_masses[i][0]*coords_and_masses[i][1]**2) for i in range(mol.GetNumAtoms())])
-    Ixz = np.sum([coords_and_masses[i][3]*(coords_and_masses[i][0]*coords_and_masses[i][2]**2) for i in range(mol.GetNumAtoms())])
-    Iyz = np.sum([coords_and_masses[i][3]*(coords_and_masses[i][1]*coords_and_masses[i][2]**2) for i in range(mol.GetNumAtoms())])
+def get_centre_of_mass(coords_and_masses):
+    center_of_mass = np.average(coords_and_masses[:,:3], axis=0, weights=coords_and_masses[:,3]) 
+    return center_of_mass
+
+def update_coords_sdf(sdf_string, new_coords):
+    mol = Chem.MolFromMolBlock(sdf_string, removeHs=False) 
+    for i in range(0, mol.GetNumAtoms()):
+        mol.GetConformer().SetAtomPosition(i, new_coords[i])
+    sdf_string = Chem.MolToMolBlock(mol)
+    return sdf_string   
+
+#~ def get_tensor_of_inertia_from_sdf(sdf_string):
+    #~ mol = Chem.MolFromMolBlock(sdf_string, removeHs=False)    
+    #~ center = get_centre_of_mass_from_sdf(sdf_string)
+    #~ coords_and_masses = get_coords_and_masses(sdf_string)
+    #~ coords_and_masses[:,:3] = coords_and_masses[:,:3] - center[:]
+    #~ Ixx = np.sum([coords_and_masses[i][3]*(coords_and_masses[i][1]**2 + coords_and_masses[i][2]**2) for i in range(mol.GetNumAtoms())])
+    #~ Iyy = np.sum([coords_and_masses[i][3]*(coords_and_masses[i][0]**2 + coords_and_masses[i][2]**2) for i in range(mol.GetNumAtoms())])
+    #~ Izz = np.sum([coords_and_masses[i][3]*(coords_and_masses[i][0]**2 + coords_and_masses[i][1]**2) for i in range(mol.GetNumAtoms())])
+    #~ Ixy = -np.sum([coords_and_masses[i][3]*coords_and_masses[i][0]*coords_and_masses[i][1] for i in range(mol.GetNumAtoms())])
+    #~ Ixz = -np.sum([coords_and_masses[i][3]*coords_and_masses[i][0]*coords_and_masses[i][2] for i in range(mol.GetNumAtoms())])
+    #~ Iyz = -np.sum([coords_and_masses[i][3]*coords_and_masses[i][1]*coords_and_masses[i][2] for i in range(mol.GetNumAtoms())])
+    #~ Iyx = Ixy
+    #~ Izx = Ixz
+    #~ Izy = Iyz
+    #~ tensor_of_inertia = np.matrix([[Ixx,Ixy,Ixz],
+                                   #~ [Iyx, Iyy, Iyz],
+                                   #~ [Izx, Izy, Izz]])
+    #~ coords_and_masses[:,:3] = coords_and_masses[:,:3] + center[:]
+
+    #~ return tensor_of_inertia
+
+def get_tensor_of_inertia(coords_and_masses):
+	###Source: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC15493/pdf/pq000978.pdf ###
+    center = get_centre_of_mass(coords_and_masses)
+    Ixx = np.sum([coords_and_masses[:,3]*(coords_and_masses[:,1]**2 + coords_and_masses[:,2]**2)])  - (center[1]**2+center[2]**2)*np.sum([coords_and_masses[:,3]])                     
+    Iyy = np.sum([coords_and_masses[:,3]*(coords_and_masses[:,0]**2 + coords_and_masses[:,2]**2)])  - (center[0]**2+center[2]**2)*np.sum([coords_and_masses[:,3]])                   
+    Izz = np.sum([coords_and_masses[:,3]*(coords_and_masses[:,0]**2 + coords_and_masses[:,1]**2)])  - (center[0]**2+center[1]**2)*np.sum([coords_and_masses[:,3]])                    
+    Ixy = -np.sum([coords_and_masses[:,3]*coords_and_masses[:,0]*coords_and_masses[:,1]])           + (center[0]*center[1])*np.sum([coords_and_masses[:,3]])
+    Ixz = -np.sum([coords_and_masses[:,3]*coords_and_masses[:,0]*coords_and_masses[:,2]])           + (center[0]*center[2])*np.sum([coords_and_masses[:,3]])
+    Iyz = -np.sum([coords_and_masses[:,3]*coords_and_masses[:,1]*coords_and_masses[:,2]])           + (center[1]*center[2])*np.sum([coords_and_masses[:,3]])    
     Iyx = Ixy
     Izx = Ixz
     Izy = Iyz
-    
-    tensor_of_inertia = np.matrix([[Ixx,Ixy,Ixz],[Iyx, Iyy, Iyz],[Izx, Izy, Izz]])
+    tensor_of_inertia = np.matrix([[Ixx, Ixy, Ixz],
+                                   [Iyx, Iyy, Iyz],
+                                   [Izx, Izy, Izz]])
     return tensor_of_inertia
-        
+    
+#~ - (center[1]**2+center[2]**2)*np.sum([coords_and_masses[:,3]])
+#~ - (center[0]**2+center[2]**2)*np.sum([coords_and_masses[:,3]])
+#~ - (center[0]**2+center[1]**2)*np.sum([coords_and_masses[:,3]])
+#~ + (center[0]*center[1])*np.sum([coords_and_masses[:,3]])
+#~ + (center[0]*center[2])*np.sum([coords_and_masses[:,3]])
+#~ + (center[1]*center[2])*np.sum([coords_and_masses[:,3]])    
+
+def get_eigens(tensor_of_inertia):
+    eigens = np.linalg.eigh(tensor_of_inertia)
+    return eigens
+
 def centroid_measure(sdf_string):
     mol = Chem.MolFromMolBlock(sdf_string, removeHs=False)
     pos = mol.GetConformer()
@@ -458,3 +698,108 @@ def pyranosering_measure(sdf_string, position, dict_of_options):
         rmsd_dict[key] = (tor_rmsd(2, get_vec(all_ang, dict_of_options[key])))
 
     return int(min(rmsd_dict.iteritems(), key=ig(1))[0])
+    
+
+smiles = 'N[C@H](C(=O)N1[C@H](C(=O)N[C@H](C(=O)O)Cc2ccccc2)CCC1)CC1=CNCN1'
+pat_1 = Chem.MolFromSmarts('[C@H]C(=O)O') 
+pat_2 = Chem.MolFromSmarts('[NX3H2,NX4H3+][C@H]')
+mol = Chem.MolFromSmiles(smiles)
+mol = Chem.AddHs(mol)
+AllChem.EmbedMolecule(mol)
+string = Chem.MolToMolBlock(mol)
+#~ print 'INITIAL COORDS \n{}\n'.format(sdf2xyz(string))
+
+
+carbon_1_indx = mol.GetSubstructMatch(pat_2)[1] #Carbon from N[C@H] terminal
+carbon_2_indx = mol.GetSubstructMatch(pat_1)[0] #Carbon from C(=O)O terminal
+
+
+
+coords_and_masses = get_coords_and_masses(string)
+coords_and_masses[:,3] = [massdic[str(coords_and_masses[i][3])] for i in range(len(coords_and_masses))]
+center = get_centre_of_mass(coords_and_masses)
+coords_and_masses = produce_coords_and_masses(Rotation(coords_and_masses[:,:3], center, np.array([213, 1, 5, 1])), coords_and_masses[:,3])
+
+#~ coords_and_masses[:,:3] = Rotation(coords_and_masses[:,:3], center, np.array([32, 4, 6, 2]))
+string = update_coords_sdf(string, coords_and_masses[:,:3])
+
+
+
+
+if 'test.xyz' in os.listdir(os.getcwd()):
+    os.remove('test.xyz')
+
+
+initial = open('initial.xyz', 'w')
+initial.write(sdf2xyz(string))
+initial.close()
+
+
+print 'Initial {}'.format(quaternion_measure(coords_and_masses, carbon_1_indx, carbon_2_indx))
+aligned = align_to_axes(coords_and_masses, carbon_1_indx, carbon_2_indx)
+print 'Aligned {}'.format(quaternion_measure(aligned, carbon_1_indx, carbon_2_indx))
+cent = get_centre_of_mass(aligned)
+
+al = update_coords_sdf(string, aligned[:,:3])
+aligned_file = open('aligned.xyz', 'w')
+aligned_file.write(sdf2xyz(al))
+aligned_file.close()
+
+
+test = open('test.xyz', 'a')
+for i in range(1,361):
+    rand_quat = np.array([i, 0,0,1])
+    rand_rotated = Rotation(aligned[:,:3], cent, rand_quat)
+    rot = produce_coords_and_masses(rand_rotated, coords_and_masses[:,3])
+    new_string = update_coords_sdf(string, rot[:,:3])
+    test.write(sdf2xyz(new_string))
+    print 'Random_rotated {}'.format(quaternion_measure(rot, carbon_1_indx, carbon_2_indx))
+    
+test.close()
+#~ quat_set = np.array([0, 1, 0, 0])
+
+#~ if 'text.xyz' in os.listdir(os.getcwd()):
+    #~ os.remove('test.xyz')
+#~ new_coords = align_to_axes(coords_and_masses, carbon_1_indx, carbon_2_indx)
+#~ test = open('test.xyz', 'a')
+#~ new_string = update_coords_sdf(string, new_coords[:,:3])
+#~ test.write(sdf2xyz(new_string))
+#~ test.close()
+
+
+
+#~ for i in range(1,300):
+    #~ quat_set = np.array([0, 1, 0, 0])
+    #~ new_coords = quaternion_set(new_coords, quat_set)
+    #~ new_string = update_coords_sdf(string, new_coords[:,:3])
+    #~ test.write(sdf2xyz(new_string))    
+    #~ print 'Eigens \n{}\n'.format(get_eigens(get_tensor_of_inertia(new_coords))[1].T)
+    #~ print 'Result {}\n{}\n'.format(i, quaternion_measure(new_coords))
+
+
+#~ check_coords = quaternion_measure(get_coords_and_masses(string_new))
+#~ print quat_1
+#~ print get_eigens((get_tensor_of_inertia(new_positions)))[1]
+#~ measure_again, super_new_positions = quaternion_measure(new_positions)
+
+#~ print measure_again
+
+
+
+
+
+
+
+#~ origin = np.array([0,0,0])
+#~ vec_1 = np.array([0.00429650, -0.13539047, 0.990783])
+#~ vec_2 = np.array([0,0,1])
+#~ vec_3 = np.array([0,0,11])
+
+#~ ang = angle_between(vec_1, vec_2)
+#~ to_rotate = np.cross(vec_1, vec_2)
+#~ quat = produce_quaternion(ang, to_rotate)
+#~ result = Rotation(vec_1, origin, quat)
+#~ print result
+
+
+

@@ -508,9 +508,18 @@ mol = Chem.AddHs(mol)
 AllChem.EmbedMolecule(mol)
 string = Chem.MolToMolBlock(mol)
 
-print get_centre_of_mass(string)
-#~ print centroid_measure(string)
-print get_tensor_of_inertia(string)
+
+
+
+coords_and_masses = get_coords_and_masses(string)
+positions = coords_and_masses[:,:3]
+weights = coords_and_masses[:,3]
+
+quaternion = np.array([90,0,0,1])
+quaternion_set(string, quaternion)
+
+#~ print 'Marianas tensor of inertia:\n{}'.format(cm_and_inertia(positions, weights))
+#~ print 'My tensor of inertia:\n{}'.format(get_tensor_of_inertia(string))
 #~ print 'Initial coordinates:'
 #~ print sdf2xyz(string)
 #~ print 'Initial centroid:'
