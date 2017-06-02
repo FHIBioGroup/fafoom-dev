@@ -17,7 +17,7 @@
 ''' Handle the molecule and its 3D structures.'''
 from __future__ import division
 from copy import deepcopy
-
+import os
 from get_parameters import (
     create_dof_object,
     get_atoms_and_bonds,
@@ -38,7 +38,8 @@ from utilities import (
     mirror_sdf,
     print_output,
     set_default,
-    xyz2sdf
+    xyz2sdf,
+    aims2xyz
 
 )
 import random
@@ -58,8 +59,7 @@ class MoleculeDescription:
             new_names_dict = {'smile': 'smiles',
                               'smart_torsion': 'smarts_torsion',
                               'filter_smart_torsion': 'filter_smarts_torsion',
-                              'smart_cistrans': 'smarts_cistrans',
-                              'centroid': 'centroids'}
+                              'smart_cistrans': 'smarts_cistrans'}
             for key in new_names_dict:
                 try:
                     params[new_names_dict[key]] = params.pop(key)
@@ -73,14 +73,16 @@ class MoleculeDescription:
                     params[str(key)] = kwargs[key].replace(
                         MoleculeDescription.newline, "\n")
 
-        dict_default = {'rmsd_type': "cartesian", 'distance_cutoff_1': 1.3,
-                        'distance_cutoff_2': 2.15, 'rmsd_cutoff_uniq': 0.2,
-                        'chiral': True, 'optimize_torsion': True,
+        dict_default = {'rmsd_type': "cartesian", 'rmsd_cutoff_uniq': 0.2,
+                        'chiral': False, 'optimize_torsion': True,
+                        'optimize_centroid': True,
+                        'optimize_orientation': True,
                         'smarts_torsion':
-                        "[*]~[!$(*#*)&!D1]-&!@[!$(*#*)&!D1]~[*]"}
+                        "[*]~[!$(*#*)&!D1]-&!@[!$(*#*)&!D1]~[*]",
+                        'constrained_geometry_file':'adds/geometry.in.constrained',
+                        'right_order_to_assign':['torsion', 'cistrans', 'centroid', 'orientation']}
 
         params = set_default(params, dict_default)
-
         for key in params:
             if not hasattr(self, str(key)):
                 setattr(self, str(key), params[key])
@@ -124,8 +126,8 @@ class MoleculeDescription:
                 continue
             else:
                 return False
-        return True
-
+        return True             
+            
     def get_parameters(self):
         """Assign permanent attributes (number of atoms, number of bonds and
         degrees of freedom related attributes) to the object."""
@@ -135,6 +137,7 @@ class MoleculeDescription:
         for attr, value in self_copy.__dict__.iteritems():
             if str(attr).split('_')[0] == "optimize" and value:
                 type_of_dof = str(attr).split('_')[1]
+                print type_of_dof
                 linked_attr = {}
                 for attr, value in self_copy.__dict__.iteritems():
                     if type_of_dof in str(attr).split('_'):
@@ -146,15 +149,37 @@ class MoleculeDescription:
                 else:
                     print_output("The degree to optimize: "+str(type_of_dof) +
                                  " hasn't been found.")
-        setattr(self, "dof_names", dof_names)
+
+        geom_file = os.path.join(os.getcwd(), self.constrained_geometry_file)
+        if os.path.isfile(geom_file):
+            if len(aims2xyz(geom_file)) == 0:
+                dof_names.remove('centroid')
+                dof_names.remove('orientation')
+        else:
+            dof_names.remove('centroid')
+            dof_names.remove('orientation')
+            open(geom_file,'w').close()
+        
+        updated_order = []
+        for i in self.right_order_to_assign:
+            if i in dof_names:
+                updated_order.append(i)
+        setattr(self, "dof_names", updated_order)
 
     def create_template_sdf(self):
-    #~ self.distance_cutoff_1,
-                                                #~ self.distance_cutoff_2
         """Assign new attribute (template_sdf_string) to the object."""
         self.template_sdf_string = template_sdf(self.smiles)
 
-
+    def check_constrained_file(self):
+        geom_file = os.path.join(os.getcwd(), self.mol_info.constrained_geometry_file)
+        if os.path.isfile(geom_file):
+            if len(aims2xyz) == 0:
+                self.mol_info.optimize_centriod=False
+                self.mol_info.optimize_orientation=False
+        else:
+            self.mol_info.optimize_centriod=False
+            self.mol_info.optimize_orientation=False
+            
 class Structure:
     """Create 3D structures."""
     index = 0
@@ -172,6 +197,7 @@ class Structure:
             self.index = Structure.index
             dof = []
             for i in self.mol_info.dof_names:
+                print 'self.mol_info.dof_names: {}'.format(i)
                 new_obj = create_dof_object(str(i), getattr(self.mol_info, i))
                 dof.append(new_obj)
             setattr(self, "dof", dof)
@@ -255,11 +281,11 @@ class Structure:
         """Return the object energy."""
         return float(self.energy)
 
+
     def generate_structure(self, values={}):
         """Generate a 3D structures. If no values are passed, a random
         structure will be generated (weights, associated with the degrees of
         freedom, will be taken into account)."""
-
         new_string = deepcopy(self.mol_info.template_sdf_string)
         for dof in self.dof:
             if dof.type in values.keys():
@@ -276,9 +302,9 @@ class Structure:
         for dof in self.dof:
             dof.update_values(self.sdf_string)
             print 'Updated values for {} are {}'.format(dof.name, dof.values)
+            
     def is_geometry_valid(self):
         """Return True if the geometry is valid."""
-        #~ , self.mol_info.distance_cutoff_1, self.mol_info.distance_cutoff_2
         check = check_geo_sdf(self.sdf_string)
         return check
 

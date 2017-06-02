@@ -32,6 +32,7 @@ from rdkit.Chem import AllChem
 from operator import itemgetter
 from rdkit.Chem import rdMolTransforms
 from utilities import *
+import numpy as np
 
 class DOF:
 
@@ -41,9 +42,11 @@ class DOF:
     def common_function():
         pass
 
-class Centroid(DOF):
-    '''Find and handle centre of the molecule. '''
-    values_options = range(-10, 10, 1)
+class Orientation(DOF):
+    '''Find and handle orientation of the molecule. '''
+    
+    values_options = [range(-150, 180, 30), np.arange(-2, 2, 1)] #values_options[0] - Defines angle, values_options[1] - defines orientaion.
+
     @staticmethod
     def find(smiles, positions=None):
         if positions is None:
@@ -53,7 +56,92 @@ class Centroid(DOF):
             pattern_cent = Chem.MolFromSmarts(smiles)
             cent = list(mol.GetSubstructMatches(pattern_cent))
             positions = cleaner(cent)
-        return positions
+        return positions #returns all atoms
+
+    def __init__(self, positions):
+        """Initialaize the Centroid object from the positions."""
+        self.name = 'Orientation'        
+        self.type = "orientation"
+        self.positions = positions
+
+    def apply_on_string(self, string, values_to_set=None):
+        mol = Chem.MolFromMolBlock(string, removeHs=False)
+        atom_1_indx = 0
+        atom_2_indx = mol.GetNumHeavyAtoms() - 1   
+        if values_to_set is not None:
+            self.values = np.array(values_to_set)
+        string = quaternion_set(string, self.values, atom_1_indx, atom_2_indx)
+        return string
+
+    def get_random_values(self):
+        """Generate a random value for orientation of the molecule. Random orientation defined with direction vector and angle"""
+        self.values = np.array([choice(Orientation.values_options[0]),
+                                choice(Orientation.values_options[1]),
+                                choice(Orientation.values_options[1]),
+                                choice(Orientation.values_options[1])])
+
+    def update_values(self, string):
+        mol = Chem.MolFromMolBlock(string, removeHs=False)
+        atom_1_indx = 0
+        atom_2_indx = mol.GetNumHeavyAtoms() - 1
+        self.values = quaternion_measure(string, atom_1_indx, atom_2_indx)
+
+
+#### NEEEED to be deeply revised...
+
+    def get_weighted_values(self, weights):
+        if len(weights) == len(Orientation.values_options):
+            self.values = [Orientation.values_options[find_one_in_list(sum(
+                           weights), weights)]
+                           for i in range(len(self.positions))]
+        else:
+            self.values = np.array([choice(Orientation.values_options)
+                           for i in range(len(self.positions))])        
+
+    def mutate_values(self, max_mutations=None, weights=None):
+
+        if max_mutations is None:
+            max_mutations = max(1, int(math.ceil(len(self.values)/2.0)))
+
+        self.values = mutation(self.values, max_mutations,
+                               Orientation.values_options, weights, periodic=False)
+
+    def is_equal(self, other, threshold, chiral=False):
+        values = []
+        tmp = []
+        for i in get_vec(self.values, other.values):
+            if i == 0:
+                tmp.append(0)
+            else:
+                tmp.append(1)
+        values.append(sum(tmp)/len(tmp))
+        if hasattr(other, "initial_values"):
+            tmp = []
+            for i in get_vec(self.values, other.initial_values):
+                if i == 0:
+                    tmp.append(0)
+                else:
+                    tmp.append(1)
+            values.append(sum(tmp)/len(tmp))
+        if min(values) > threshold:
+            return False
+        else:
+            return True
+                             
+class Centroid(DOF):
+    '''Find and handle centre of the molecule. '''
+    values_options = range(1, 10, 1)
+
+    @staticmethod
+    def find(smiles, positions=None):
+        if positions is None:
+            mol = Chem.MolFromSmiles(smiles)
+            if mol is None:
+                raise ValueError("The smiles is invalid")
+            pattern_cent = Chem.MolFromSmarts(smiles)
+            cent = list(mol.GetSubstructMatches(pattern_cent))
+            positions = cleaner(cent)
+        return positions #returns all atoms
 
     def __init__(self, positions):
         """Initialaize the Centroid object from the positions."""
@@ -71,6 +159,10 @@ class Centroid(DOF):
         """Generate a random value for position of the Centroid object"""
         self.values = np.array([choice(Centroid.values_options) for i in range(3)])
 
+    def update_values(self, string):
+        self.values = centroid_measure(string)
+        
+#### NEEEED to be deeply revised...
     def get_weighted_values(self, weights):
         if len(weights) == len(Centroid.values_options):
             self.values = [Centroid.values_options[find_one_in_list(sum(
@@ -87,9 +179,6 @@ class Centroid(DOF):
 
         self.values = mutation(self.values, max_mutations,
                                Centroid.values_options, weights, periodic=False)
-
-    def update_values(self, string):
-        self.values = centroid_measure(string)
 
     def is_equal(self, other, threshold, chiral=False):
         values = []
@@ -501,22 +590,22 @@ class CisTrans(DOF):
 #~ For test of the module only
 #~ '''
 
-smiles = 'CC(=O)N[C@H](C(=O)NC)C'
-obj = Centroid(smiles)
-mol = Chem.MolFromSmiles(obj.positions)
-mol = Chem.AddHs(mol)
-AllChem.EmbedMolecule(mol)
-string = Chem.MolToMolBlock(mol)
+#~ smiles = 'CC(=O)N[C@H](C(=O)NC)C'
+#~ obj = Centroid(smiles)
+#~ mol = Chem.MolFromSmiles(obj.positions)
+#~ mol = Chem.AddHs(mol)
+#~ AllChem.EmbedMolecule(mol)
+#~ string = Chem.MolToMolBlock(mol)
 
 
 
 
-coords_and_masses = get_coords_and_masses(string)
-positions = coords_and_masses[:,:3]
-weights = coords_and_masses[:,3]
+#~ coords_and_masses = get_coords_and_masses(string)
+#~ positions = coords_and_masses[:,:3]
+#~ weights = coords_and_masses[:,3]
 
-quaternion = np.array([90,0,0,1])
-quaternion_set(string, quaternion)
+#~ quaternion = np.array([90,0,0,1])
+#~ quaternion_set(string, quaternion)
 
 #~ print 'Marianas tensor of inertia:\n{}'.format(cm_and_inertia(positions, weights))
 #~ print 'My tensor of inertia:\n{}'.format(get_tensor_of_inertia(string))

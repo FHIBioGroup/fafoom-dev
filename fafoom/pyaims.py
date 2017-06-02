@@ -22,7 +22,7 @@ import os
 import subprocess
 import itertools
 
-from utilities import remover_file, sdf2aims, string2file
+from utilities import remover_file, sdf2aims, string2file, generate_extended_input, aims2xyz, sdf2xyz_list, check_for_clashes
 
 
 class AimsObject():
@@ -33,16 +33,21 @@ class AimsObject():
         """
         self.sourcedir = sourcedir
 
-    def generate_input(self, sdf_string):
+    def generate_input(self, sdf_string, periodicity=0):
         """Create input files for FHI-aims.
         Args:
             sdf_string (str)
         """
         self.aims_string = sdf2aims(sdf_string)
         string2file(self.aims_string, 'geometry.in')
+        if os.path.join(self.sourcedir, 'geometry.in.constrained'):
+            constrained_part_file = os.path.join(self.sourcedir, 'geometry.in.constrained')
+            generate_extended_input(self.aims_string, constrained_part_file, 'geometry.in')
+        print 'OOOK {}'.format(check_for_clashes(aims2xyz(constrained_part_file), sdf2xyz_list(sdf_string)))
         name = 'control.in'
         src = os.path.join(self.sourcedir, name)
         shutil.copy(src, os.getcwd())
+            
 
     def build_storage(self, dirname):
         """Create a directory for storing the FHI-aims input and output.

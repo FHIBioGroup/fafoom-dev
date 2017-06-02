@@ -16,7 +16,7 @@
 #   along with fafoom.  If not, see <http://www.gnu.org/licenses/>.
 ''' Collection of diverse help/convert functions '''
 from __future__ import division
-import os
+import os, re
 import numpy as np
 import math
 import shutil
@@ -102,7 +102,19 @@ def string2file(string, filename):
     with open(filename, 'w') as target:
         target.write(string)
     target.close()
-
+    
+def generate_extended_input(string, constrained_part_file, filename): #Constrained part is a file!!!
+    #string is sdf string!
+    #Checking for clashes:
+    with open(constrained_part_file, 'r') as part:
+        constrained_part = part.readlines()
+    with open(filename, 'w') as target:
+        for line in constrained_part:
+            target.write(line)
+        target.write('\n')
+        target.write(string)
+    part.close()
+    target.close()    
 
 def set_default(params, dict_default):
     """Set defaults for missing keys and add the key:value pairs to the
@@ -113,7 +125,6 @@ def set_default(params, dict_default):
                          str(dict_default[key]))
             params[str(key)] = dict_default[key]
     return params
-
 
 def file2dict(filename, sections):
     """Parse a file and create a dictionary"""
@@ -127,7 +138,6 @@ def file2dict(filename, sections):
     return new_dict
 
 # Help vector/matrix functions
-
 
 def ig(x):
     return itemgetter(x)
@@ -264,7 +274,7 @@ def distance(x, y):
     """"Calculate distance between two points in 3D."""
     return np.sqrt((x[0]-y[0])**2+(x[1]-y[1])**2+(x[2]-y[2])**2)
 
-#~ , cutoff1, cutoff2
+
 def check_geo_sdf(sdf_string):
     """Check geometry from a sdf_string for clashes.
 
@@ -277,18 +287,13 @@ def check_geo_sdf(sdf_string):
     Raises:
         ValueError: if distance cutoffs are non-positive
     """
-
-    #~ if cutoff1 <= 0 or cutoff2 <= 0:
-        #~ raise ValueError("Distance cutoff needs to be a positive float")
     atoms, bonds = get_ind_from_sdfline(sdf_string.split('\n')[3])
     coordinates = np.zeros((atoms, 3))
     bonds_list = []
     atoms_names = []
     for i in range(4, atoms+4):
         coordinates[i-4][0:3] = sdf_string.split('\n')[i].split()[0:3]
-#
         atoms_names.append(sdf_string.split('\n')[i].split()[3])
-#
     for i in range(atoms+4, atoms+bonds+4):
         e1, e2 = get_ind_from_sdfline(sdf_string.split('\n')[i])
         bonds_list.append([e1, e2])
@@ -302,22 +307,11 @@ def check_geo_sdf(sdf_string):
     for x in range(atoms):
         for y in range(x+1, atoms):
             if [x+1, y+1] not in bonds_list and [y+1, x+1] not in bonds_list:
-                #~ print (VDW_radii[atoms_names[x]]+VDW_radii[atoms_names[y]])/1.88973
-                #~ print x, y
-                #~ print atoms_names[x], atoms_names[y]
-                #~ if dist[x][y] < cutoff1:   (VDW_radii[atoms_names[x]]+VDW_radii[atoms_names[y]])/1.88973
-                if dist[x][y] < VDW_radii[atoms_names[x]]*bohrtoang or dist[x][y] < VDW_radii[atoms_names[y]]*bohrtoang:
-                    
+                if dist[x][y] < VDW_radii[atoms_names[x]]*bohrtoang or dist[x][y] < VDW_radii[atoms_names[y]]*bohrtoang:                 
                     check = False
                     return check
- 
-            #~ else:
-                #~ if dist[x][y] > cutoff2:
-                    #~ check = False
-                    #~ return check
     return check
-
-
+    
 def get_ind_from_sdfline(sdf_line):
     """Extract the indicies from the sdf string (for molecules with more than
     99 atoms)"""
@@ -335,10 +329,40 @@ def get_ind_from_sdfline(sdf_line):
             ind2 = int(list_ind[3]+list_ind[4]+list_ind[5])
 
     return ind1, ind2
+    
+def check_for_clashes(list_1, list_2):
+    check = True
+    for i in list_1:
+        for j in list_2:
+            if np.linalg.norm((np.array(i[1:]) - np.array(j[1:]))) < i[0] or np.linalg.norm((np.array(i[1:]) - np.array(j[1:]))) < j[0]:
+                check = False           
+    return check
 
 # Format conversions
 
 
+def aims2xyz(aims_file):
+    xyz_coords = []
+    with open(aims_file, 'r') as aims:
+        lines = aims.readlines()
+        for line in lines:
+            atoms = re.match(r'(.*atom\s+(.\d+\.\d+)\s+(.\d+\.\d+)\s+(.\d+\.\d+)\s+(\w+))', line)
+            if atoms:
+                xyz_coords.append([str(atoms.group(5)), float(atoms.group(2)), float(atoms.group(3)), float(atoms.group(4))])
+    aims.close()
+    xyz_coords_array = np.array([ np.array([VDW_radii[i[0]]*bohrtoang, i[1], i[2], i[3]]) for i in xyz_coords])
+    return xyz_coords_array
+    
+def sdf2xyz_list(sdf_string):
+    mol = Chem.MolFromMolBlock(sdf_string, removeHs=False)    
+    pos = mol.GetConformer()   
+    coords_and_masses = np.array([np.array([VDW_radii[mol.GetAtomWithIdx(i).GetSymbol()]*bohrtoang,
+                                            float(pos.GetAtomPosition(i).x), 
+                                            float(pos.GetAtomPosition(i).y), 
+                                            float(pos.GetAtomPosition(i).z)]) 
+                                            for i in range(mol.GetNumAtoms())])        
+    return coords_and_masses                
+        
 def sdf2aims(sdf_string):
     """Convert a sdf string to a aims string."""
     atoms = get_ind_from_sdfline(sdf_string.split('\n')[3])[0]
@@ -399,7 +423,6 @@ def aims2sdf(aims_string, sdf_template_string):
 
     sdf_string = ''.join(c)
     return sdf_string
-
 
 def xyz2sdf(xyz_string, sdf_template_string):
     """Convert a xyz string to a sdf string. Template for the sdf string is

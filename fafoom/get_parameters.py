@@ -18,7 +18,7 @@
 from __future__ import division
 from rdkit import Chem
 from rdkit.Chem import AllChem
-from deg_of_freedom import Torsion, CisTrans, PyranoseRing, Centroid
+from deg_of_freedom import Torsion, CisTrans, PyranoseRing, Centroid, Orientation
 from utilities import check_geo_sdf
 
 
@@ -90,7 +90,12 @@ def get_positions(type_of_deg, smiles, **kwargs):
                                      positions=kwargs['list_of_centroid'])
         else:
             return Centroid.find(smiles)
-
+    if type_of_deg == "orientation":
+        if 'list_of_orientation' in kwargs:
+            return Orientation.find(smiles,
+                                     positions=kwargs['list_of_orientation'])
+        else:
+            return Orientation.find(smiles)
 
 def create_dof_object(type_of_deg, positions):
     """Initialize the degree of freedom from the positions
@@ -109,16 +114,14 @@ def create_dof_object(type_of_deg, positions):
         return PyranoseRing(positions)
     if type_of_deg == "centroid":
         return Centroid(positions)
+    if type_of_deg == "orientation":
+        return Orientation(positions)
 
-#~ , distance_cutoff_1, distance_cutoff_2
 def template_sdf(smiles):
     """Create a template sdf string and writes it to file.
 
     Args(required):
         smiles (str): one-line representation of the molecule
-    Args(optional):
-        distance_cutoff_1 (float): min distance between non-bonded atoms [A]
-        distance_cutoff_2 (float): max distance between bonded atoms [A]
     Returns:
         sdf string
     """
@@ -131,7 +134,6 @@ def template_sdf(smiles):
         AllChem.UFFOptimizeMolecule(mol)
         Chem.SDWriter('mol.sdf').write(mol)
         sdf_string = Chem.MolToMolBlock(mol)
-        #~ , distance_cutoff_1, distance_cutoff_2
         check = check_geo_sdf(sdf_string)
         if check:
             sdf_check = False

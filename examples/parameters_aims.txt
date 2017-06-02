@@ -1,7 +1,7 @@
 [Molecule]
 
-smiles="CC(=O)N[C@H](C(=O)NC)C"
-optimize_cistrans=True
+smiles="N[C@H](C(=O)N1[C@H](C(=O)N[C@H](C(=O)O)Cc2ccccc2)CCC1)CC1=CNCN1"
+
 optimize_torsion=True
 smarts_torsion= "[*]~[!$(*#*)&!D1]-&!@[!$(*#*)&!D1]~[*]"
 smarts_cistrans= "C~[$(C=O)]-[$(NC)]~[C]"
@@ -10,6 +10,8 @@ rmsd_type="cartesian"
 rmsd_cutoff_uniq=0.25
 chiral=True
 optimize_centroid=True
+optimize_orientation=True
+optimize_cistrans=True
 [GA settings]
 
 energy_var=0.001
