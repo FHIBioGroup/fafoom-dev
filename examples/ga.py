@@ -73,7 +73,7 @@ if opt == "simple":
         print_output("New trial")
         str3d = Structure(mol)
         str3d.generate_structure()
-        print '\n{}'.format(sdf2xyz(str3d.sdf_string))
+        #~ print '\n{}'.format(sdf2xyz(str3d.sdf_string))
         aims_object = AimsObject(os.path.join(os.getcwd(),'adds')) #Need for creation of the input file. Does not affect the algoritm.
         if not str3d.is_geometry_valid():
             print_output("The geometry of "+str(str3d)+" is invalid. Copied to /invalid")
@@ -98,6 +98,7 @@ if opt == "simple":
             run_util.relax_info(str3d)
             cnt += 1
         else:
+            print_output(blacklist)
             print_output("Geomerty of "+str(str3d)+" is fine, but already "
                          "known.")
             cnt += 1

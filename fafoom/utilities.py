@@ -28,8 +28,11 @@ from rdkit.Chem import AllChem
 from operator import itemgetter
 from rdkit.Chem import rdMolTransforms
 
+import shutil
+
 # Flow-handling
 # In Bohr
+atom_masses = {'H':  1.00794, 'He':  4.002602, 'Li':  6.941, 'Be':  9.012182, 'B':  10.811, 'C':  12.011, 'N':  14.00674, 'O':  15.9994, 'F':  18.9984, 'Ne':  20.1797, 'Na':  22.98977, 'Mg':  24.305, 'Al':  26.98154, 'Si':  28.0855, 'P':  30.97376, 'S':  32.066, 'Cl':  35.4527, 'K':  39.0983, 'Ar':  39.948, 'Ca':  40.078, 'Sc':  44.95591, 'Ti':  47.88, 'V':  50.9415, 'Cr':  51.9961, 'Mn':  54.93805, 'Fe':  55.847, 'Ni':  58.6934, 'Co':  58.9332, 'Cu':  63.546, 'Zn':  65.39, 'Ga':  69.723, 'Ge':  72.61, 'As':  74.92159, 'Se':  78.96, 'Br':  79.904, 'Kr':  83.8, 'Rb':  85.4678, 'Sr':  87.62, 'Y':  88.90585, 'Zr':  91.224, 'Nb':  92.90638, 'Mo':  95.94, 'Ru':  101.07, 'Rh':  102.9055, 'Pd':  106.42, 'Ag':  107.8682, 'Cd':  112.411, 'In':  114.818, 'Sn':  118.71, 'Sb':  121.757, 'I':  126.9045, 'Te':  127.6, 'Xe':  131.29, 'Cs':  132.9054, 'Ba':  137.327, 'La':  138.9055, 'Ce':  140.115, 'Pr':  140.9077, 'Nd':  144.24, 'Sm':  150.36, 'Eu':  151.965, 'Gd':  157.25, 'Tb':  158.9253, 'Dy':  162.5, 'Ho':  164.9303, 'Er':  167.26, 'Tm':  168.9342, 'Yb':  173.04, 'Lu':  174.967, 'Hf':  178.49, 'Ta':  180.9479, 'W':  183.85, 'Re':  186.207, 'Os':  190.2, 'Ir':  192.22, 'Pt':  195.08, 'Au':  196.9665, 'Hg':  200.59, 'Tl':  204.3833, 'Pb':  207.2, 'Bi':  208.9804, 'Po':  208.9824, 'At':  209.9871, 'Pa':  213.0359, 'Ra':  226.0254, 'Ac':  227.0728, 'Th':  232.0381, 'Np':  237.0482, 'U':  238.0289, 'Am':  243.0614, 'Pu':  244.0642}
 VDW_radii = {'H': 3.1000,'He': 2.6500,'Li': 4.1600,'Be': 4.1700,'B':  3.8900,'C':  3.5900,'N':  3.3400,'O':  3.1900,'F':  3.0400,'Ne': 2.9100,'Na': 3.7300,'Mg': 4.2700,'Al': 4.3300,'Si': 4.2000,'P':  4.0100,'S':  3.8600,'Cl': 3.7100,'Ar': 3.5500,'K':  3.7100,'Ca': 4.6500,'Sc': 4.5900,'Ti': 4.5100,'V':  4.4400,'Cr': 3.9900,'Mn': 3.9700,'Fe': 4.2300,'Co': 4.1800,'Ni': 3.8200,'Cu': 3.7600,'Zn': 4.0200,'Ga': 4.1900,'Ge': 4.2000,'As': 4.1100,'Se': 4.0400,'Br': 3.9300,'Kr': 3.8200,'Rb': 3.7200,'Sr': 4.5400,'Y':  4.8151,'Zr': 4.53,'Nb': 4.2365,'Mo': 4.099,'Tc': 4.076,'Ru': 3.9953,'Rh': 3.95,'Pd': 3.6600,'Ag': 3.8200,'Cd': 3.9900,'In': 4.2319,'Sn': 4.3030,'Sb': 4.2760,'Te': 4.2200,'I':  4.1700,'Xe': 4.0800,'Cs': 3.78,'Ba': 4.77,'La': 3.14,'Ce': 3.26,'Pr': 3.28,'Nd': 3.3,'Pm': 3.27,'Sm': 3.32,'Eu': 3.40,'Gd': 3.62,'Tb': 3.42,'Dy': 3.26,'Ho': 3.24,'Er': 3.30,'Tm': 3.26,'Yb': 3.22,'Lu': 3.20,'Hf': 4.21,'Ta': 4.15,'W':  4.08,'Re': 4.02,'Os': 3.84,'Ir': 4.00,'Pt': 3.92,'Au': 3.86,'Hg': 3.98,'Tl': 3.91,'Pb': 4.31,'Bi': 4.32,'Po': 4.097,'At': 4.07,'Rn': 4.23,'Fr': 3.90,'Ra': 4.98,'Ac': 2.75,'Th': 2.85,'Pa': 2.71,'U':  3.00,'Np': 3.28,'Pu': 3.45,'Am': 3.51,'Cm': 3.47,'Bk': 3.56,'Cf': 3.55,'Es': 3.76,'Fm': 3.89,'Md': 3.93,'No': 3.78}
 bohrtoang=0.52917721
 
@@ -104,8 +107,7 @@ def string2file(string, filename):
     target.close()
     
 def generate_extended_input(string, constrained_part_file, filename): #Constrained part is a file!!!
-    #string is sdf string!
-    #Checking for clashes:
+    periodicity = check_for_periodicity(constrained_part_file)
     with open(constrained_part_file, 'r') as part:
         constrained_part = part.readlines()
     with open(filename, 'w') as target:
@@ -114,7 +116,8 @@ def generate_extended_input(string, constrained_part_file, filename): #Constrain
         target.write('\n')
         target.write(string)
     part.close()
-    target.close()    
+    target.close()  
+ 
 
 def set_default(params, dict_default):
     """Set defaults for missing keys and add the key:value pairs to the
@@ -329,6 +332,61 @@ def get_ind_from_sdfline(sdf_line):
             ind2 = int(list_ind[3]+list_ind[4]+list_ind[5])
 
     return ind1, ind2
+
+def update_coords_aims(aims_file, new_coords):
+    i = 0
+    full_path = os.path.realpath(aims_file)
+    path, filename = os.path.split(full_path)
+    aims = open(aims_file, 'r')
+    lines = aims.readlines()
+    temp = open(os.path.join(path, 'temp.in'), 'w')
+    for line in lines:
+        coord = re.match(r'(.*(atom)\s+(.\d+\.\d+)\s+(.\d+\.\d+)\s+(.\d+\.\d+)\s+(\w+))', line)
+        if coord:
+            temp.write('{}   {}   {}   {}   {}\n'.format(coord.group(2), new_coords[i][0], new_coords[i][1], new_coords[i][2], coord.group(6)))
+            i += 1
+        else:
+            temp.write(line)
+    temp.close()
+    aims.close()
+    shutil.move(os.path.join(path, 'temp.in'), aims_file)
+
+def get_cm(coords_and_masses):
+    center_of_mass = np.average(coords_and_masses[:,:3], axis=0, weights=coords_and_masses[:,3]) 
+    return center_of_mass
+
+def align_to_origin(aims_file):
+    coords = aims2xyz_masses(aims_file)
+    if len(aims2xyz_masses(aims_file)) == 1:
+        update_coords_aims(aims_file, np.array([[0.0,0.0,0.0]]))  
+    if len(aims2xyz_extended(aims_file)) > 1:
+        center = get_cm(aims2xyz_masses(aims_file)) 
+        new_coords = np.array(aims2xyz_masses(aims_file)[:,:3]) - center
+        update_coords_aims(aims_file, new_coords)  
+
+def check_for_periodicity(aims_file):
+    periodicity = False
+    with open(aims_file, 'r') as aims:
+        lines = aims.readlines()
+        for line in  lines:
+            lattice = re.match(r'(\s?(lattice_vector)\.*)', line)
+            if lattice:
+                periodicity = True
+    return periodicity
+    
+def set_centroid_values_options(aims_file):
+    periodicity = check_for_periodicity(aims_file)
+    if len(aims2xyz(geom_file)) == 1 and periodicity == False:
+        #Also need to update values for atom and put it in origin.
+        values_options = [range(0,1,1), range(0,1,1), range(0,10,1)]
+    if len(aims2xyz(geom_file)) > 1 and periodicity == False:
+        #need to place center of molecule to origin and draw bow after aligning of inertia moments.
+        values_options = [range(0,1,1), range(0,1,1), range(0,10,1)]
+    if len(aims2xyz(geom_file)) == 1 and periodicity == True:
+        print 'Are you sure?!'
+    if len(aims2xyz(geom_file)) > 1 and periodicity == False:
+        #put centroid inside the box, made of lattice vectors.
+        values_options = [range(0,1,1), range(0,1,1), range(0,10,1)]
     
 def check_for_clashes(list_1, list_2):
     check = True
@@ -340,6 +398,21 @@ def check_for_clashes(list_1, list_2):
 
 # Format conversions
 
+#~ def update_aims_coords(aims_file, coords):
+    #~ aims_info = aims2xyz_extended(aims_file)
+    #~ with open(aims_file, 'r') as aims:
+        
+def aims2xyz_masses(aims_file):
+    xyz_coords = []
+    with open(aims_file, 'r') as aims:
+        lines = aims.readlines()
+        for line in lines:
+            atoms = re.match(r'(.*atom\s+(.\d+\.\d+)\s+(.\d+\.\d+)\s+(.\d+\.\d+)\s+(\w+))', line)
+            if atoms:
+                xyz_coords.append([float(atoms.group(2)), float(atoms.group(3)), float(atoms.group(4)), atoms.group(5)])
+    aims.close()
+    xyz_coords_array = np.array([ np.array([i[0], i[1], i[2], float(atom_masses[i[3]]) ]) for i in xyz_coords])
+    return xyz_coords_array
 
 def aims2xyz(aims_file):
     xyz_coords = []
@@ -350,7 +423,31 @@ def aims2xyz(aims_file):
             if atoms:
                 xyz_coords.append([str(atoms.group(5)), float(atoms.group(2)), float(atoms.group(3)), float(atoms.group(4))])
     aims.close()
+    xyz_coords_array = np.array([ np.array([i[0], i[1], i[2], i[3]]) for i in xyz_coords])
+    return xyz_coords_array
+
+def aims2xyz_vdw(aims_file):
+    xyz_coords = []
+    with open(aims_file, 'r') as aims:
+        lines = aims.readlines()
+        for line in lines:
+            atoms = re.match(r'(.*atom\s+(.\d+\.\d+)\s+(.\d+\.\d+)\s+(.\d+\.\d+)\s+(\w+))', line)
+            if atoms:
+                xyz_coords.append([str(atoms.group(5)), float(atoms.group(2)), float(atoms.group(3)), float(atoms.group(4))])
+    aims.close()
     xyz_coords_array = np.array([ np.array([VDW_radii[i[0]]*bohrtoang, i[1], i[2], i[3]]) for i in xyz_coords])
+    return xyz_coords_array
+
+def aims2xyz_extended(aims_file): # returns [coord_1, coord_2, coord_3, Atom_symbol, Atom_mass, Atom_VDW_radii]
+    xyz_coords = []
+    with open(aims_file, 'r') as aims:
+        lines = aims.readlines()
+        for line in lines:
+            atoms = re.match(r'(.*atom\s+(.\d+\.\d+)\s+(.\d+\.\d+)\s+(.\d+\.\d+)\s+(\w+))', line)
+            if atoms:
+                xyz_coords.append([str(atoms.group(5)), float(atoms.group(2)), float(atoms.group(3)), float(atoms.group(4))])
+    aims.close()
+    xyz_coords_array = [[i[1], i[2], i[3], i[0], atom_masses[i[0]], VDW_radii[i[0]]*bohrtoang] for i in xyz_coords]
     return xyz_coords_array
     
 def sdf2xyz_list(sdf_string):

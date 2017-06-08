@@ -30,6 +30,8 @@ from pyff import FFObject
 from pynwchem import NWChemObject
 from pyorca import OrcaObject
 
+from deg_of_freedom import Centroid
+
 from utilities import (
     aims2sdf,
     check_geo_sdf,
@@ -39,7 +41,8 @@ from utilities import (
     print_output,
     set_default,
     xyz2sdf,
-    aims2xyz
+    aims2xyz,
+    aims2xyz_extended
 
 )
 import random
@@ -74,7 +77,9 @@ class MoleculeDescription:
                         MoleculeDescription.newline, "\n")
 
         dict_default = {'rmsd_type': "cartesian", 'rmsd_cutoff_uniq': 0.2,
-                        'chiral': False, 'optimize_torsion': True,
+                        'chiral': False,
+                        'optimize_torsion': True,
+                        'optimize_cistrans':True
                         'optimize_centroid': True,
                         'optimize_orientation': True,
                         'smarts_torsion':
@@ -137,7 +142,6 @@ class MoleculeDescription:
         for attr, value in self_copy.__dict__.iteritems():
             if str(attr).split('_')[0] == "optimize" and value:
                 type_of_dof = str(attr).split('_')[1]
-                print type_of_dof
                 linked_attr = {}
                 for attr, value in self_copy.__dict__.iteritems():
                     if type_of_dof in str(attr).split('_'):
@@ -169,17 +173,7 @@ class MoleculeDescription:
     def create_template_sdf(self):
         """Assign new attribute (template_sdf_string) to the object."""
         self.template_sdf_string = template_sdf(self.smiles)
-
-    def check_constrained_file(self):
-        geom_file = os.path.join(os.getcwd(), self.mol_info.constrained_geometry_file)
-        if os.path.isfile(geom_file):
-            if len(aims2xyz) == 0:
-                self.mol_info.optimize_centriod=False
-                self.mol_info.optimize_orientation=False
-        else:
-            self.mol_info.optimize_centriod=False
-            self.mol_info.optimize_orientation=False
-            
+          
 class Structure:
     """Create 3D structures."""
     index = 0
@@ -197,7 +191,6 @@ class Structure:
             self.index = Structure.index
             dof = []
             for i in self.mol_info.dof_names:
-                print 'self.mol_info.dof_names: {}'.format(i)
                 new_obj = create_dof_object(str(i), getattr(self.mol_info, i))
                 dof.append(new_obj)
             setattr(self, "dof", dof)
@@ -281,12 +274,21 @@ class Structure:
         """Return the object energy."""
         return float(self.energy)
 
-
     def generate_structure(self, values={}):
         """Generate a 3D structures. If no values are passed, a random
         structure will be generated (weights, associated with the degrees of
         freedom, will be taken into account)."""
         new_string = deepcopy(self.mol_info.template_sdf_string)
+        
+        if 'centroid' in self.mol_info.dof_names:
+            
+            geom_file = os.path.join(os.getcwd(), self.mol_info.constrained_geometry_file)
+            #~ print 'Extended {}'.format(aims2xyz_extended(geom_file))
+            centroid_indx = self.mol_info.dof_names.index('centroid')
+            
+            if len(aims2xyz(geom_file)) == 1:
+                Centroid.values_options = [range(0,1,1), range(0,1,1), range(3,6,1)]    
+        print '\n'
         for dof in self.dof:
             if dof.type in values.keys():
                 new_string = dof.apply_on_string(new_string, values[dof.type])
@@ -295,8 +297,10 @@ class Structure:
                     weights = getattr(self.mol_info, "weights_"+str(dof.type))
                     dof.get_weighted_values(weights)
                 else:
+                    #~ if dof.name=='Centroid':    
+                        #~ print 'result {}'.format(dof.values_options)
                     dof.get_random_values()
-                    print 'Initial values for {} are {}'.format(dof.name ,dof.values) 
+                    print 'Initial random values for {} are {}'.format(dof.name ,dof.values) 
                 new_string = dof.apply_on_string(new_string)
         self.sdf_string = new_string
         for dof in self.dof:
@@ -355,6 +359,7 @@ class Structure:
         if obj1.mol_info.rmsd_type == 'internal_coord':
             all_bool = []
             for dof1, dof2 in zip(obj1.dof, obj2.dof):
+                
                 all_bool.append(dof1.is_equal(dof2,
                                               obj1.mol_info.rmsd_cutoff_uniq,
                                               obj1.mol_info.chiral))

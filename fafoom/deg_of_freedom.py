@@ -21,7 +21,7 @@ from copy import copy
 from random import choice
 from rdkit import Chem
 
-from utilities import ig, cleaner, get_vec, tor_rmsd, find_one_in_list
+from utilities import ig, cleaner, get_vec, tor_rmsd, find_one_in_list, unit_vector
 from measure import *
 
 from genetic_operations import mutation
@@ -78,7 +78,14 @@ class Orientation(DOF):
         self.values = np.array([choice(Orientation.values_options[0]),
                                 choice(Orientation.values_options[1]),
                                 choice(Orientation.values_options[1]),
-                                choice(Orientation.values_options[1])])
+                                choice(Orientation.values_options[1])])  
+        if np.linalg.norm(np.array(self.values[1:])) == 0:
+            self.values = np.array([self.values[0], 0.0, 0.00001, 0.99999])
+        if self.values[1] == 0 and self.values[2] == 0 and self.values[3] == 1:
+            self.values = np.array([self.values[0], 0.0, 0.00001, 0.99999])
+        if self.values[1] == 0 and self.values[2] == 0 and self.values[3] == -1:
+            self.values = np.array([self.values[0], 0.0, -0.00001, -0.99999])
+
 
     def update_values(self, string):
         mol = Chem.MolFromMolBlock(string, removeHs=False)
@@ -102,27 +109,19 @@ class Orientation(DOF):
 
         if max_mutations is None:
             max_mutations = max(1, int(math.ceil(len(self.values)/2.0)))
-
+        values_to_mutate = range(2,10, 1)
         self.values = mutation(self.values, max_mutations,
-                               Orientation.values_options, weights, periodic=False)
+                               values_to_mutate, weights, periodic=False)
+        #~ self.values = mutation(self.values, max_mutations,
+                               #~ Orientation.values_options, weights, periodic=False)
 
-    def is_equal(self, other, threshold, chiral=False):
+    def is_equal(self, other, threshold, chiral=True):
+        threshold = 45
         values = []
-        tmp = []
-        for i in get_vec(self.values, other.values):
-            if i == 0:
-                tmp.append(0)
-            else:
-                tmp.append(1)
-        values.append(sum(tmp)/len(tmp))
+        angle_between(self.values[1:], other.values[1:])
+        values.append(angle_between(self.values[1:], other.values[1:]))
         if hasattr(other, "initial_values"):
-            tmp = []
-            for i in get_vec(self.values, other.initial_values):
-                if i == 0:
-                    tmp.append(0)
-                else:
-                    tmp.append(1)
-            values.append(sum(tmp)/len(tmp))
+            values.append(angle_between(self.values[1:], other.values[1:]))
         if min(values) > threshold:
             return False
         else:
@@ -130,7 +129,7 @@ class Orientation(DOF):
                              
 class Centroid(DOF):
     '''Find and handle centre of the molecule. '''
-    values_options = range(1, 10, 1)
+    values_options = [range(0,1,1), range(0, 1, 1), range(3, 6, 1)]
 
     @staticmethod
     def find(smiles, positions=None):
@@ -157,7 +156,8 @@ class Centroid(DOF):
 
     def get_random_values(self):
         """Generate a random value for position of the Centroid object"""
-        self.values = np.array([choice(Centroid.values_options) for i in range(3)])
+        self.values = np.array([choice(Centroid.values_options[0]), choice(Centroid.values_options[1]), choice(Centroid.values_options[2])])
+
 
     def update_values(self, string):
         self.values = centroid_measure(string)
@@ -176,27 +176,18 @@ class Centroid(DOF):
 
         if max_mutations is None:
             max_mutations = max(1, int(math.ceil(len(self.values)/2.0)))
-
+        values_to_mutate = range(2, 5, 1)
         self.values = mutation(self.values, max_mutations,
-                               Centroid.values_options, weights, periodic=False)
+                               values_to_mutate, weights, periodic=False)
+        #~ self.values = mutation(self.values, max_mutations,
+                               #~ Centroid.values_options, weights, periodic=False)
 
-    def is_equal(self, other, threshold, chiral=False):
+    def is_equal(self, other, threshold, chiral=True):
+        threshold = 1
         values = []
-        tmp = []
-        for i in get_vec(self.values, other.values):
-            if i == 0:
-                tmp.append(0)
-            else:
-                tmp.append(1)
-        values.append(sum(tmp)/len(tmp))
+        values.append(np.linalg.norm(np.array(self.values) - np.array(other.values)))
         if hasattr(other, "initial_values"):
-            tmp = []
-            for i in get_vec(self.values, other.initial_values):
-                if i == 0:
-                    tmp.append(0)
-                else:
-                    tmp.append(1)
-            values.append(sum(tmp)/len(tmp))
+            values.append(np.linalg.norm(np.array(self.values) - np.array(other.values)))
         if min(values) > threshold:
             return False
         else:
