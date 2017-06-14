@@ -1,1 +1,1 @@
-Rigid body test: test Benzene molecule with Na cation. Should not crush during optimization of torsions and cistrans. Optimizations and mutations have to be applied only to orientation and spatial position of the benzene molecule with respect to Na cation.
+Rigid body test: test Benzene molecule with Na cation. Should not crash during optimization of torsions and cistrans. Optimizations and mutations have to be applied only to orientation and spatial position of the benzene molecule with respect to Na cation.
