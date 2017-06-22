@@ -79,7 +79,7 @@ class MoleculeDescription:
         dict_default = {'rmsd_type': "cartesian", 'rmsd_cutoff_uniq': 0.2,
                         'chiral': False,
                         'optimize_torsion': True,
-                        'optimize_cistrans':True
+                        'optimize_cistrans':True,
                         'optimize_centroid': True,
                         'optimize_orientation': True,
                         'smarts_torsion':

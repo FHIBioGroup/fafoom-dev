@@ -196,6 +196,17 @@ def quaternion_set(sdf_string, quaternion_to_set, atom_1_indx, atom_2_indx):
     updated_sdf_string = update_coords_sdf(sdf_string, rotation_2)
     return updated_sdf_string
 
+def quaternion_set_coords(coords_and_masses, quaternion_to_set, atom_1_indx, atom_2_indx): 
+    center = get_centre_of_mass(coords_and_masses)
+    aligned = align_to_axes(coords_and_masses, atom_1_indx, atom_2_indx)
+    first_rot = produce_quaternion(quaternion_to_set[0], np.array([0, 0, 1]))
+    rotation_1 = Rotation(aligned[:,:3], center, first_rot)
+    angle_2 = angle_between(np.array([0, 0, 1]), quaternion_to_set[1:])
+    vec_2 = np.cross(np.array([0, 0, 1]), quaternion_to_set[1:])
+    quat_2 = produce_quaternion(angle_2, vec_2)
+    rotation_2 = Rotation(rotation_1, center, quat_2)
+    return produce_coords_and_masses(rotation_2, coords_and_masses[:,3])
+
 def get_coords(sdf_string):
     mol = Chem.MolFromMolBlock(sdf_string, removeHs=False)    
     pos = mol.GetConformer()   
@@ -652,7 +663,7 @@ def pyranosering_measure(sdf_string, position, dict_of_options):
 
 
 
-#~ smiles = 'N[C@H](C(=O)N1[C@H](C(=O)N[C@H](C(=O)O)Cc2ccccc2)CCC1)CC1=CNCN1'
+#~ smiles = '[NH3+][C@H](C(=O)N1[C@H](C(=O)N[C@H](C(=O)O)Cc2ccccc2)CCC1)Cc1nc[nH]c1'
 #~ pat_1 = Chem.MolFromSmarts('[C@H]C(=O)O') 
 #~ pat_2 = Chem.MolFromSmarts('[NX3H2,NX4H3+][C@H]')
 #~ mol = Chem.MolFromSmiles(smiles)
@@ -664,7 +675,7 @@ def pyranosering_measure(sdf_string, position, dict_of_options):
 #~ last_heavy_atom = mol.GetNumHeavyAtoms() - 1        #Last Heavy atom
 #~ coords_and_masses = get_coords_and_masses(string)
 #~ center = get_centre_of_mass(coords_and_masses)
-#~ coords_and_masses = produce_coords_and_masses(Rotation(coords_and_masses[:,:3], center, np.array([33, -1, 0.5, 1])), coords_and_masses[:,3])
+#~ coords_and_masses = produce_coords_and_masses(Rotation(coords_and_masses[:,:3], center, np.array([45, 1, 1, 1])), coords_and_masses[:,3])
 #~ string = update_coords_sdf(string, coords_and_masses[:,:3])
 #~ if 'test.xyz' in os.listdir(os.getcwd()):
     #~ os.remove('test.xyz')
@@ -678,11 +689,10 @@ def pyranosering_measure(sdf_string, position, dict_of_options):
 #~ aligned_file = open('aligned.xyz', 'w')
 #~ aligned_file.write(sdf2xyz(al))
 #~ aligned_file.close()
-#~ quat_set = np.array([-4, 11, -11, 111])	
-#~ after_setting = quaternion_set(coords_and_masses, quat_set, first_heavy_atom_indx, last_heavy_atom)
-#~ print quaternion_measure(after_setting, first_heavy_atom_indx, last_heavy_atom)	
+#~ quat_set = np.array([0, 1, 1, 1])	
+#~ after_setting = quaternion_set_coords(coords_and_masses, quat_set, first_heavy_atom_indx, last_heavy_atom)
 #~ sett = update_coords_sdf(string, after_setting[:,:3])
-#~ setted = open('setted.xyz', 'w')
+#~ setted = open('setted_111.xyz', 'w')
 #~ setted.write(sdf2xyz(sett))
 #~ setted.close()
 

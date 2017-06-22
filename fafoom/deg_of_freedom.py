@@ -21,7 +21,7 @@ from copy import copy
 from random import choice
 from rdkit import Chem
 
-from utilities import ig, cleaner, get_vec, tor_rmsd, find_one_in_list, unit_vector
+from utilities import ig, cleaner, get_vec, tor_rmsd, find_one_in_list
 from measure import *
 
 from genetic_operations import mutation
@@ -45,7 +45,7 @@ class DOF:
 class Orientation(DOF):
     '''Find and handle orientation of the molecule. '''
     
-    values_options = [range(-150, 180, 30), np.arange(-2, 2, 1)] #values_options[0] - Defines angle, values_options[1] - defines orientaion.
+    values_options = [range(0, 91, 90), np.arange(0, 2, 1)] #values_options[0] - Defines angle, values_options[1] - defines orientaion.
 
     @staticmethod
     def find(smiles, positions=None):
@@ -129,7 +129,7 @@ class Orientation(DOF):
                              
 class Centroid(DOF):
     '''Find and handle centre of the molecule. '''
-    values_options = [range(0,1,1), range(0, 1, 1), range(3, 6, 1)]
+    values_options = [range(0,1,1), range(0, 1, 1), range(6, 10, 1)]
 
     @staticmethod
     def find(smiles, positions=None):

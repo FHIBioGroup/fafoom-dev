@@ -36,6 +36,23 @@ atom_masses = {'H':  1.00794, 'He':  4.002602, 'Li':  6.941, 'Be':  9.012182, 'B
 VDW_radii = {'H': 3.1000,'He': 2.6500,'Li': 4.1600,'Be': 4.1700,'B':  3.8900,'C':  3.5900,'N':  3.3400,'O':  3.1900,'F':  3.0400,'Ne': 2.9100,'Na': 3.7300,'Mg': 4.2700,'Al': 4.3300,'Si': 4.2000,'P':  4.0100,'S':  3.8600,'Cl': 3.7100,'Ar': 3.5500,'K':  3.7100,'Ca': 4.6500,'Sc': 4.5900,'Ti': 4.5100,'V':  4.4400,'Cr': 3.9900,'Mn': 3.9700,'Fe': 4.2300,'Co': 4.1800,'Ni': 3.8200,'Cu': 3.7600,'Zn': 4.0200,'Ga': 4.1900,'Ge': 4.2000,'As': 4.1100,'Se': 4.0400,'Br': 3.9300,'Kr': 3.8200,'Rb': 3.7200,'Sr': 4.5400,'Y':  4.8151,'Zr': 4.53,'Nb': 4.2365,'Mo': 4.099,'Tc': 4.076,'Ru': 3.9953,'Rh': 3.95,'Pd': 3.6600,'Ag': 3.8200,'Cd': 3.9900,'In': 4.2319,'Sn': 4.3030,'Sb': 4.2760,'Te': 4.2200,'I':  4.1700,'Xe': 4.0800,'Cs': 3.78,'Ba': 4.77,'La': 3.14,'Ce': 3.26,'Pr': 3.28,'Nd': 3.3,'Pm': 3.27,'Sm': 3.32,'Eu': 3.40,'Gd': 3.62,'Tb': 3.42,'Dy': 3.26,'Ho': 3.24,'Er': 3.30,'Tm': 3.26,'Yb': 3.22,'Lu': 3.20,'Hf': 4.21,'Ta': 4.15,'W':  4.08,'Re': 4.02,'Os': 3.84,'Ir': 4.00,'Pt': 3.92,'Au': 3.86,'Hg': 3.98,'Tl': 3.91,'Pb': 4.31,'Bi': 4.32,'Po': 4.097,'At': 4.07,'Rn': 4.23,'Fr': 3.90,'Ra': 4.98,'Ac': 2.75,'Th': 2.85,'Pa': 2.71,'U':  3.00,'Np': 3.28,'Pu': 3.45,'Am': 3.51,'Cm': 3.47,'Bk': 3.56,'Cf': 3.55,'Es': 3.76,'Fm': 3.89,'Md': 3.93,'No': 3.78}
 bohrtoang=0.52917721
 
+#~ def produce_A_k(vec_1, vec_2):
+    #~ return no.array([0, -vec_2[0], -vec_2[1], -vec_2[2] 
+                    #~ vec_2[0], 0 -vec_1[2], -vec_1[1],
+                    #~ vec_2[1], vec_1[2], 0, -vec_1[0],
+                    #~ vec_2[2], -vec_1[1], vec_1[0], 0])
+
+#~ def least_square_fit(coords_and_masses_1, coords_and_masses_2):
+    #~ A_k_s = []
+    #~ """Align to origin:"""
+    #~ x_k = coords_and_masses_1[:,:3] - get_centre_of_mass(coords_and_masses_1)
+    #~ y_k = coords_and_masses_2[:,:3] - get_centre_of_mass(coords_and_masses_2)
+    #~ """Calaulate A_k matrices"""
+    #~ for k in range(len(coords_and_masses_1)):
+        #~ A_k_s.append(produce_A_k(x_k[k:,:3]+y_k[k:,:3], x_k[k:,:3]-y_k[k:,:3]).T*produce_A_k(x_k[k:,:3]+y_k[k:,:3], x_k[k:,:3]-y_k[k:,:3]))
+    
+
+
 def backup(filename, obj):
     """ Write the representation of an object (or objects) to a file."""
     with open(filename, 'w') as outf:

@@ -23,8 +23,8 @@
 #  Relaxation
 #
 #RI_method LVL_fast
-  relax_geometry trm 5E-3
-  relax_geometry   bfgs_textbook 1.e-2
+ # relax_geometry trm 5E-3
+ # relax_geometry   bfgs_textbook 1.e-2
 #
 ################################################################################
 #

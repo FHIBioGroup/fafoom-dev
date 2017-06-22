@@ -10,6 +10,7 @@ from visual import draw_picture
 
 from rdkit import Chem
 from rdkit.Chem import AllChem
+from rdkit.Chem import Draw
 
 from measure import centroid_measure
 from utilities import sdf2xyz
@@ -32,7 +33,9 @@ cnt_max = 200
 population, blacklist = [], []
 min_energy = []
 
-
+smil = '[NH3+][C@H](C(=O)N1[C@H](C(=O)N[C@H](C(=O)[O-])Cc2ccccc2)CCC1)Cc1[nH]c[nH+]c1'
+m = Chem.MolFromSmiles(smil)
+Draw.MolToFile(m,'N2_HisHProPhe_C2.pdf', size=(250, 250), imageType='pdf',fitImage=True )
 #***********************************************************************
 """
 Creation of the folders for valid and invalid structures. 
@@ -56,7 +59,7 @@ if opt == "simple":
     mol = MoleculeDescription(p_file)
     # Assign the permanent attributes to the molecule.
     mol.get_parameters()
-    mol.create_template_sdf()
+    mol.create_template_sdf()   
     # Check for potential degree of freedom related parameters.
     linked_params = run_util.find_linked_params(mol, params)
     print_output("Number of atoms: "+str(mol.atoms))
