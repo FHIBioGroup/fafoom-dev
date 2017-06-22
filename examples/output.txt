@@ -1,0 +1,413 @@
+Local optimization will be performed with FHI-aims.
+Setting a default value for right_order_to_assign: ['torsion', 'cistrans', 'centroid', 'orientation']
+Setting a default value for constrained_geometry_file: adds/geometry.in.constrained
+Number of atoms: 55
+Number of bonds: 57
+Number of identified torsion: 8
+Identified torsion: [(1, 23, 24, 28), (2, 1, 23, 24), (4, 2, 1, 23), (6, 8, 9, 13), (8, 6, 5, 20), (9, 13, 14, 19), (10, 9, 13, 14), (12, 10, 9, 13)]
+Number of identified centroid: 1
+Identified centroid: [(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28)]
+Number of identified orientation: 1
+Identified orientation: [(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28)]
+___Initialization___
+New trial
+The geometry of Structure 1 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 2 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 3 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 4 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 5 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 6 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 7 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 8 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 9 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 10 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 11 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 12 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 13 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 14 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 15 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 16 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 17 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 18 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 19 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 20 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 21 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 22 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 23 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 24 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 25 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 26 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 27 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 28 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 29 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 30 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 31 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 32 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 33 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 34 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 35 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 36 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 37 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 38 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 39 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 40 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 41 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 42 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 43 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 44 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 45 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 46 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 47 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 48 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 49 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 50 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 51 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 52 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 53 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 54 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 55 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 56 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 57 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 58 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 59 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 60 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 61 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 62 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 63 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 64 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 65 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 66 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 67 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 68 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 69 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 70 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 71 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 72 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 73 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 74 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 75 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 76 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 77 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 78 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 79 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 80 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 81 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 82 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 83 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 84 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 85 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 86 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 87 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 88 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 89 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 90 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 91 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 92 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 93 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 94 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 95 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 96 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 97 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 98 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 99 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 100 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 101 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 102 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 103 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 104 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 105 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 106 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 107 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 108 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 109 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 110 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 111 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 112 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 113 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 114 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 115 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 116 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 117 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 118 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 119 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 120 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 121 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 122 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 123 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 124 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 125 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 126 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 127 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 128 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 129 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 130 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 131 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 132 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 133 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 134 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 135 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 136 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 137 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 138 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 139 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 140 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 141 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 142 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 143 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 144 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 145 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 146 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 147 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 148 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 149 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 150 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 151 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 152 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 153 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 154 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 155 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 156 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 157 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 158 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 159 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 160 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 161 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 162 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 163 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 164 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 165 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 166 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 167 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 168 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 169 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 170 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 171 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 172 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 173 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 174 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 175 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 176 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 177 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 178 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 179 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 180 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 181 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 182 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 183 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 184 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 185 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 186 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 187 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 188 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 189 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 190 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 191 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 192 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 193 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 194 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 195 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 196 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 197 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 198 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 199 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 200 is invalid. Copied to /invalid
+The allowed number of trials for building the population has been exceeded. The code terminates.

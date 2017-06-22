@@ -1,0 +1,7 @@
+atom   0.0   0.0   0.0   Na
+constrain_relaxation .true.
+
+atom    0.0698    0.0000    4.0000   N
+atom   -0.3235   -0.7703    3.4145   H
+atom   -0.3235   -0.1218    4.9599   H
+atom   -0.3235    0.8922    3.6256   H
