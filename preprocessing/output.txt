@@ -1,0 +1,306 @@
+Local optimization will be performed with FHI-aims.
+Setting a default value for constrained_geometry_file: adds/geometry.in.constrained
+Setting a default value for right_order_to_assign: ['torsion', 'cistrans', 'centroid', 'orientation']
+Number of identified centroid: 1
+Identified centroid: [(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28)]
+Will generate 100 structures
+
+
+The geometry of Structure 1 is valid, copied to /valid
+
+
+The geometry of Structure 2 is valid, copied to /valid
+
+
+The geometry of Structure 3 is valid, copied to /valid
+
+
+The geometry of Structure 4 is valid, copied to /valid
+
+
+The geometry of Structure 5 is valid, copied to /valid
+
+
+The geometry of Structure 6 is valid, copied to /valid
+
+
+The geometry of Structure 7 is valid, copied to /valid
+
+
+The geometry of Structure 8 is valid, copied to /valid
+
+
+The geometry of Structure 9 is valid, copied to /valid
+
+
+The geometry of Structure 10 is valid, copied to /valid
+
+
+The geometry of Structure 11 is valid, copied to /valid
+
+
+The geometry of Structure 12 is valid, copied to /valid
+
+
+The geometry of Structure 13 is valid, copied to /valid
+
+
+The geometry of Structure 14 is valid, copied to /valid
+
+
+The geometry of Structure 15 is valid, copied to /valid
+
+
+The geometry of Structure 16 is valid, copied to /valid
+
+
+The geometry of Structure 17 is valid, copied to /valid
+
+
+The geometry of Structure 18 is valid, copied to /valid
+
+
+The geometry of Structure 19 is valid, copied to /valid
+
+
+The geometry of Structure 20 is valid, copied to /valid
+
+
+The geometry of Structure 21 is valid, copied to /valid
+
+
+The geometry of Structure 22 is valid, copied to /valid
+
+
+The geometry of Structure 23 is valid, copied to /valid
+
+
+The geometry of Structure 24 is valid, copied to /valid
+
+
+The geometry of Structure 25 is valid, copied to /valid
+
+
+The geometry of Structure 26 is valid, copied to /valid
+
+
+The geometry of Structure 27 is valid, copied to /valid
+
+
+The geometry of Structure 28 is valid, copied to /valid
+
+
+The geometry of Structure 29 is valid, copied to /valid
+
+
+The geometry of Structure 30 is valid, copied to /valid
+
+
+The geometry of Structure 31 is valid, copied to /valid
+
+
+The geometry of Structure 32 is valid, copied to /valid
+
+
+The geometry of Structure 33 is valid, copied to /valid
+
+
+The geometry of Structure 34 is valid, copied to /valid
+
+
+The geometry of Structure 35 is valid, copied to /valid
+
+
+The geometry of Structure 36 is valid, copied to /valid
+
+
+The geometry of Structure 37 is valid, copied to /valid
+
+
+The geometry of Structure 38 is valid, copied to /valid
+
+
+The geometry of Structure 39 is valid, copied to /valid
+
+
+The geometry of Structure 40 is valid, copied to /valid
+
+
+The geometry of Structure 41 is valid, copied to /valid
+
+
+The geometry of Structure 42 is valid, copied to /valid
+
+
+The geometry of Structure 43 is valid, copied to /valid
+
+
+The geometry of Structure 44 is valid, copied to /valid
+
+
+The geometry of Structure 45 is valid, copied to /valid
+
+
+The geometry of Structure 46 is valid, copied to /valid
+
+
+The geometry of Structure 47 is valid, copied to /valid
+
+
+The geometry of Structure 48 is valid, copied to /valid
+
+
+The geometry of Structure 49 is valid, copied to /valid
+
+
+The geometry of Structure 50 is valid, copied to /valid
+
+
+The geometry of Structure 51 is valid, copied to /valid
+
+
+The geometry of Structure 52 is valid, copied to /valid
+
+
+The geometry of Structure 53 is valid, copied to /valid
+
+
+The geometry of Structure 54 is valid, copied to /valid
+
+
+The geometry of Structure 55 is valid, copied to /valid
+
+
+The geometry of Structure 56 is valid, copied to /valid
+
+
+The geometry of Structure 57 is valid, copied to /valid
+
+
+The geometry of Structure 58 is valid, copied to /valid
+
+
+The geometry of Structure 59 is valid, copied to /valid
+
+
+The geometry of Structure 60 is valid, copied to /valid
+
+
+The geometry of Structure 61 is valid, copied to /valid
+
+
+The geometry of Structure 62 is valid, copied to /valid
+
+
+The geometry of Structure 63 is valid, copied to /valid
+
+
+The geometry of Structure 64 is valid, copied to /valid
+
+
+The geometry of Structure 65 is valid, copied to /valid
+
+
+The geometry of Structure 66 is valid, copied to /valid
+
+
+The geometry of Structure 67 is valid, copied to /valid
+
+
+The geometry of Structure 68 is valid, copied to /valid
+
+
+The geometry of Structure 69 is valid, copied to /valid
+
+
+The geometry of Structure 70 is valid, copied to /valid
+
+
+The geometry of Structure 71 is valid, copied to /valid
+
+
+The geometry of Structure 72 is valid, copied to /valid
+
+
+The geometry of Structure 73 is valid, copied to /valid
+
+
+The geometry of Structure 74 is valid, copied to /valid
+
+
+The geometry of Structure 75 is valid, copied to /valid
+
+
+The geometry of Structure 76 is valid, copied to /valid
+
+
+The geometry of Structure 77 is valid, copied to /valid
+
+
+The geometry of Structure 78 is valid, copied to /valid
+
+
+The geometry of Structure 79 is valid, copied to /valid
+
+
+The geometry of Structure 80 is valid, copied to /valid
+
+
+The geometry of Structure 81 is valid, copied to /valid
+
+
+The geometry of Structure 82 is valid, copied to /valid
+
+
+The geometry of Structure 83 is valid, copied to /valid
+
+
+The geometry of Structure 84 is valid, copied to /valid
+
+
+The geometry of Structure 85 is valid, copied to /valid
+
+
+The geometry of Structure 86 is valid, copied to /valid
+
+
+The geometry of Structure 87 is valid, copied to /valid
+
+
+The geometry of Structure 88 is valid, copied to /valid
+
+
+The geometry of Structure 89 is valid, copied to /valid
+
+
+The geometry of Structure 90 is valid, copied to /valid
+
+
+The geometry of Structure 91 is valid, copied to /valid
+
+
+The geometry of Structure 92 is valid, copied to /valid
+
+
+The geometry of Structure 93 is valid, copied to /valid
+
+
+The geometry of Structure 94 is valid, copied to /valid
+
+
+The geometry of Structure 95 is valid, copied to /valid
+
+
+The geometry of Structure 96 is valid, copied to /valid
+
+
+The geometry of Structure 97 is valid, copied to /valid
+
+
+The geometry of Structure 98 is valid, copied to /valid
+
+
+The geometry of Structure 99 is valid, copied to /valid
+
+
+The geometry of Structure 100 is valid, copied to /valid
