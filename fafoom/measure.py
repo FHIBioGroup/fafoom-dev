@@ -49,11 +49,6 @@ def translate_back(point, coord):
     translated = coord[:] + point[:]
     return translated 
 
-#~ def unit(vec):
-    #~ mag = np.sqrt(vec[0]**2 + vec[1]**2 + vec[2]**2)
-    #~ unit = np.array([vec[0]/mag, vec[1]/mag, vec[2]/mag])
-    #~ return unit
-
 def mult_quats(q_1, q_2):
     Q_q_2 = np.array([[q_2[0], q_2[1], q_2[2], q_2[3]],
                      [-q_2[1], q_2[0], -q_2[3], q_2[2]],
@@ -256,14 +251,8 @@ def get_eigens(tensor_of_inertia):
     eigens = np.linalg.eigh(tensor_of_inertia)
     return eigens
 
-
 def centroid_measure(sdf_string):
     return get_centre_of_mass_from_sdf(sdf_string)
-#~ def centroid_measure(sdf_string):
-    #~ mol = Chem.MolFromMolBlock(sdf_string, removeHs=False)
-    #~ pos = mol.GetConformer()
-    #~ centroid = rdMolTransforms.ComputeCentroid(pos, ignoreHs=True) 
-    #~ return np.array([centroid.x, centroid.y, centroid.z])
 
 def centroid_set(sdf_string, values_to_set):
     atoms_list = []

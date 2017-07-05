@@ -44,7 +44,7 @@ def simple_or_restart():
             remover_dir(d)
         remover_dir("blacklist")
         for f in ["mol.sdf", "control.in", "geometry.in", "output.txt",
-                  "result.out", "kill.dat"]:
+                  "aims.out", "kill.dat"]:
             remover_file(f)
         for f in for_restart:
             remover_file(f)

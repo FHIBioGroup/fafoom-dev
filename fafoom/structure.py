@@ -85,7 +85,8 @@ class MoleculeDescription:
                         'smarts_torsion':
                         "[*]~[!$(*#*)&!D1]-&!@[!$(*#*)&!D1]~[*]",
                         'constrained_geometry_file':'adds/geometry.in.constrained',
-                        'right_order_to_assign':['torsion', 'cistrans', 'centroid', 'orientation']}
+                        'right_order_to_assign':['torsion', 'cistrans', 'centroid', 'orientation'],
+                        'volume':(-10,11)}
 
         params = set_default(params, dict_default)
         for key in params:
@@ -169,6 +170,8 @@ class MoleculeDescription:
             if i in dof_names:
                 updated_order.append(i)
         setattr(self, "dof_names", updated_order)
+
+        Centroid.values_options = range(self.volume[0], self.volume[1], 1) #Limitation for Centroid
 
     def create_template_sdf(self):
         """Assign new attribute (template_sdf_string) to the object."""
@@ -279,16 +282,6 @@ class Structure:
         structure will be generated (weights, associated with the degrees of
         freedom, will be taken into account)."""
         new_string = deepcopy(self.mol_info.template_sdf_string)
-        
-        if 'centroid' in self.mol_info.dof_names:
-            
-            geom_file = os.path.join(os.getcwd(), self.mol_info.constrained_geometry_file)
-            #~ print 'Extended {}'.format(aims2xyz_extended(geom_file))
-            centroid_indx = self.mol_info.dof_names.index('centroid')
-            
-            if len(aims2xyz(geom_file)) == 1:
-                Centroid.values_options = [range(0,1,1), range(0,1,1), range(3,6,1)]    
-        print '\n'
         for dof in self.dof:
             if dof.type in values.keys():
                 new_string = dof.apply_on_string(new_string, values[dof.type])
@@ -297,8 +290,6 @@ class Structure:
                     weights = getattr(self.mol_info, "weights_"+str(dof.type))
                     dof.get_weighted_values(weights)
                 else:
-                    #~ if dof.name=='Centroid':    
-                        #~ print 'result {}'.format(dof.values_options)
                     dof.get_random_values()
                     print 'Initial random values for {} are {}'.format(dof.name ,dof.values) 
                 new_string = dof.apply_on_string(new_string)
@@ -307,7 +298,20 @@ class Structure:
             dof.update_values(self.sdf_string)
             print 'Updated values for {} are {}'.format(dof.name, dof.values)
             
-    def is_geometry_valid(self):
+    def adjust_centroid(self):
+        new_string = deepcopy(self.mol_info.template_sdf_string)
+        for dof in self.dof:
+            if dof.type == 'centroid':
+                dof.get_random_values()
+                print 'Initial random values for {} are {}'.format(dof.name ,dof.values) 
+                new_string = dof.apply_on_string(new_string)
+        self.sdf_string = new_string
+        for dof in self.dof:
+            if dof.type == 'centroid':
+                dof.update_values(self.sdf_string)
+                print 'Updated values for {} are {}'.format(dof.name, dof.values)      
+
+    def is_geometry_valid(self):          
         """Return True if the geometry is valid."""
         check = check_geo_sdf(self.sdf_string)
         return check

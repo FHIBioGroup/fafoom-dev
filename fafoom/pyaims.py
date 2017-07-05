@@ -44,7 +44,8 @@ class AimsObject():
         string2file(self.aims_string, 'geometry.in')
         if os.path.join(self.sourcedir, 'geometry.in.constrained'):
             constrained_part_file = os.path.join(self.sourcedir, 'geometry.in.constrained')
-            align_to_origin(constrained_part_file)
+            if len(aims2xyz(constrained_part_file)) == 1: #If one atom - put it to the origin.
+                align_to_origin(constrained_part_file)
             generate_extended_input(self.aims_string, constrained_part_file, 'geometry.in')
         name = 'control.in'
         src = os.path.join(self.sourcedir, name)
@@ -66,7 +67,7 @@ class AimsObject():
         shutil.copy('control.in', self.dirname)
 
     def run_aims(self, execution_string):
-        """Run FHI-aims and write output to 'result.out'. The optimized
+        """Run FHI-aims and write output to 'aims.out'. The optimized
         geometry is written to 'geometry.out'. If the run fails due to
         convergence issue, file 'kill.dat' will be created.
 
@@ -86,13 +87,13 @@ class AimsObject():
             execution_string, stdout=subprocess.PIPE, shell=True)
         out = subprocess.Popen(
             ['cat'], stdin=aims.stdout,
-            stdout=open('result.out', 'w'), shell=True)
+            stdout=open('aims.out', 'w'), shell=True)
         out.wait()
         s0 = "Present geometry is converged"
         s = "Total energy of the DFT / Hartree-Fock s.c.f. calculation      :"
         s2 = "Final atomic structure:"
         not_conv = True
-        searchfile = open("result.out", "r")
+        searchfile = open("aims.out", "r")
         for line in searchfile:
             if s0 in line:
                 not_conv = False
@@ -103,7 +104,7 @@ class AimsObject():
             killfile.close()
 
         else:
-            searchfile = open("result.out", "r")
+            searchfile = open("aims.out", "r")
             for i, line in enumerate(searchfile, 1):
                 if s in line:
                     a = line.split(" ")
@@ -113,7 +114,7 @@ class AimsObject():
             searchfile.close()
             atoms = len(self.aims_string.splitlines())
             with open('geometry.out', 'w') as file_geo:
-                with open('result.out') as f:
+                with open('aims.out') as f:
                     for line in itertools.islice(f, l_num+1, l_num+1+atoms):
                         file_geo.write(line)
             file_geo.close()
@@ -158,8 +159,8 @@ class AimsObject():
         try:
             os.remove('geometry.in')
             os.remove('control.in')
-            shutil.copy('result.out', self.dirname)
-            os.remove('result.out')
+            shutil.copy('aims.out', self.dirname)
+            os.remove('aims.out')
             remover_file('geometry.in.next_step')
             shutil.copy('geometry.out', self.dirname)
             os.remove('geometry.out')

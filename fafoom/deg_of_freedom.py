@@ -21,7 +21,6 @@ from copy import copy
 from random import choice
 from rdkit import Chem
 
-from utilities import ig, cleaner, get_vec, tor_rmsd, find_one_in_list
 from measure import *
 
 from genetic_operations import mutation
@@ -45,7 +44,7 @@ class DOF:
 class Orientation(DOF):
     '''Find and handle orientation of the molecule. '''
     
-    values_options = [range(0, 91, 90), np.arange(0, 2, 1)] #values_options[0] - Defines angle, values_options[1] - defines orientaion.
+    values_options = [range(0, 1, 90), np.arange(-2, 2, 1)] #values_options[0] - Defines angle, values_options[1] - defines orientaion.
 
     @staticmethod
     def find(smiles, positions=None):
@@ -70,7 +69,7 @@ class Orientation(DOF):
         atom_2_indx = mol.GetNumHeavyAtoms() - 1   
         if values_to_set is not None:
             self.values = np.array(values_to_set)
-        string = quaternion_set(string, self.values, atom_1_indx, atom_2_indx)
+        string = quaternion_set(string, self.values, atom_1_indx, atom_2_indx) 
         return string
 
     def get_random_values(self):
@@ -79,11 +78,12 @@ class Orientation(DOF):
                                 choice(Orientation.values_options[1]),
                                 choice(Orientation.values_options[1]),
                                 choice(Orientation.values_options[1])])  
+        """Need to improve eigenvalue problem. The follows works for now:"""
         if np.linalg.norm(np.array(self.values[1:])) == 0:
             self.values = np.array([self.values[0], 0.0, 0.00001, 0.99999])
-        if self.values[1] == 0 and self.values[2] == 0 and self.values[3] == 1:
+        if self.values[1] == 0 and self.values[2] == 0 and (self.values[3] == 1 or self.values[3]/self.values[3] == 1):
             self.values = np.array([self.values[0], 0.0, 0.00001, 0.99999])
-        if self.values[1] == 0 and self.values[2] == 0 and self.values[3] == -1:
+        if self.values[1] == 0 and self.values[2] == 0 and (self.values[3] == -1 or self.values[3]/self.values[3] == 1):
             self.values = np.array([self.values[0], 0.0, -0.00001, -0.99999])
 
 
@@ -92,9 +92,6 @@ class Orientation(DOF):
         atom_1_indx = 0
         atom_2_indx = mol.GetNumHeavyAtoms() - 1
         self.values = quaternion_measure(string, atom_1_indx, atom_2_indx)
-
-
-#### NEEEED to be deeply revised...
 
     def get_weighted_values(self, weights):
         if len(weights) == len(Orientation.values_options):
@@ -108,15 +105,13 @@ class Orientation(DOF):
     def mutate_values(self, max_mutations=None, weights=None):
 
         if max_mutations is None:
-            max_mutations = max(1, int(math.ceil(len(self.values)/2.0)))
-        values_to_mutate = range(2,10, 1)
+            max_mutations = 3
+        values_to_mutate = range(-2,2, 1)
         self.values = mutation(self.values, max_mutations,
                                values_to_mutate, weights, periodic=False)
-        #~ self.values = mutation(self.values, max_mutations,
-                               #~ Orientation.values_options, weights, periodic=False)
 
     def is_equal(self, other, threshold, chiral=True):
-        threshold = 45
+        threshold = 60
         values = []
         angle_between(self.values[1:], other.values[1:])
         values.append(angle_between(self.values[1:], other.values[1:]))
@@ -129,7 +124,7 @@ class Orientation(DOF):
                              
 class Centroid(DOF):
     '''Find and handle centre of the molecule. '''
-    values_options = [range(0,1,1), range(0, 1, 1), range(6, 10, 1)]
+    values_options = [i for i in range(-10, 11, 1)]
 
     @staticmethod
     def find(smiles, positions=None):
@@ -156,34 +151,28 @@ class Centroid(DOF):
 
     def get_random_values(self):
         """Generate a random value for position of the Centroid object"""
-        self.values = np.array([choice(Centroid.values_options[0]), choice(Centroid.values_options[1]), choice(Centroid.values_options[2])])
-
+        self.values = np.array([choice(Centroid.values_options), choice(Centroid.values_options), choice(Centroid.values_options)])
 
     def update_values(self, string):
         self.values = centroid_measure(string)
-        
-#### NEEEED to be deeply revised...
+ 
     def get_weighted_values(self, weights):
         if len(weights) == len(Centroid.values_options):
             self.values = [Centroid.values_options[find_one_in_list(sum(
                            weights), weights)]
-                           for i in range(len(self.positions))]
+                           for i in range(len(self.values))]
         else:
             self.values = np.array([choice(Centroid.values_options)
-                           for i in range(len(self.positions))])        
+                           for i in range(len(self.values))])        
 
     def mutate_values(self, max_mutations=None, weights=None):
-
         if max_mutations is None:
-            max_mutations = max(1, int(math.ceil(len(self.values)/2.0)))
-        values_to_mutate = range(2, 5, 1)
+            max_mutations = 3
         self.values = mutation(self.values, max_mutations,
-                               values_to_mutate, weights, periodic=False)
-        #~ self.values = mutation(self.values, max_mutations,
-                               #~ Centroid.values_options, weights, periodic=False)
+                               Centroid.values_options, weights, periodic=False)
 
     def is_equal(self, other, threshold, chiral=True):
-        threshold = 1
+        threshold = 0.5 #Distance between two centres of mass should be more that 0.5 Angs. if other values are equal.
         values = []
         values.append(np.linalg.norm(np.array(self.values) - np.array(other.values)))
         if hasattr(other, "initial_values"):
@@ -238,9 +227,7 @@ class Torsion(DOF):
                 custom_torsion = [v for i, v in enumerate(custom_torsion)
                                   if i not in set(to_del_bef_custom)]
                 torsion = custom_torsion
-
             positions = cleaner(torsion)
-
         return positions
 
     def __init__(self, positions):
