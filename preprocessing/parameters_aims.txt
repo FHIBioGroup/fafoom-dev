@@ -1,6 +1,6 @@
 [Molecule]
 
-smiles="[NH3+][C@H](C(=O)N1[C@H](C(=O)N[C@H](C(=O)[O])Cc2ccccc2)CCC1)Cc1[nH]c[nH+]c1"
+smiles="[NH3+][C@H](C(=O)N1[C@H](C(=O)N[C@H](C(=O)O)Cc2ccccc2)CCC1)Cc1nc[nH]c1"
 
 
 smarts_torsion= "[*]~[!$(*#*)&!D1]-&!@[!$(*#*)&!D1]~[*]"
@@ -11,9 +11,9 @@ rmsd_cutoff_uniq=0.25
 chiral=False
 optimize_torsion=False
 optimize_cistrans=False
-optimize_centroid=True
-optimize_orientation=False
-volume=(-5,1)
+optimize_centroid=False
+optimize_orientation=True
+volume = (0,1,0,1,0,3)
 
 [GA settings]
 

@@ -31,6 +31,10 @@ from pynwchem import NWChemObject
 from pyorca import OrcaObject
 
 from deg_of_freedom import Centroid
+from measure import centroid_set, centroid_measure
+
+import numpy as np
+from random import choice
 
 from utilities import (
     aims2sdf,
@@ -76,17 +80,18 @@ class MoleculeDescription:
                     params[str(key)] = kwargs[key].replace(
                         MoleculeDescription.newline, "\n")
 
-        dict_default = {'rmsd_type': "cartesian", 'rmsd_cutoff_uniq': 0.2,
+        dict_default = {'rmsd_type': "cartesian", 
+                        'rmsd_cutoff_uniq': 0.2,
                         'chiral': False,
                         'optimize_torsion': True,
                         'optimize_cistrans':True,
                         'optimize_centroid': True,
                         'optimize_orientation': True,
-                        'smarts_torsion':
-                        "[*]~[!$(*#*)&!D1]-&!@[!$(*#*)&!D1]~[*]",
+                        'smarts_torsion':"[*]~[!$(*#*)&!D1]-&!@[!$(*#*)&!D1]~[*]",
                         'constrained_geometry_file':'adds/geometry.in.constrained',
                         'right_order_to_assign':['torsion', 'cistrans', 'centroid', 'orientation'],
-                        'volume':(-10,11)}
+                        'volume':(-10,11, -10, 11, -10, 11),
+                        'fix_centroid':None}
 
         params = set_default(params, dict_default)
         for key in params:
@@ -140,6 +145,7 @@ class MoleculeDescription:
         self.atoms, self.bonds = get_atoms_and_bonds(self.smiles)
         self_copy = deepcopy(self)
         dof_names = []
+        limits_names = []
         for attr, value in self_copy.__dict__.iteritems():
             if str(attr).split('_')[0] == "optimize" and value:
                 type_of_dof = str(attr).split('_')[1]
@@ -154,7 +160,7 @@ class MoleculeDescription:
                 else:
                     print_output("The degree to optimize: "+str(type_of_dof) +
                                  " hasn't been found.")
-
+               
         geom_file = os.path.join(os.getcwd(), self.constrained_geometry_file)
         if os.path.isfile(geom_file):
             if len(aims2xyz(geom_file)) == 0:
@@ -170,9 +176,15 @@ class MoleculeDescription:
             if i in dof_names:
                 updated_order.append(i)
         setattr(self, "dof_names", updated_order)
-
-        Centroid.values_options = range(self.volume[0], self.volume[1], 1) #Limitation for Centroid
-
+        
+        Centroid.range_x = range(self.volume[0], self.volume[1], 1) #Limitation for Centroid
+        Centroid.range_y = range(self.volume[2], self.volume[3], 1) #Limitation for Centroid
+        Centroid.range_z = range(self.volume[4], self.volume[5], 1) #Limitation for Centroid
+        if self.fix_centroid is not None:
+            Centroid.range_x = [self.fix_centroid[0]] 
+            Centroid.range_y = [self.fix_centroid[1]]
+            Centroid.range_z = [self.fix_centroid[2]]
+        
     def create_template_sdf(self):
         """Assign new attribute (template_sdf_string) to the object."""
         self.template_sdf_string = template_sdf(self.smiles)
@@ -193,6 +205,7 @@ class Structure:
             Structure.index += 1
             self.index = Structure.index
             dof = []
+            limit = []
             for i in self.mol_info.dof_names:
                 new_obj = create_dof_object(str(i), getattr(self.mol_info, i))
                 dof.append(new_obj)
@@ -297,7 +310,16 @@ class Structure:
         for dof in self.dof:
             dof.update_values(self.sdf_string)
             print 'Updated values for {} are {}'.format(dof.name, dof.values)
-            
+
+############
+    def adjust_position(self):
+        values_old = centroid_measure(self.sdf_string)
+        values_new = np.array([0, 0, values_old[2] + 0.5])
+        #~ values = np.array([choice(Centroid.range_x), choice(Centroid.range_y), choice(Centroid.range_z)])
+        new_string = centroid_set(self.sdf_string, values_new)
+        self.sdf_string = new_string
+############
+
     def adjust_centroid(self):
         new_string = deepcopy(self.mol_info.template_sdf_string)
         for dof in self.dof:

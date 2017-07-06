@@ -29,8 +29,6 @@ from utilities import get_vec, tor_rmsd, xyz2sdf, sdf2xyz
 def ig(x):
     return itemgetter(x)
 
-'''Rotation around arbitrary axis in space'''
-
 def unit_vector(vector):
     """ Returns the unit vector of the vector.  """
     return vector / np.linalg.norm(vector)

@@ -124,8 +124,10 @@ class Orientation(DOF):
                              
 class Centroid(DOF):
     '''Find and handle centre of the molecule. '''
-    values_options = [i for i in range(-10, 11, 1)]
-
+    range_x = [i for i in range(-10, 11, 1)]
+    range_y = [i for i in range(-10, 11, 1)]
+    range_z = [i for i in range(-10, 11, 1)]
+    values_options = [range_x, range_y, range_z]
     @staticmethod
     def find(smiles, positions=None):
         if positions is None:
@@ -151,7 +153,7 @@ class Centroid(DOF):
 
     def get_random_values(self):
         """Generate a random value for position of the Centroid object"""
-        self.values = np.array([choice(Centroid.values_options), choice(Centroid.values_options), choice(Centroid.values_options)])
+        self.values = np.array([choice(Centroid.range_x), choice(Centroid.range_y), choice(Centroid.range_z)])
 
     def update_values(self, string):
         self.values = centroid_measure(string)
@@ -169,7 +171,7 @@ class Centroid(DOF):
         if max_mutations is None:
             max_mutations = 3
         self.values = mutation(self.values, max_mutations,
-                               Centroid.values_options, weights, periodic=False)
+                               Centroid.values_options[2], weights, periodic=False)
 
     def is_equal(self, other, threshold, chiral=True):
         threshold = 0.5 #Distance between two centres of mass should be more that 0.5 Angs. if other values are equal.

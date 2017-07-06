@@ -82,8 +82,13 @@ if opt == "simple":
             print_output("The geometry of "+str(str3d)+" is valid, copied to /valid")
 	    if not check_for_clashes(str3d.sdf_string, os.path.join(aims_object.sourcedir, 'geometry.in.constrained')):
 		check = False
-		for i in range(10):
-		    str3d.adjust_centroid()
+		for i in range(50):
+		    if 'centroid' not in mol.dof_names:
+			print 'Before {}'.format(centroid_measure(str3d.sdf_string))
+			str3d.adjust_position()
+			print 'After {}'.format(centroid_measure(str3d.sdf_string))
+		    #~ print str3d.sdf_string
+		    #~ str3d.adjust_centroid()
 		    check = check_for_clashes(str3d.sdf_string, os.path.join(aims_object.sourcedir, 'geometry.in.constrained'))
 		    if check:
 			break
