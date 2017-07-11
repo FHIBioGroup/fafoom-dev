@@ -1,0 +1,2471 @@
+Local optimization will be performed with FHI-aims.
+Setting a default value for right_order_to_assign: ['torsion', 'cistrans', 'centroid', 'orientation']
+Setting a default value for constrained_geometry_file: adds/geometry.in.constrained
+Number of atoms: 13
+Number of bonds: 12
+Number of identified centroid: 1
+Identified centroid: [(0, 1, 2, 3, 4, 5)]
+___Initialization___
+New trial
+The geometry of Structure 1 is valid, copied to /valid
+Structure 1, energy: -27361.0358, was added to the population
+Structure 1
+Values of centroid before: [-5.00003546  3.00002123  1.99999933] and after local opt: [-3.81049135  2.39053779  0.76391422]
+New trial
+The geometry of Structure 2 is valid, copied to /valid
+Structure 2, energy: -27361.1245, was added to the population
+Structure 2
+Values of centroid before: [ 1.99996454  3.00002123 -5.00000067] and after local opt: [ 0.93594582  2.25115577 -3.63189852]
+New trial
+The geometry of Structure 3 is valid, copied to /valid
+Structure 3, energy: -27360.9018, was added to the population
+Structure 3
+Values of centroid before: [ 1.99996454 -4.99997877 -4.00000067] and after local opt: [ 1.08582845 -3.27463724 -3.19333927]
+New trial
+The geometry of Structure 4 is valid, copied to /valid
+Structure 4, energy: -27361.2936, was added to the population
+Structure 4
+Values of centroid before: [-3.00003546 -1.99997877 -4.00000067] and after local opt: [-2.3643574  -1.134414   -3.12460819]
+New trial
+The geometry of Structure 5 is valid, copied to /valid
+Structure 5, energy: -27360.769, was added to the population
+Structure 5
+Values of centroid before: [-4.00003546 -4.99997877 -2.00000067] and after local opt: [-3.1513392  -3.58631693 -1.82014628]
+New trial
+The geometry of Structure 6 is valid, copied to /valid
+Structure 6, energy: -27361.4855, was added to the population
+Structure 6
+Values of centroid before: [-2.00003546 -2.99997877 -4.00000067] and after local opt: [-1.77368374 -1.79013989 -2.92513196]
+New trial
+The geometry of Structure 7 is valid, copied to /valid
+Structure 7, energy: -27361.1055, was added to the population
+Structure 7
+Values of centroid before: [ 1.99996454 -1.99997877 -5.00000067] and after local opt: [ 1.21517909 -1.35573117 -3.73625301]
+New trial
+The geometry of Structure 8 is valid, copied to /valid
+Structure 8, energy: -27361.9974, was added to the population
+Structure 8
+Values of centroid before: [ 2.99996454 -2.99997877  1.99999933] and after local opt: [ 2.23163065 -1.91776891  1.4751312 ]
+New trial
+The geometry of Structure 9 is valid, copied to /valid
+Structure 9, energy: -27360.6752, was added to the population
+Structure 9
+Values of centroid before: [-4.00003546 -3.99997877  2.99999933] and after local opt: [-3.21715246 -2.78538823  2.13266057]
+New trial
+The geometry of Structure 10 is valid, copied to /valid
+Structure 10, energy: -27362.7337, was added to the population
+Structure 10
+Values of centroid before: [ 3.99996454  3.00002123  2.99999933] and after local opt: [ 2.11044598  2.13361382  1.72316326]
+___Initialization completed___
+Initial population after sorting: 
+Structure 10 -27362.7337
+Structure 8 -27361.9974
+Structure 6 -27361.4855
+Structure 4 -27361.2936
+Structure 2 -27361.1245
+Structure 7 -27361.1055
+Structure 1 -27361.0358
+Structure 3 -27360.9018
+Structure 5 -27360.769
+Structure 9 -27360.6752
+Blacklist: Structure 1, Structure 2, Structure 3, Structure 4, Structure 5, Structure 6, Structure 7, Structure 8, Structure 9, Structure 10
+ 
+ ___Start of iteration 0___
+Crossover outcome: Structure 11, Structure 12
+Structure 11
+Values of centroid: [ 2.23166454 -1.35577877 -3.73630067]
+Structure 12
+Values of centroid: [ 1.21516454 -1.91777877  1.47509933]
+__child1__
+Performing mutation for: centroid
+child1 after mutation: Structure 11
+Structure 11
+Values of centroid: [-4.00003546 -1.35577877  1.99999933]
+Structure 11:, energy: -27362.3262, is temporary added to the population
+Structure 11
+Values of centroid before: [-4.00003546 -1.35577877  1.99999933] and after local opt: [-2.92195871 -0.75497938  0.32583241]
+__child2__
+Performing mutation for: centroid
+child2 after mutation: Structure 12
+Structure 12
+Values of centroid: [ 1.21516454  4.00002123 -4.00000067]
+Structure 12:, energy: -27361.3378, is temporary added to the population
+Structure 12
+Values of centroid before: [ 1.21516454  4.00002123 -4.00000067] and after local opt: [ 0.40666579  2.7694057  -2.91456786]
+Sorted population: Structure 10, Structure 11, Structure 8, Structure 6, Structure 12, Structure 4, Structure 2, Structure 7, Structure 1, Structure 3, Structure 5, Structure 9
+Sorted population after removing two structures with highest energy: Structure 10, Structure 11, Structure 8, Structure 6, Structure 12, Structure 4, Structure 2, Structure 7, Structure 1, Structure 3
+Lowest energy of the population: -27362.734
+Lowest energies in run: [-27362.7337, -27362.7337]
+Next iteration will be perfomed
+ 
+ ___Start of iteration 1___
+Crossover outcome: Structure 15, Structure 16
+Structure 15
+Values of centroid: [ 2.23166454 -1.91777877 -3.12460067]
+Structure 16
+Values of centroid: [-2.36433546 -1.13437877  1.47509933]
+__child1__
+Performing mutation for: centroid
+child1 after mutation: Structure 15
+Structure 15
+Values of centroid: [-4.00003546  2.00002123 -5.00000067]
+Structure 15:, energy: -27360.8225, is temporary added to the population
+Structure 15
+Values of centroid before: [-4.00003546  2.00002123 -5.00000067] and after local opt: [-3.1456303   1.79260735 -3.96220522]
+__child2__
+Performing mutation for: centroid
+child2 after mutation: Structure 16
+Structure 16
+Values of centroid: [ 2.99996454  4.00002123  2.99999933]
+Structure 16:, energy: -27362.706, is temporary added to the population
+Structure 16
+Values of centroid before: [ 2.99996454  4.00002123  2.99999933] and after local opt: [ 1.48843631  2.66107517  1.68144045]
+Sorted population: Structure 10, Structure 16, Structure 11, Structure 8, Structure 6, Structure 12, Structure 4, Structure 2, Structure 7, Structure 1, Structure 3, Structure 15
+Sorted population after removing two structures with highest energy: Structure 10, Structure 16, Structure 11, Structure 8, Structure 6, Structure 12, Structure 4, Structure 2, Structure 7, Structure 1
+Lowest energy of the population: -27362.734
+Lowest energies in run: [-27362.7337, -27362.7337, -27362.7337]
+Next iteration will be perfomed
+ 
+ ___Start of iteration 2___
+Crossover outcome: Structure 19, Structure 20
+Structure 19
+Values of centroid: [ 1.48846454  2.66112123  1.72319933]
+Structure 20
+Values of centroid: [ 2.11046454  2.13362123  1.68139933]
+__child1__
+Performing mutation for: centroid
+child1 after mutation: Structure 19
+Structure 19
+Values of centroid: [ 1.48846454  2.66112123 -4.00000067]
+Structure 19:, energy: -27362.1531, is temporary added to the population
+Structure 19
+Values of centroid before: [ 1.48846454  2.66112123 -4.00000067] and after local opt: [ 0.3358696   1.62088845 -2.8521093 ]
+__child2__
+Performing mutation for: centroid
+child2 after mutation: Structure 20
+Structure 20
+Values of centroid: [-2.00003546  2.13362123  1.68139933]
+Structure 20:, energy: -27361.9141, is temporary added to the population
+Structure 20
+Values of centroid before: [-2.00003546  2.13362123  1.68139933] and after local opt: [-1.50388731  1.88496336  1.08570198]
+Sorted population: Structure 10, Structure 16, Structure 11, Structure 19, Structure 8, Structure 20, Structure 6, Structure 12, Structure 4, Structure 2, Structure 7, Structure 1
+Sorted population after removing two structures with highest energy: Structure 10, Structure 16, Structure 11, Structure 19, Structure 8, Structure 20, Structure 6, Structure 12, Structure 4, Structure 2
+Lowest energy of the population: -27362.734
+Lowest energies in run: [-27362.7337, -27362.7337, -27362.7337, -27362.7337]
+Next iteration will be perfomed
+ 
+ ___Start of iteration 3___
+Crossover outcome: Structure 23, Structure 24
+Structure 23
+Values of centroid: [ 0.33586454  1.62092123 -2.85210067]
+Structure 24
+Values of centroid: [ 1.48846454  2.66112123  1.68139933]
+__child1__
+Performing mutation for: centroid
+child1 after mutation: Structure 23
+Structure 23
+Values of centroid: [ 0.33586454 -3.99997877 -2.85210067]
+Structure 23:, energy: -27361.7026, is temporary added to the population
+Structure 23
+Values of centroid before: [ 0.33586454 -3.99997877 -2.85210067] and after local opt: [ 0.28360699 -2.60989854 -2.15928651]
+__child2__
+Performing mutation for: centroid
+child2 after mutation: Structure 24
+Structure 24
+Values of centroid: [ 2.99996454  2.66112123 -5.00000067]
+Structure 24:, energy: -27361.0052, is temporary added to the population
+Structure 24
+Values of centroid before: [ 2.99996454  2.66112123 -5.00000067] and after local opt: [ 1.76134818  2.08144194 -3.75175223]
+Sorted population: Structure 10, Structure 16, Structure 11, Structure 19, Structure 8, Structure 20, Structure 23, Structure 6, Structure 12, Structure 4, Structure 2, Structure 24
+Sorted population after removing two structures with highest energy: Structure 10, Structure 16, Structure 11, Structure 19, Structure 8, Structure 20, Structure 23, Structure 6, Structure 12, Structure 4
+Lowest energy of the population: -27362.734
+Lowest energies in run: [-27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337]
+Next iteration will be perfomed
+ 
+ ___Start of iteration 4___
+Crossover outcome: Structure 27, Structure 28
+Structure 27
+Values of centroid: [ 1.48846454 -0.75497877  0.32579933]
+Structure 28
+Values of centroid: [-2.92193546  2.66112123  1.68139933]
+__child1__
+Performing mutation for: centroid
+child1 after mutation: Structure 27
+Structure 27
+Values of centroid: [ 3.99996454 -0.75497877  2.99999933]
+Structure 27:, energy: -27360.3663, is temporary added to the population
+Structure 27
+Values of centroid before: [ 3.99996454 -0.75497877  2.99999933] and after local opt: [ 3.40908584 -0.54082453  2.59079575]
+__child2__
+Performing mutation for: centroid
+child2 after mutation: Structure 28
+Structure 28
+Values of centroid: [-2.00003546  2.00002123 -5.00000067]
+Structure 28:, energy: -27361.1063, is temporary added to the population
+Structure 28
+Values of centroid before: [-2.00003546  2.00002123 -5.00000067] and after local opt: [-1.65879965  1.68720515 -3.75609444]
+Sorted population: Structure 10, Structure 16, Structure 11, Structure 19, Structure 8, Structure 20, Structure 23, Structure 6, Structure 12, Structure 4, Structure 28, Structure 27
+Sorted population after removing two structures with highest energy: Structure 10, Structure 16, Structure 11, Structure 19, Structure 8, Structure 20, Structure 23, Structure 6, Structure 12, Structure 4
+Lowest energy of the population: -27362.734
+Lowest energies in run: [-27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337]
+Next iteration will be perfomed
+ 
+ ___Start of iteration 5___
+Crossover outcome: Structure 31, Structure 32
+Structure 31
+Values of centroid: [ 2.11046454  2.13362123  0.32579933]
+Structure 32
+Values of centroid: [-2.92193546 -0.75497877  1.72319933]
+__child1__
+Performing mutation for: centroid
+child1 after mutation: Structure 31
+Structure 31
+Values of centroid: [ 3.99996454  3.00002123 -3.00000067]
+Structure 31:, energy: -27361.3874, is temporary added to the population
+Structure 31
+Values of centroid before: [ 3.99996454  3.00002123 -3.00000067] and after local opt: [ 2.317284    2.26028102 -2.32922921]
+__child2__
+Performing mutation for: centroid
+child2 after mutation: Structure 32
+Structure 32
+Values of centroid: [-5.00003546 -3.99997877 -2.00000067]
+Structure 32:, energy: -27360.6999, is temporary added to the population
+Structure 32
+Values of centroid before: [-5.00003546 -3.99997877 -2.00000067] and after local opt: [-3.96846935 -2.91160142 -1.64838505]
+Sorted population: Structure 10, Structure 16, Structure 11, Structure 19, Structure 8, Structure 20, Structure 23, Structure 6, Structure 31, Structure 12, Structure 4, Structure 32
+Sorted population after removing two structures with highest energy: Structure 10, Structure 16, Structure 11, Structure 19, Structure 8, Structure 20, Structure 23, Structure 6, Structure 31, Structure 12
+Lowest energy of the population: -27362.734
+Lowest energies in run: [-27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337]
+Next iteration will be perfomed
+ 
+ ___Start of iteration 6___
+Crossover outcome: Structure 35, Structure 36
+Structure 35
+Values of centroid: [-2.92193546 -0.75497877  1.08569933]
+Structure 36
+Values of centroid: [-1.50393546  1.88492123  0.32579933]
+__child1__
+Performing mutation for: centroid
+child1 after mutation: Structure 35
+Structure 35
+Values of centroid: [-4.00003546 -2.99997877  1.08569933]
+Structure 35:, energy: -27362.5166, is temporary added to the population
+Structure 35
+Values of centroid before: [-4.00003546 -2.99997877  1.08569933] and after local opt: [-3.39160838 -1.22038977  0.44722184]
+__child2__
+Performing mutation for: centroid
+child2 after mutation: Structure 36
+Structure 36
+Values of centroid: [-1.50393546 -1.99997877  0.32579933]
+Structure 36:, energy: -27362.5005, is temporary added to the population
+Structure 36
+Values of centroid before: [-1.50393546 -1.99997877  0.32579933] and after local opt: [-0.98523625 -1.42859353 -0.44926789]
+Sorted population: Structure 10, Structure 16, Structure 35, Structure 36, Structure 11, Structure 19, Structure 8, Structure 20, Structure 23, Structure 6, Structure 31, Structure 12
+Sorted population after removing two structures with highest energy: Structure 10, Structure 16, Structure 35, Structure 36, Structure 11, Structure 19, Structure 8, Structure 20, Structure 23, Structure 6
+Lowest energy of the population: -27362.734
+Lowest energies in run: [-27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337]
+Next iteration will be perfomed
+ 
+ ___Start of iteration 7___
+Crossover outcome: Structure 39, Structure 40
+Structure 39
+Values of centroid: [ 2.11046454  2.66112123  1.68139933]
+Structure 40
+Values of centroid: [ 1.48846454  2.13362123  1.72319933]
+__child1__
+Performing mutation for: centroid
+child1 after mutation: Structure 39
+Structure 39
+Values of centroid: [ 2.11046454 -1.99997877 -3.00000067]
+Structure 39:, energy: -27362.5597, is temporary added to the population
+Structure 39
+Values of centroid before: [ 2.11046454 -1.99997877 -3.00000067] and after local opt: [ 1.16274076 -1.2481323  -2.15151854]
+__child2__
+Performing mutation for: centroid
+child2 after mutation: Structure 40
+Structure 40
+Values of centroid: [ 1.48846454 -4.99997877  2.99999933]
+Structure 40:, energy: -27360.9982, is temporary added to the population
+Structure 40
+Values of centroid before: [ 1.48846454 -4.99997877  2.99999933] and after local opt: [ 1.32900107 -3.71020781  2.26708961]
+Sorted population: Structure 10, Structure 16, Structure 39, Structure 35, Structure 36, Structure 11, Structure 19, Structure 8, Structure 20, Structure 23, Structure 6, Structure 40
+Sorted population after removing two structures with highest energy: Structure 10, Structure 16, Structure 39, Structure 35, Structure 36, Structure 11, Structure 19, Structure 8, Structure 20, Structure 23
+Lowest energy of the population: -27362.734
+Lowest energies in run: [-27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337]
+Next iteration will be perfomed
+ 
+ ___Start of iteration 8___
+Crossover outcome: Structure 43, Structure 44
+Structure 43
+Values of centroid: [-3.39163546 -1.22037877 -0.44930067]
+Structure 44
+Values of centroid: [-0.98523546 -1.42857877  0.44719933]
+__child1__
+Performing mutation for: centroid
+child1 after mutation: Structure 43
+Structure 43
+Values of centroid: [-5.00003546 -3.99997877  3.99999933]
+Structure 43:, energy: -27360.5023, is temporary added to the population
+Structure 43
+Values of centroid before: [-5.00003546 -3.99997877  3.99999933] and after local opt: [-4.00296668 -2.98815838  3.20748904]
+__child2__
+Performing mutation for: centroid
+child2 after mutation: Structure 44
+Structure 44
+Values of centroid: [-0.98523546 -1.42857877 -3.00000067]
+Structure 44:, energy: -27362.7708, is temporary added to the population
+Structure 44
+Values of centroid before: [-0.98523546 -1.42857877 -3.00000067] and after local opt: [-0.41903295 -1.0839623  -2.2488613 ]
+Sorted population: Structure 44, Structure 10, Structure 16, Structure 39, Structure 35, Structure 36, Structure 11, Structure 19, Structure 8, Structure 20, Structure 23, Structure 43
+Sorted population after removing two structures with highest energy: Structure 44, Structure 10, Structure 16, Structure 39, Structure 35, Structure 36, Structure 11, Structure 19, Structure 8, Structure 20
+Lowest energy of the population: -27362.771
+Lowest energies in run: [-27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7708]
+Next iteration will be perfomed
+ 
+ ___Start of iteration 9___
+Crossover outcome: Structure 47, Structure 48
+Structure 47
+Values of centroid: [-0.98523546 -1.22037877  0.44719933]
+Structure 48
+Values of centroid: [-3.39163546 -1.42857877 -0.44930067]
+__child1__
+Performing mutation for: centroid
+child1 after mutation: Structure 47
+Structure 47
+Values of centroid: [ 3.99996454 -1.22037877 -3.00000067]
+Structure 47:, energy: -27361.4349, is temporary added to the population
+Structure 47
+Values of centroid before: [ 3.99996454 -1.22037877 -3.00000067] and after local opt: [ 2.96071662 -1.11930993 -2.14523358]
+__child2__
+Performing mutation for: centroid
+child2 after mutation: Structure 48
+Structure 48
+Values of centroid: [-4.00003546 -1.42857877 -0.44930067]
+Structure 48:, energy: -27362.9473, is temporary added to the population
+Structure 48
+Values of centroid before: [-4.00003546 -1.42857877 -0.44930067] and after local opt: [-3.00800562 -0.18146743 -0.56737693]
+Sorted population: Structure 48, Structure 44, Structure 10, Structure 16, Structure 39, Structure 35, Structure 36, Structure 11, Structure 19, Structure 8, Structure 20, Structure 47
+Sorted population after removing two structures with highest energy: Structure 48, Structure 44, Structure 10, Structure 16, Structure 39, Structure 35, Structure 36, Structure 11, Structure 19, Structure 8
+Lowest energy of the population: -27362.947
+Lowest energies in run: [-27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7708, -27362.9473]
+Next iteration will be perfomed
+ 
+ ___Start of iteration 10___
+Crossover outcome: Structure 51, Structure 52
+Structure 51
+Values of centroid: [ 1.48846454  2.66112123 -2.24890067]
+Structure 52
+Values of centroid: [-0.41903546 -1.08397877  1.68139933]
+__child1__
+Performing mutation for: centroid
+child1 after mutation: Structure 51
+Structure 51
+Values of centroid: [-4.00003546  4.00002123 -3.00000067]
+Structure 51:, energy: -27360.9023, is temporary added to the population
+Structure 51
+Values of centroid before: [-4.00003546  4.00002123 -3.00000067] and after local opt: [-3.03162855  3.07880047 -2.47601429]
+__child2__
+Performing mutation for: centroid
+child2 after mutation: Structure 52
+Structure 52
+Values of centroid: [-0.41903546  3.00002123  1.68139933]
+Structure 52:, energy: -27361.8015, is temporary added to the population
+Structure 52
+Values of centroid before: [-0.41903546  3.00002123  1.68139933] and after local opt: [-0.43483733  2.29242715  1.12749417]
+Sorted population: Structure 48, Structure 44, Structure 10, Structure 16, Structure 39, Structure 35, Structure 36, Structure 11, Structure 19, Structure 8, Structure 52, Structure 51
+Sorted population after removing two structures with highest energy: Structure 48, Structure 44, Structure 10, Structure 16, Structure 39, Structure 35, Structure 36, Structure 11, Structure 19, Structure 8
+Lowest energy of the population: -27362.947
+Lowest energies in run: [-27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7708, -27362.9473, -27362.9473]
+Next iteration will be perfomed
+ 
+ ___Start of iteration 11___
+Crossover outcome: Structure 55, Structure 56
+Structure 55
+Values of centroid: [ 1.48846454 -0.75497877  0.32579933]
+Structure 56
+Values of centroid: [-2.92193546  2.66112123  1.68139933]
+__child1__
+Performing mutation for: centroid
+child1 after mutation: Structure 55
+Structure 55
+Values of centroid: [ 1.48846454 -2.99997877 -2.00000067]
+Structure 55:, energy: -27362.7681, is temporary added to the population
+Structure 55
+Values of centroid before: [ 1.48846454 -2.99997877 -2.00000067] and after local opt: [ 0.91302194 -1.80433284 -1.5342054 ]
+__child2__
+Performing mutation for: centroid
+child2 after mutation: Structure 56
+Structure 56
+Values of centroid: [-4.00003546  2.00002123 -5.00000067]
+Structure 56:, energy: -27360.8225, is temporary added to the population
+Structure 56
+Values of centroid before: [-4.00003546  2.00002123 -5.00000067] and after local opt: [-3.1456303   1.79260735 -3.96220522]
+Sorted population: Structure 48, Structure 44, Structure 55, Structure 10, Structure 16, Structure 39, Structure 35, Structure 36, Structure 11, Structure 19, Structure 8, Structure 56
+Sorted population after removing two structures with highest energy: Structure 48, Structure 44, Structure 55, Structure 10, Structure 16, Structure 39, Structure 35, Structure 36, Structure 11, Structure 19
+Lowest energy of the population: -27362.947
+Lowest energies in run: [-27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7708, -27362.9473, -27362.9473, -27362.9473]
+Next iteration will be perfomed
+ 
+ ___Start of iteration 12___
+Crossover outcome: Structure 59, Structure 60
+Structure 59
+Values of centroid: [ 1.16276454  2.13362123  1.72319933]
+Structure 60
+Values of centroid: [ 2.11046454 -1.24817877 -2.15150067]
+__child1__
+Performing mutation for: centroid
+child1 after mutation: Structure 59
+Structure 59
+Values of centroid: [ 1.16276454  2.13362123  2.99999933]
+Structure 59:, energy: -27362.6167, is temporary added to the population
+Structure 59
+Values of centroid before: [ 1.16276454  2.13362123  2.99999933] and after local opt: [ 0.93914935  1.86683336  2.05318064]
+__child2__
+Performing mutation for: centroid
+child2 after mutation: Structure 60
+Structure 60
+Values of centroid: [ 2.99996454 -3.99997877 -3.00000067]
+Structure 60:, energy: -27360.9391, is temporary added to the population
+Structure 60
+Values of centroid before: [ 2.99996454 -3.99997877 -3.00000067] and after local opt: [ 2.38411171 -3.05746865 -2.2566965 ]
+Sorted population: Structure 48, Structure 44, Structure 55, Structure 10, Structure 16, Structure 59, Structure 39, Structure 35, Structure 36, Structure 11, Structure 19, Structure 60
+Sorted population after removing two structures with highest energy: Structure 48, Structure 44, Structure 55, Structure 10, Structure 16, Structure 59, Structure 39, Structure 35, Structure 36, Structure 11
+Lowest energy of the population: -27362.947
+Lowest energies in run: [-27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7708, -27362.9473, -27362.9473, -27362.9473, -27362.9473]
+Next iteration will be perfomed
+ 
+ ___Start of iteration 13___
+No crossover was performed. Children are copies of parents: Structure 63: Structure 63, Structure 64: Structure 64
+Structure 63
+Values of centroid: [ 1.16274076 -1.2481323  -2.15151854]
+Structure 64
+Values of centroid: [-3.00800562 -0.18146743 -0.56737693]
+__child1__
+Performing mutation for: centroid
+child1 after mutation: Structure 63
+Structure 63
+Values of centroid: [-2.99995924  3.9999677  -4.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 65
+Structure 65
+Values of centroid: [ 1.16274076 -5.0000323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 66
+Structure 66
+Values of centroid: [-2.99995924 -3.0000323   1.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 67
+Structure 67
+Values of centroid: [-4.99995924 -1.2481323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 68
+Structure 68
+Values of centroid: [ 1.16274076 -1.2481323  -3.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 69
+Structure 69
+Values of centroid: [ 4.00004076  3.9999677  -3.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 70
+Structure 70
+Values of centroid: [ 1.16274076 -4.0000323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 71
+Structure 71
+Values of centroid: [-1.99995924  3.9999677   1.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 72
+Structure 72
+Values of centroid: [ 4.00004076 -3.0000323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 73
+Structure 73
+Values of centroid: [-2.99995924 -5.0000323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 74
+Structure 74
+Values of centroid: [ 4.00004076 -1.2481323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 75
+Structure 75
+Values of centroid: [ 1.16274076 -5.0000323  -5.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 76
+Structure 76
+Values of centroid: [ 1.16274076 -1.2481323   1.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 77
+Structure 77
+Values of centroid: [ 1.16274076  1.9999677  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 78
+Structure 78
+Values of centroid: [-1.99995924  1.9999677   3.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 79
+Structure 79
+Values of centroid: [ 1.16274076  1.9999677  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 80
+Structure 80
+Values of centroid: [-3.99995924 -1.2481323   1.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 81
+Structure 81
+Values of centroid: [ 3.00004076  3.9999677   2.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 82
+Structure 82
+Values of centroid: [-1.99995924 -1.2481323  -4.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 83
+Structure 83
+Values of centroid: [-4.99995924 -1.2481323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 84
+Structure 84
+Values of centroid: [-1.99995924  1.9999677  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 85
+Structure 85
+Values of centroid: [ 3.00004076  2.9999677  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 86
+Structure 86
+Values of centroid: [-3.99995924 -1.2481323  -3.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 87
+Structure 87
+Values of centroid: [ 3.00004076 -1.2481323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 88
+Structure 88
+Values of centroid: [-4.99995924 -3.0000323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 89
+Structure 89
+Values of centroid: [ 4.00004076  3.9999677   3.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 90
+Structure 90
+Values of centroid: [ 3.00004076  1.9999677  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 91
+Structure 91
+Values of centroid: [-2.99995924  2.9999677  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 92
+Structure 92
+Values of centroid: [ 1.16274076 -3.0000323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 93
+Structure 93
+Values of centroid: [-1.99995924  1.9999677  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 94
+Structure 94
+Values of centroid: [-4.99995924 -1.2481323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 95
+Structure 95
+Values of centroid: [ 1.16274076 -1.2481323  -5.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 96
+Structure 96
+Values of centroid: [-2.99995924 -3.0000323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 97
+Structure 97
+Values of centroid: [ 3.00004076 -1.2481323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 98
+Structure 98
+Values of centroid: [ 1.16274076 -4.0000323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 99
+Structure 99
+Values of centroid: [ 1.16274076 -1.2481323  -3.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 100
+Structure 100
+Values of centroid: [ 3.00004076  1.9999677   2.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 101
+Structure 101
+Values of centroid: [-2.99995924  3.9999677  -5.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 102
+Structure 102
+Values of centroid: [-4.99995924  2.9999677  -5.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 103
+Structure 103
+Values of centroid: [ 1.16274076  1.9999677   1.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 104
+Structure 104
+Values of centroid: [-2.99995924  2.9999677  -4.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 105
+Structure 105
+Values of centroid: [ 1.16274076 -1.2481323  -5.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 106
+Structure 106
+Values of centroid: [-2.99995924  1.9999677  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 107
+Structure 107
+Values of centroid: [-4.99995924 -1.2481323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 108
+Structure 108
+Values of centroid: [ 1.16274076  1.9999677  -4.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 109
+Structure 109
+Values of centroid: [ 1.16274076 -1.2481323   2.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 110
+Structure 110
+Values of centroid: [-1.99995924 -1.2481323  -5.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 111
+Structure 111
+Values of centroid: [-4.99995924 -3.0000323   1.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 112
+Structure 112
+Values of centroid: [-1.99995924 -5.0000323  -5.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 113
+Structure 113
+Values of centroid: [ 1.16274076  3.9999677  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 114
+Structure 114
+Values of centroid: [-1.99995924 -3.0000323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 115
+Structure 115
+Values of centroid: [-2.99995924 -5.0000323  -4.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 116
+Structure 116
+Values of centroid: [ 3.00004076  1.9999677   3.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 117
+Structure 117
+Values of centroid: [ 1.16274076 -1.2481323   2.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 118
+Structure 118
+Values of centroid: [ 1.16274076 -4.0000323  -3.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 119
+Structure 119
+Values of centroid: [-1.99995924  1.9999677  -3.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 120
+Structure 120
+Values of centroid: [-4.99995924 -5.0000323   1.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 121
+Structure 121
+Values of centroid: [-4.99995924  1.9999677  -3.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 122
+Structure 122
+Values of centroid: [ 1.16274076  1.9999677   2.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 123
+Structure 123
+Values of centroid: [ 4.00004076 -1.2481323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 124
+Structure 124
+Values of centroid: [ 4.00004076 -1.2481323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 125
+Structure 125
+Values of centroid: [-1.99995924 -5.0000323   2.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 126
+Structure 126
+Values of centroid: [-4.99995924 -1.2481323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 127
+Structure 127
+Values of centroid: [ 3.00004076 -3.0000323  -4.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 128
+Structure 128
+Values of centroid: [ 1.16274076 -4.0000323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 129
+Structure 129
+Values of centroid: [ 1.16274076 -1.2481323  -4.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 130
+Structure 130
+Values of centroid: [-1.99995924 -1.2481323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 131
+Structure 131
+Values of centroid: [ 1.16274076 -1.2481323  -4.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 132
+Structure 132
+Values of centroid: [-3.99995924  2.9999677  -3.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 133
+Structure 133
+Values of centroid: [ 4.00004076 -1.2481323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 134
+Structure 134
+Values of centroid: [-3.99995924 -1.2481323  -5.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 135
+Structure 135
+Values of centroid: [ 4.00004076  1.9999677  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 136
+Structure 136
+Values of centroid: [-4.99995924 -4.0000323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 137
+Structure 137
+Values of centroid: [-2.99995924 -1.2481323   1.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 138
+Structure 138
+Values of centroid: [ 1.16274076 -1.2481323  -3.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 139
+Structure 139
+Values of centroid: [ 1.16274076 -1.2481323  -3.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 140
+Structure 140
+Values of centroid: [ 1.16274076 -5.0000323  -3.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 141
+Structure 141
+Values of centroid: [-2.99995924  3.9999677  -3.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 142
+Structure 142
+Values of centroid: [ 4.00004076 -4.0000323   2.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 143
+Structure 143
+Values of centroid: [-4.99995924 -1.2481323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 144
+Structure 144
+Values of centroid: [-3.99995924 -1.2481323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 145
+Structure 145
+Values of centroid: [ 3.00004076 -4.0000323  -3.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 146
+Structure 146
+Values of centroid: [ 1.16274076 -1.2481323  -4.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 147
+Structure 147
+Values of centroid: [ 3.00004076 -5.0000323  -4.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 148
+Structure 148
+Values of centroid: [-2.99995924 -1.2481323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 149
+Structure 149
+Values of centroid: [ 1.16274076  1.9999677  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 150
+Structure 150
+Values of centroid: [ 1.16274076  3.9999677  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 151
+Structure 151
+Values of centroid: [ 4.00004076 -5.0000323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 152
+Structure 152
+Values of centroid: [-1.99995924 -5.0000323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 153
+Structure 153
+Values of centroid: [-2.99995924 -3.0000323   3.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 154
+Structure 154
+Values of centroid: [ 4.00004076 -4.0000323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 155
+Structure 155
+Values of centroid: [-2.99995924 -4.0000323  -3.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 156
+Structure 156
+Values of centroid: [ 3.00004076 -1.2481323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 157
+Structure 157
+Values of centroid: [ 1.16274076 -3.0000323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 158
+Structure 158
+Values of centroid: [ 4.00004076 -1.2481323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 159
+Structure 159
+Values of centroid: [ 1.16274076 -5.0000323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 160
+Structure 160
+Values of centroid: [ 3.00004076 -5.0000323  -3.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 161
+Structure 161
+Values of centroid: [ 1.16274076  3.9999677  -5.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 162
+Structure 162
+Values of centroid: [ 1.16274076 -1.2481323  -5.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 163
+Structure 163
+Values of centroid: [ 4.00004076 -1.2481323   1.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 164
+Structure 164
+Values of centroid: [ 1.16274076 -5.0000323  -5.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 165
+Structure 165
+Values of centroid: [ 1.16274076  1.9999677   2.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 166
+Structure 166
+Values of centroid: [-4.99995924 -1.2481323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 167
+Structure 167
+Values of centroid: [ 1.16274076 -4.0000323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 168
+Structure 168
+Values of centroid: [-2.99995924 -1.2481323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 169
+Structure 169
+Values of centroid: [-1.99995924 -3.0000323  -4.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 170
+Structure 170
+Values of centroid: [ 3.00004076 -3.0000323   3.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 171
+Structure 171
+Values of centroid: [-1.99995924 -3.0000323   1.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 172
+Structure 172
+Values of centroid: [-2.99995924 -1.2481323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 173
+Structure 173
+Values of centroid: [ 1.16274076 -3.0000323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 174
+Structure 174
+Values of centroid: [ 1.16274076  3.9999677   3.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 175
+Structure 175
+Values of centroid: [ 3.00004076 -1.2481323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 176
+Structure 176
+Values of centroid: [ 3.00004076  2.9999677  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 177
+Structure 177
+Values of centroid: [ 1.16274076 -1.2481323   3.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 178
+Structure 178
+Values of centroid: [ 3.00004076 -1.2481323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 179
+Structure 179
+Values of centroid: [ 1.16274076 -4.0000323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 180
+Structure 180
+Values of centroid: [-1.99995924 -1.2481323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 181
+Structure 181
+Values of centroid: [ 3.00004076 -5.0000323  -5.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 182
+Structure 182
+Values of centroid: [-1.99995924 -4.0000323  -5.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 183
+Structure 183
+Values of centroid: [-2.99995924  3.9999677  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 184
+Structure 184
+Values of centroid: [ 3.00004076 -1.2481323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 185
+Structure 185
+Values of centroid: [-2.99995924 -5.0000323   2.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 186
+Structure 186
+Values of centroid: [-4.99995924 -3.0000323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 187
+Structure 187
+Values of centroid: [-4.99995924  3.9999677   2.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 188
+Structure 188
+Values of centroid: [ 1.16274076 -3.0000323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 189
+Structure 189
+Values of centroid: [-4.99995924 -5.0000323   2.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 190
+Structure 190
+Values of centroid: [ 1.16274076 -1.2481323  -4.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 191
+Structure 191
+Values of centroid: [ 1.16274076 -3.0000323   3.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 192
+Structure 192
+Values of centroid: [-4.99995924 -4.0000323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 193
+Structure 193
+Values of centroid: [ 3.00004076 -1.2481323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 194
+Structure 194
+Values of centroid: [-4.99995924 -3.0000323   2.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 195
+Structure 195
+Values of centroid: [ 3.00004076  3.9999677  -3.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 196
+Structure 196
+Values of centroid: [ 1.16274076 -1.2481323  -4.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 197
+Structure 197
+Values of centroid: [ 1.16274076  2.9999677  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 198
+Structure 198
+Values of centroid: [-4.99995924 -1.2481323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 199
+Structure 199
+Values of centroid: [ 1.16274076  3.9999677  -4.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 200
+Structure 200
+Values of centroid: [ 1.16274076  1.9999677   2.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 201
+Structure 201
+Values of centroid: [-2.99995924 -3.0000323   1.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 202
+Structure 202
+Values of centroid: [-2.99995924 -5.0000323   2.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 203
+Structure 203
+Values of centroid: [-1.99995924  1.9999677   2.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 204
+Structure 204
+Values of centroid: [ 1.16274076  2.9999677  -3.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 205
+Structure 205
+Values of centroid: [ 3.00004076  2.9999677   3.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 206
+Structure 206
+Values of centroid: [ 3.00004076 -1.2481323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 207
+Structure 207
+Values of centroid: [ 1.16274076  1.9999677  -4.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 208
+Structure 208
+Values of centroid: [ 4.00004076 -1.2481323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 209
+Structure 209
+Values of centroid: [ 1.16274076  3.9999677  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 210
+Structure 210
+Values of centroid: [ 1.16274076  3.9999677  -4.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 211
+Structure 211
+Values of centroid: [ 1.16274076 -3.0000323   3.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 212
+Structure 212
+Values of centroid: [-3.99995924 -5.0000323  -4.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 213
+Structure 213
+Values of centroid: [-2.99995924 -1.2481323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 214
+Structure 214
+Values of centroid: [-3.99995924  3.9999677   2.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 215
+Structure 215
+Values of centroid: [-4.99995924 -1.2481323  -3.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 216
+Structure 216
+Values of centroid: [-4.99995924  2.9999677  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 217
+Structure 217
+Values of centroid: [ 3.00004076 -1.2481323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 218
+Structure 218
+Values of centroid: [ 4.00004076  1.9999677  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 219
+Structure 219
+Values of centroid: [-1.99995924 -1.2481323   2.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 220
+Structure 220
+Values of centroid: [-3.99995924  1.9999677   2.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 221
+Structure 221
+Values of centroid: [ 4.00004076  3.9999677  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 222
+Structure 222
+Values of centroid: [ 1.16274076  2.9999677  -5.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 223
+Structure 223
+Values of centroid: [-1.99995924  1.9999677  -3.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 224
+Structure 224
+Values of centroid: [-3.99995924 -4.0000323   3.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 225
+Structure 225
+Values of centroid: [ 1.16274076  1.9999677  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 226
+Structure 226
+Values of centroid: [-3.99995924  2.9999677  -5.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 227
+Structure 227
+Values of centroid: [ 1.16274076 -5.0000323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 228
+Structure 228
+Values of centroid: [ 1.16274076 -4.0000323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 229
+Structure 229
+Values of centroid: [-4.99995924 -4.0000323   2.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 230
+Structure 230
+Values of centroid: [ 4.00004076 -4.0000323   3.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 231
+Structure 231
+Values of centroid: [-1.99995924  3.9999677  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 232
+Structure 232
+Values of centroid: [ 3.00004076 -3.0000323  -5.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 233
+Structure 233
+Values of centroid: [ 1.16274076 -3.0000323   3.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 234
+Structure 234
+Values of centroid: [ 3.00004076 -4.0000323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 235
+Structure 235
+Values of centroid: [-4.99995924 -5.0000323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 236
+Structure 236
+Values of centroid: [ 4.00004076  1.9999677  -4.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 237
+Structure 237
+Values of centroid: [ 4.00004076 -3.0000323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 238
+Structure 238
+Values of centroid: [ 4.00004076 -4.0000323  -4.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 239
+Structure 239
+Values of centroid: [-1.99995924  3.9999677   3.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 240
+Structure 240
+Values of centroid: [-1.99995924 -1.2481323  -5.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 241
+Structure 241
+Values of centroid: [ 3.00004076  2.9999677  -5.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 242
+Structure 242
+Values of centroid: [-1.99995924  3.9999677   2.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 243
+Structure 243
+Values of centroid: [ 1.16274076 -1.2481323  -3.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 244
+Structure 244
+Values of centroid: [-4.99995924 -1.2481323  -3.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 245
+Structure 245
+Values of centroid: [ 4.00004076  3.9999677  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 246
+Structure 246
+Values of centroid: [-4.99995924 -5.0000323  -5.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 247
+Structure 247
+Values of centroid: [-4.99995924 -4.0000323  -4.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 248
+Structure 248
+Values of centroid: [ 1.16274076  2.9999677  -4.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 249
+Structure 249
+Values of centroid: [ 4.00004076 -3.0000323  -4.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 250
+Structure 250
+Values of centroid: [ 4.00004076 -3.0000323   3.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 251
+Structure 251
+Values of centroid: [ 1.16274076  1.9999677  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 252
+Structure 252
+Values of centroid: [-4.99995924 -1.2481323   2.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 253
+Structure 253
+Values of centroid: [ 4.00004076 -1.2481323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 254
+Structure 254
+Values of centroid: [ 4.00004076 -1.2481323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 255
+Structure 255
+Values of centroid: [ 3.00004076  3.9999677  -4.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 256
+Structure 256
+Values of centroid: [ 4.00004076  3.9999677   2.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 257
+Structure 257
+Values of centroid: [-3.99995924 -1.2481323  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 258
+Structure 258
+Values of centroid: [-4.99995924  1.9999677  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 259
+Structure 259
+Values of centroid: [ 1.16274076 -1.2481323   3.99998146]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 260
+Structure 260
+Values of centroid: [-1.99995924  2.9999677  -4.00001854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 261
+Structure 261
+Values of centroid: [-4.99995924  3.9999677  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 262
+Structure 262
+Values of centroid: [ 4.00004076  2.9999677  -2.15151854]
+ The geometry of child1 is invalid.
+Performing mutation for: centroid
+child1 after mutation: Structure 263
+Structure 263
+Values of centroid: [ 1.16274076 -5.0000323  -3.00001854]
+ The geometry of child1 is invalid.
+__child2__
+Performing mutation for: centroid
+child2 after mutation: Structure 64
+Structure 64
+Values of centroid: [ 3.99999438 -2.99996743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 265
+Structure 265
+Values of centroid: [ 3.99999438 -0.18146743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 266
+Structure 266
+Values of centroid: [-2.00000562 -0.18146743  2.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 267
+Structure 267
+Values of centroid: [-4.00000562 -4.99996743 -2.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 268
+Structure 268
+Values of centroid: [-5.00000562  4.00003257 -3.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 269
+Structure 269
+Values of centroid: [-3.00800562 -3.99996743 -3.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 270
+Structure 270
+Values of centroid: [-5.00000562 -3.99996743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 271
+Structure 271
+Values of centroid: [-3.00800562 -2.99996743  3.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 272
+Structure 272
+Values of centroid: [-2.00000562 -4.99996743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 273
+Structure 273
+Values of centroid: [-5.00000562 -0.18146743  4.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 274
+Structure 274
+Values of centroid: [-2.00000562 -0.18146743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 275
+Structure 275
+Values of centroid: [-3.00800562 -0.18146743 -2.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 276
+Structure 276
+Values of centroid: [ 3.99999438 -4.99996743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 277
+Structure 277
+Values of centroid: [ 2.99999438 -0.18146743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 278
+Structure 278
+Values of centroid: [ 2.99999438  3.00003257 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 279
+Structure 279
+Values of centroid: [-3.00800562 -0.18146743 -3.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 280
+Structure 280
+Values of centroid: [-3.00800562  4.00003257  4.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 281
+Structure 281
+Values of centroid: [ 1.99999438 -2.99996743 -4.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 282
+Structure 282
+Values of centroid: [-4.00000562 -0.18146743  2.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 283
+Structure 283
+Values of centroid: [-2.00000562 -0.18146743 -4.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 284
+Structure 284
+Values of centroid: [-4.00000562  4.00003257  2.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 285
+Structure 285
+Values of centroid: [-3.00800562  3.00003257 -4.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 286
+Structure 286
+Values of centroid: [-3.00800562 -2.99996743  3.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 287
+Structure 287
+Values of centroid: [ 2.99999438 -0.18146743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 288
+Structure 288
+Values of centroid: [-3.00800562 -4.99996743  3.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 289
+Structure 289
+Values of centroid: [-5.00000562  2.00003257  2.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 290
+Structure 290
+Values of centroid: [-2.00000562  3.00003257  4.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 291
+Structure 291
+Values of centroid: [-4.00000562  4.00003257 -4.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 292
+Structure 292
+Values of centroid: [-2.00000562 -2.99996743 -4.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 293
+Structure 293
+Values of centroid: [ 3.99999438 -0.18146743 -4.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 294
+Structure 294
+Values of centroid: [-3.00800562  2.00003257  3.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 295
+Structure 295
+Values of centroid: [-3.00800562  3.00003257 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 296
+Structure 296
+Values of centroid: [-3.00800562  4.00003257 -2.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 297
+Structure 297
+Values of centroid: [-3.00800562  2.00003257 -3.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 298
+Structure 298
+Values of centroid: [-4.00000562  4.00003257 -2.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 299
+Structure 299
+Values of centroid: [-4.00000562 -0.18146743 -3.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 300
+Structure 300
+Values of centroid: [ 1.99999438 -4.99996743 -3.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 301
+Structure 301
+Values of centroid: [ 1.99999438  2.00003257 -4.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 302
+Structure 302
+Values of centroid: [ 1.99999438 -0.18146743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 303
+Structure 303
+Values of centroid: [ 1.99999438 -0.18146743 -2.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 304
+Structure 304
+Values of centroid: [-3.00800562 -0.18146743 -3.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 305
+Structure 305
+Values of centroid: [-3.00800562  3.00003257 -2.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 306
+Structure 306
+Values of centroid: [ 1.99999438  2.00003257 -3.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 307
+Structure 307
+Values of centroid: [-3.00800562  4.00003257 -2.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 308
+Structure 308
+Values of centroid: [-5.00000562  3.00003257 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 309
+Structure 309
+Values of centroid: [-5.00000562 -0.18146743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 310
+Structure 310
+Values of centroid: [-5.00000562  3.00003257  3.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 311
+Structure 311
+Values of centroid: [-4.00000562  3.00003257 -2.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 312
+Structure 312
+Values of centroid: [-4.00000562 -2.99996743  2.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 313
+Structure 313
+Values of centroid: [ 2.99999438  3.00003257  2.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 314
+Structure 314
+Values of centroid: [ 1.99999438 -0.18146743 -3.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 315
+Structure 315
+Values of centroid: [-3.00800562 -3.99996743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 316
+Structure 316
+Values of centroid: [-3.00800562 -0.18146743 -4.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 317
+Structure 317
+Values of centroid: [-3.00800562  4.00003257 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 318
+Structure 318
+Values of centroid: [ 2.99999438 -2.99996743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 319
+Structure 319
+Values of centroid: [ 1.99999438 -0.18146743 -2.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 320
+Structure 320
+Values of centroid: [-5.00000562  3.00003257 -4.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 321
+Structure 321
+Values of centroid: [-4.00000562  2.00003257  2.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 322
+Structure 322
+Values of centroid: [-2.00000562  4.00003257 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 323
+Structure 323
+Values of centroid: [ 1.99999438 -4.99996743 -2.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 324
+Structure 324
+Values of centroid: [ 3.99999438  3.00003257  4.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 325
+Structure 325
+Values of centroid: [-2.00000562  3.00003257 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 326
+Structure 326
+Values of centroid: [-3.00800562  3.00003257 -2.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 327
+Structure 327
+Values of centroid: [ 1.99999438 -2.99996743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 328
+Structure 328
+Values of centroid: [-4.00000562 -0.18146743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 329
+Structure 329
+Values of centroid: [-5.00000562 -0.18146743  3.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 330
+Structure 330
+Values of centroid: [-2.00000562 -0.18146743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 331
+Structure 331
+Values of centroid: [-4.00000562  4.00003257  4.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 332
+Structure 332
+Values of centroid: [ 2.99999438 -0.18146743 -2.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 333
+Structure 333
+Values of centroid: [-2.00000562 -0.18146743 -2.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 334
+Structure 334
+Values of centroid: [-2.00000562 -0.18146743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 335
+Structure 335
+Values of centroid: [-2.00000562 -4.99996743 -3.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 336
+Structure 336
+Values of centroid: [-3.00800562 -0.18146743 -4.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 337
+Structure 337
+Values of centroid: [-2.00000562 -0.18146743  4.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 338
+Structure 338
+Values of centroid: [ 2.99999438  4.00003257 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 339
+Structure 339
+Values of centroid: [-5.00000562 -2.99996743  2.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 340
+Structure 340
+Values of centroid: [-3.00800562  2.00003257 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 341
+Structure 341
+Values of centroid: [ 3.99999438  3.00003257  3.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 342
+Structure 342
+Values of centroid: [-5.00000562 -2.99996743 -3.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 343
+Structure 343
+Values of centroid: [-4.00000562 -0.18146743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 344
+Structure 344
+Values of centroid: [ 3.99999438  3.00003257 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 345
+Structure 345
+Values of centroid: [-5.00000562  3.00003257 -3.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 346
+Structure 346
+Values of centroid: [ 3.99999438 -0.18146743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 347
+Structure 347
+Values of centroid: [ 1.99999438 -0.18146743  4.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 348
+Structure 348
+Values of centroid: [-2.00000562  4.00003257 -4.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 349
+Structure 349
+Values of centroid: [ 3.99999438 -4.99996743  2.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 350
+Structure 350
+Values of centroid: [-3.00800562  3.00003257  4.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 351
+Structure 351
+Values of centroid: [-3.00800562  3.00003257 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 352
+Structure 352
+Values of centroid: [-3.00800562 -3.99996743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 353
+Structure 353
+Values of centroid: [-2.00000562  3.00003257 -3.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 354
+Structure 354
+Values of centroid: [ 3.99999438  2.00003257 -2.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 355
+Structure 355
+Values of centroid: [-3.00800562 -0.18146743  3.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 356
+Structure 356
+Values of centroid: [-5.00000562 -0.18146743  3.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 357
+Structure 357
+Values of centroid: [ 2.99999438 -3.99996743 -4.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 358
+Structure 358
+Values of centroid: [-4.00000562 -0.18146743 -2.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 359
+Structure 359
+Values of centroid: [-3.00800562  3.00003257  4.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 360
+Structure 360
+Values of centroid: [ 1.99999438  2.00003257 -2.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 361
+Structure 361
+Values of centroid: [-3.00800562 -3.99996743  2.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 362
+Structure 362
+Values of centroid: [ 3.99999438  4.00003257  4.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 363
+Structure 363
+Values of centroid: [-3.00800562 -0.18146743 -4.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 364
+Structure 364
+Values of centroid: [-2.00000562 -2.99996743 -4.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 365
+Structure 365
+Values of centroid: [ 1.99999438 -3.99996743 -2.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 366
+Structure 366
+Values of centroid: [-2.00000562 -4.99996743 -4.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 367
+Structure 367
+Values of centroid: [ 2.99999438 -0.18146743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 368
+Structure 368
+Values of centroid: [-3.00800562 -0.18146743  2.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 369
+Structure 369
+Values of centroid: [ 1.99999438  3.00003257 -4.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 370
+Structure 370
+Values of centroid: [-4.00000562 -2.99996743  4.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 371
+Structure 371
+Values of centroid: [-3.00800562  4.00003257 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 372
+Structure 372
+Values of centroid: [-3.00800562 -2.99996743  3.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 373
+Structure 373
+Values of centroid: [-3.00800562  3.00003257 -4.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 374
+Structure 374
+Values of centroid: [ 1.99999438  3.00003257  2.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 375
+Structure 375
+Values of centroid: [-5.00000562  3.00003257 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 376
+Structure 376
+Values of centroid: [-2.00000562 -4.99996743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 377
+Structure 377
+Values of centroid: [-2.00000562 -0.18146743 -2.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 378
+Structure 378
+Values of centroid: [-3.00800562  4.00003257 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 379
+Structure 379
+Values of centroid: [-4.00000562 -3.99996743 -3.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 380
+Structure 380
+Values of centroid: [-3.00800562  2.00003257 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 381
+Structure 381
+Values of centroid: [ 1.99999438 -2.99996743 -2.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 382
+Structure 382
+Values of centroid: [-3.00800562  3.00003257 -2.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 383
+Structure 383
+Values of centroid: [ 2.99999438  3.00003257  3.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 384
+Structure 384
+Values of centroid: [ 3.99999438 -3.99996743  2.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 385
+Structure 385
+Values of centroid: [-5.00000562  3.00003257  3.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 386
+Structure 386
+Values of centroid: [-3.00800562  3.00003257 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 387
+Structure 387
+Values of centroid: [-3.00800562 -2.99996743 -2.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 388
+Structure 388
+Values of centroid: [-4.00000562  3.00003257 -4.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 389
+Structure 389
+Values of centroid: [-5.00000562 -0.18146743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 390
+Structure 390
+Values of centroid: [-2.00000562  4.00003257 -2.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 391
+Structure 391
+Values of centroid: [-3.00800562  4.00003257 -4.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 392
+Structure 392
+Values of centroid: [ 1.99999438  2.00003257 -3.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 393
+Structure 393
+Values of centroid: [ 1.99999438 -4.99996743  2.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 394
+Structure 394
+Values of centroid: [-3.00800562 -0.18146743 -4.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 395
+Structure 395
+Values of centroid: [ 2.99999438 -4.99996743 -3.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 396
+Structure 396
+Values of centroid: [-3.00800562 -0.18146743  2.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 397
+Structure 397
+Values of centroid: [ 2.99999438 -2.99996743 -4.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 398
+Structure 398
+Values of centroid: [ 2.99999438  3.00003257 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 399
+Structure 399
+Values of centroid: [-2.00000562  2.00003257 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 400
+Structure 400
+Values of centroid: [ 3.99999438  2.00003257 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 401
+Structure 401
+Values of centroid: [-4.00000562 -0.18146743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 402
+Structure 402
+Values of centroid: [ 2.99999438 -3.99996743  3.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 403
+Structure 403
+Values of centroid: [-2.00000562 -0.18146743 -2.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 404
+Structure 404
+Values of centroid: [ 1.99999438 -0.18146743 -3.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 405
+Structure 405
+Values of centroid: [-4.00000562 -0.18146743 -2.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 406
+Structure 406
+Values of centroid: [-4.00000562 -0.18146743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 407
+Structure 407
+Values of centroid: [ 3.99999438  3.00003257  2.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 408
+Structure 408
+Values of centroid: [-3.00800562  4.00003257 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 409
+Structure 409
+Values of centroid: [-3.00800562 -0.18146743  3.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 410
+Structure 410
+Values of centroid: [ 2.99999438  3.00003257 -3.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 411
+Structure 411
+Values of centroid: [ 1.99999438  4.00003257 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 412
+Structure 412
+Values of centroid: [-3.00800562 -0.18146743 -2.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 413
+Structure 413
+Values of centroid: [ 2.99999438 -2.99996743 -3.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 414
+Structure 414
+Values of centroid: [-3.00800562  2.00003257 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 415
+Structure 415
+Values of centroid: [ 2.99999438 -3.99996743  4.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 416
+Structure 416
+Values of centroid: [ 1.99999438 -0.18146743 -4.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 417
+Structure 417
+Values of centroid: [-2.00000562 -4.99996743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 418
+Structure 418
+Values of centroid: [ 2.99999438  3.00003257  2.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 419
+Structure 419
+Values of centroid: [-3.00800562 -0.18146743  2.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 420
+Structure 420
+Values of centroid: [-3.00800562  3.00003257 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 421
+Structure 421
+Values of centroid: [ 3.99999438 -2.99996743 -3.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 422
+Structure 422
+Values of centroid: [ 2.99999438  3.00003257  4.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 423
+Structure 423
+Values of centroid: [ 3.99999438 -0.18146743  2.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 424
+Structure 424
+Values of centroid: [-4.00000562 -0.18146743  2.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 425
+Structure 425
+Values of centroid: [ 2.99999438 -0.18146743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 426
+Structure 426
+Values of centroid: [-5.00000562 -4.99996743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 427
+Structure 427
+Values of centroid: [-5.00000562 -4.99996743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 428
+Structure 428
+Values of centroid: [-3.00800562 -2.99996743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 429
+Structure 429
+Values of centroid: [ 2.99999438  2.00003257  2.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 430
+Structure 430
+Values of centroid: [-4.00000562 -3.99996743 -4.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 431
+Structure 431
+Values of centroid: [ 1.99999438  2.00003257 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 432
+Structure 432
+Values of centroid: [ 1.99999438 -0.18146743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 433
+Structure 433
+Values of centroid: [-5.00000562  4.00003257 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 434
+Structure 434
+Values of centroid: [-3.00800562 -3.99996743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 435
+Structure 435
+Values of centroid: [ 1.99999438 -3.99996743  4.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 436
+Structure 436
+Values of centroid: [ 3.99999438  3.00003257  2.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 437
+Structure 437
+Values of centroid: [-5.00000562 -4.99996743 -4.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 438
+Structure 438
+Values of centroid: [ 2.99999438  2.00003257 -4.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 439
+Structure 439
+Values of centroid: [-3.00800562 -3.99996743 -2.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 440
+Structure 440
+Values of centroid: [-3.00800562 -4.99996743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 441
+Structure 441
+Values of centroid: [-3.00800562  3.00003257 -4.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 442
+Structure 442
+Values of centroid: [-3.00800562 -0.18146743 -4.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 443
+Structure 443
+Values of centroid: [-2.00000562  4.00003257 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 444
+Structure 444
+Values of centroid: [-4.00000562  2.00003257  2.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 445
+Structure 445
+Values of centroid: [-4.00000562 -2.99996743  3.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 446
+Structure 446
+Values of centroid: [-3.00800562 -3.99996743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 447
+Structure 447
+Values of centroid: [ 3.99999438  4.00003257  4.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 448
+Structure 448
+Values of centroid: [-3.00800562 -0.18146743 -4.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 449
+Structure 449
+Values of centroid: [ 3.99999438  3.00003257  3.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 450
+Structure 450
+Values of centroid: [-3.00800562  4.00003257 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 451
+Structure 451
+Values of centroid: [-3.00800562 -0.18146743 -3.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 452
+Structure 452
+Values of centroid: [ 3.99999438  2.00003257 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 453
+Structure 453
+Values of centroid: [ 2.99999438 -3.99996743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 454
+Structure 454
+Values of centroid: [ 1.99999438 -0.18146743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 455
+Structure 455
+Values of centroid: [-3.00800562 -0.18146743 -2.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 456
+Structure 456
+Values of centroid: [ 1.99999438 -0.18146743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 457
+Structure 457
+Values of centroid: [-5.00000562 -0.18146743 -4.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 458
+Structure 458
+Values of centroid: [-3.00800562 -3.99996743 -2.99997693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 459
+Structure 459
+Values of centroid: [-5.00000562  2.00003257 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 460
+Structure 460
+Values of centroid: [-3.00800562 -4.99996743 -0.56737693]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 461
+Structure 461
+Values of centroid: [ 1.99999438  3.00003257  2.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 462
+Structure 462
+Values of centroid: [-2.00000562 -2.99996743  3.00002307]
+ The geometry of child2 is invalid.
+Performing mutation for: centroid
+child2 after mutation: Structure 463
+Structure 463
+Values of centroid: [ 1.99999438 -3.99996743  3.00002307]
+ The geometry of child2 is invalid.
+Sorted population: Structure 48, Structure 44, Structure 55, Structure 10, Structure 16, Structure 59, Structure 39, Structure 35, Structure 36, Structure 11
+Sorted population after removing two structures with highest energy: Structure 48, Structure 44, Structure 55, Structure 10, Structure 16, Structure 59, Structure 39, Structure 35
+Lowest energy of the population: -27362.947
+Lowest energies in run: [-27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7337, -27362.7708, -27362.9473, -27362.9473, -27362.9473, -27362.9473, -27362.9473]
+Next iteration will be perfomed
+ 
+ ___Start of iteration 14___
+Crossover outcome: Structure 465, Structure 466
+Structure 465
+Values of centroid: [ 2.11046454  2.13362123  1.68139933]
+Structure 466
+Values of centroid: [ 1.48846454  2.66112123  1.72319933]
+__child1__
+Performing mutation for: centroid
+child1 after mutation: Structure 465
+Structure 465
+Values of centroid: [-4.00003546 -1.99997877 -2.00000067]
+Structure 465:, energy: -27361.6229, is temporary added to the population
+Structure 465
+Values of centroid before: [-4.00003546 -1.99997877 -2.00000067] and after local opt: [-3.10692669 -0.93686747 -1.80015749]
+__child2__
+Performing mutation for: centroid
+child2 after mutation: Structure 466
+Structure 466
+Values of centroid: [-3.00003546 -3.99997877  2.99999933]
+The FHI-aims relaxation failed
+Kill.dat file discovered. The code terminates

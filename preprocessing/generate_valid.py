@@ -7,7 +7,7 @@ from fafoom import MoleculeDescription, Structure, selection, print_output,\
     remover_dir, set_default, file2dict
 import fafoom.run_utilities as run_util
 from visual import draw_picture
-
+from pyforcefield import *
 
 from rdkit import Chem
 from rdkit.Chem import AllChem
@@ -36,27 +36,33 @@ min_energy = []
 
 #***********************************************************************
 """
-Creation of the folders for valid and invalid structures. 
-It helps to visually inspect produced structures. 
+Creation of the folders for valid and invalid structures.
+It helps to visually inspect produced structures.
 """
 if os.path.exists(os.path.join(os.getcwd(),'invalid')):
     shutil.rmtree(os.path.join(os.getcwd(),'invalid'))
     os.mkdir(os.path.join(os.getcwd(),'invalid'))
 else:
-    os.mkdir(os.path.join(os.getcwd(),'invalid'))   
-    
+    os.mkdir(os.path.join(os.getcwd(),'invalid'))
+
 if os.path.exists(os.path.join(os.getcwd(),'valid')):
     shutil.rmtree(os.path.join(os.getcwd(),'valid'))
     os.mkdir(os.path.join(os.getcwd(),'valid'))
 else:
     os.mkdir(os.path.join(os.getcwd(),'valid'))
+
+if os.path.exists(os.path.join(os.getcwd(),'valid_for_FF')):
+    shutil.rmtree(os.path.join(os.getcwd(),'valid_for_FF'))
+    os.mkdir(os.path.join(os.getcwd(),'valid_for_FF'))
+else:
+    os.mkdir(os.path.join(os.getcwd(),'valid_for_FF'))
 #=======================================================================
 
 if opt == "simple":
     mol = MoleculeDescription(p_file)
     # Assign the permanent attributes to the molecule.
     mol.get_parameters()
-    mol.create_template_sdf()   
+    mol.create_template_sdf()
     # Check for potential degree of freedom related parameters.
     linked_params = run_util.find_linked_params(mol, params)
     #~ print_output("Number of atoms: "+str(mol.atoms))
@@ -72,6 +78,8 @@ if opt == "simple":
         str3d = Structure(mol)
         str3d.generate_structure()
         #~ print '\n{}'.format(sdf2xyz(str3d.sdf_string))
+        test_ff = ForceField(os.path.join(os.getcwd(),'adds','FF'))
+        # test_ff.update_pdb_coords(str3d.sdf_string)
         aims_object = AimsObject(os.path.join(os.getcwd(),'adds')) #Need for creation of the input file. Does not affect the algoritm.
         if not str3d.is_geometry_valid():
             print_output("The geometry of "+str(str3d)+" is invalid. Copied to /invalid")
@@ -80,22 +88,32 @@ if opt == "simple":
             continue
         else:
             print_output("The geometry of "+str(str3d)+" is valid, copied to /valid")
+	    if 'centroid' not in mol.dof_names:
+		str3d.adjust_position()
 	    if not check_for_clashes(str3d.sdf_string, os.path.join(aims_object.sourcedir, 'geometry.in.constrained')):
 		check = False
 		for i in range(50):
-		    if 'centroid' not in mol.dof_names:
-			print 'Before {}'.format(centroid_measure(str3d.sdf_string))
-			str3d.adjust_position()
-			print 'After {}'.format(centroid_measure(str3d.sdf_string))
-		    #~ print str3d.sdf_string
-		    #~ str3d.adjust_centroid()
+		    print 'Before {}'.format(centroid_measure(str3d.sdf_string))
+		    str3d.adjust_position()
+		    print 'After {}'.format(centroid_measure(str3d.sdf_string))
 		    check = check_for_clashes(str3d.sdf_string, os.path.join(aims_object.sourcedir, 'geometry.in.constrained'))
 		    if check:
 			break
 		if check == False:
 		    print 'Increase the volume!!!'
-		    break	
-            aims_object.generate_input(str3d.sdf_string) #generates input
-            os.mkdir(os.path.join(os.getcwd(),'valid',str(cnt)+'_geometry')) # creates the folder for particular structure inside th "valid" folder
-            shutil.copy('geometry.in',os.path.join(os.getcwd(), 'valid', str(cnt)+'_geometry','geometry.in')) # copy input to self-titled folder
+		    break
+	    print str3d.sdf_string
+            test_ff.generate_input(str3d.sdf_string)
+            os.mkdir(os.path.join(os.getcwd(),'valid_for_FF',str(cnt)+'_geometry'))
+            shutil.copy('all.pdb',os.path.join(os.getcwd(), 'valid_for_FF', str(cnt)+'_geometry','all.pdb'))
+            shutil.copy('all.psf',os.path.join(os.getcwd(), 'valid_for_FF', str(cnt)+'_geometry','all.psf'))
+            shutil.copy('Configure.conf',os.path.join(os.getcwd(), 'valid_for_FF', str(cnt)+'_geometry','Configure.conf'))
+            shutil.copy('par_all22_prot_metals.inp',os.path.join(os.getcwd(), 'valid_for_FF', str(cnt)+'_geometry','par_all22_prot_metals.inp'))
+
+
+
+
+            #~ aims_object.generate_input(str3d.sdf_string) #generates input
+            #~ os.mkdir(os.path.join(os.getcwd(),'valid',str(cnt)+'_geometry')) # creates the folder for particular structure inside th "valid" folder
+            #~ shutil.copy('geometry.in',os.path.join(os.getcwd(), 'valid', str(cnt)+'_geometry','geometry.in')) # copy input to self-titled folder
             cnt += 1

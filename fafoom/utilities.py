@@ -107,7 +107,7 @@ def string2file(string, filename):
     target.close()
 
 
-    
+
 def generate_extended_input(string, constrained_part_file, filename):
     with open(constrained_part_file, 'r') as part:
         constrained_part = part.readlines()
@@ -117,8 +117,8 @@ def generate_extended_input(string, constrained_part_file, filename):
         target.write('\n')
         target.write(string)
     part.close()
-    target.close()  
- 
+    target.close()
+
 
 def set_default(params, dict_default):
     """Set defaults for missing keys and add the key:value pairs to the
@@ -311,11 +311,11 @@ def check_geo_sdf(sdf_string):
     for x in range(atoms):
         for y in range(x+1, atoms):
             if [x+1, y+1] not in bonds_list and [y+1, x+1] not in bonds_list:
-                if dist[x][y] < VDW_radii[atoms_names[x]]*bohrtoang or dist[x][y] < VDW_radii[atoms_names[y]]*bohrtoang:                 
+                if dist[x][y] < VDW_radii[atoms_names[x]]*bohrtoang or dist[x][y] < VDW_radii[atoms_names[y]]*bohrtoang:
                     check = False
                     return check
     return check
-    
+
 def get_ind_from_sdfline(sdf_line):
     """Extract the indicies from the sdf string (for molecules with more than
     99 atoms)"""
@@ -353,30 +353,30 @@ def update_coords_aims(aims_file, new_coords):
     shutil.move(os.path.join(path, 'temp.in'), aims_file)
 
 def get_cm(coords_and_masses):
-    center_of_mass = np.average(coords_and_masses[:,:3], axis=0, weights=coords_and_masses[:,3]) 
+    center_of_mass = np.average(coords_and_masses[:,:3], axis=0, weights=coords_and_masses[:,3])
     return center_of_mass
 
 def align_to_origin(aims_file):
     coords = aims2xyz_masses(aims_file)
     if len(aims2xyz_masses(aims_file)) == 1:
-        update_coords_aims(aims_file, np.array([[0.0,0.0,0.0]]))  
+        update_coords_aims(aims_file, np.array([[0.0,0.0,0.0]]))
     if len(aims2xyz_extended(aims_file)) > 1:
-        center = get_cm(aims2xyz_masses(aims_file)) 
+        center = get_cm(aims2xyz_masses(aims_file))
         new_coords = np.array(aims2xyz_masses(aims_file)[:,:3]) - center
-        update_coords_aims(aims_file, new_coords)  
-      
+        update_coords_aims(aims_file, new_coords)
+
 def check_for_clashes(sdf_string, constrained_geom_file):
     check = True
     molecule = sdf2xyz_list(sdf_string)
     constrained = aims2xyz_vdw(constrained_geom_file)
     for x in molecule:
         for y in constrained:
-            if np.linalg.norm(x[1:]-y[1:]) < x[0] or np.linalg.norm(x[1:]-y[1:]) < y[0]:                 
-                check = False    
+            if np.linalg.norm(x[1:]-y[1:]) < x[0] or np.linalg.norm(x[1:]-y[1:]) < y[0]:
+                check = False
     return check
 
 # Format conversions
-        
+
 def aims2xyz_masses(aims_file):
     xyz_coords = []
     with open(aims_file, 'r') as aims:
@@ -424,17 +424,17 @@ def aims2xyz_extended(aims_file): # returns [coord_1, coord_2, coord_3, Atom_sym
     aims.close()
     xyz_coords_array = [[i[1], i[2], i[3], i[0], atom_masses[i[0]], VDW_radii[i[0]]*bohrtoang] for i in xyz_coords]
     return xyz_coords_array
-    
+
 def sdf2xyz_list(sdf_string):
-    mol = Chem.MolFromMolBlock(sdf_string, removeHs=False)    
-    pos = mol.GetConformer()   
+    mol = Chem.MolFromMolBlock(sdf_string, removeHs=False)
+    pos = mol.GetConformer()
     coords_and_masses = np.array([np.array([VDW_radii[mol.GetAtomWithIdx(i).GetSymbol()]*bohrtoang,
-                                            float(pos.GetAtomPosition(i).x), 
-                                            float(pos.GetAtomPosition(i).y), 
-                                            float(pos.GetAtomPosition(i).z)]) 
-                                            for i in range(mol.GetNumAtoms())])        
-    return coords_and_masses                
-        
+                                            float(pos.GetAtomPosition(i).x),
+                                            float(pos.GetAtomPosition(i).y),
+                                            float(pos.GetAtomPosition(i).z)])
+                                            for i in range(mol.GetNumAtoms())])
+    return coords_and_masses
+
 def sdf2aims(sdf_string):
     """Convert a sdf string to a aims string."""
     atoms = get_ind_from_sdfline(sdf_string.split('\n')[3])[0]
@@ -451,18 +451,28 @@ def sdf2aims(sdf_string):
 
 
 def sdf2xyz(sdf_string):
-    """Convert a sdf string to a xyz string."""
-    atoms = get_ind_from_sdfline(sdf_string.split('\n')[3])[0]
-    coord = [str(atoms)+('\n')]
-    for i in range(4, 4+atoms):
-        x = float(sdf_string.split('\n')[i].split()[0])
-        y = float(sdf_string.split('\n')[i].split()[1])
-        z = float(sdf_string.split('\n')[i].split()[2])
-        name = sdf_string.split('\n')[i].split()[3]
-        coord.append('\n%2s%10.4f%10.4f%10.4f' % (name, x, y, z))
-    coord.append('\n')
-    xyz_string = ''.join(coord)
-    return xyz_string
+    """Convert a sdf_string to a xyz_list."""
+    xyz_list = []
+    for line in sdf_string.split('\n'):
+        coords_found = re.match(r'(\s*(.?\d+\.\d+)\s*(.?\d+\.\d+)\s*(.?\d+\.\d+)\s*(\w+)\s+)', line)
+        if coords_found:
+            xyz_list.append([coords_found.group(5),
+                            float(coords_found.group(2)),
+                            float(coords_found.group(3)),
+                            float(coords_found.group(4))])
+    return xyz_list
+    # """Convert a sdf string to a xyz string."""
+    # atoms = get_ind_from_sdfline(sdf_string.split('\n')[3])[0]
+    # coord = [str(atoms)+('\n')]
+    # for i in range(4, 4+atoms):
+    #     x = float(sdf_string.split('\n')[i].split()[0])
+    #     y = float(sdf_string.split('\n')[i].split()[1])
+    #     z = float(sdf_string.split('\n')[i].split()[2])
+    #     name = sdf_string.split('\n')[i].split()[3]
+    #     coord.append('\n%2s%10.4f%10.4f%10.4f' % (name, x, y, z))
+    # coord.append('\n')
+    # xyz_string = ''.join(coord)
+    # return xyz_string
 
 
 def aims2sdf(aims_string, sdf_template_string):
@@ -557,4 +567,4 @@ def mirror_sdf(sdf_string):
         else:
             c.append(''.join(sdf_form[i])+'\n')
     mirror_sdf_string = ''.join(c)
-    return mirror_sdf_string 
+    return mirror_sdf_string

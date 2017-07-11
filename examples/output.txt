@@ -1,0 +1,10 @@
+Local optimization will be performed with FHI-aims.
+Setting a default value for constrained_geometry_file: adds/geometry.in.constrained
+Setting a default value for right_order_to_assign: ['torsion', 'cistrans', 'centroid', 'orientation']
+Number of atoms: 1
+Number of bonds: 0
+Number of identified centroid: 1
+Identified centroid: [(0,)]
+___Initialization___
+New trial
+The geometry of Structure 1 is valid, copied to /valid

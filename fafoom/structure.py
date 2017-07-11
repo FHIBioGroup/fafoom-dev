@@ -80,7 +80,7 @@ class MoleculeDescription:
                     params[str(key)] = kwargs[key].replace(
                         MoleculeDescription.newline, "\n")
 
-        dict_default = {'rmsd_type': "cartesian", 
+        dict_default = {'rmsd_type': "cartesian",
                         'rmsd_cutoff_uniq': 0.2,
                         'chiral': False,
                         'optimize_torsion': True,
@@ -137,8 +137,8 @@ class MoleculeDescription:
                 continue
             else:
                 return False
-        return True             
-            
+        return True
+
     def get_parameters(self):
         """Assign permanent attributes (number of atoms, number of bonds and
         degrees of freedom related attributes) to the object."""
@@ -160,7 +160,7 @@ class MoleculeDescription:
                 else:
                     print_output("The degree to optimize: "+str(type_of_dof) +
                                  " hasn't been found.")
-               
+
         geom_file = os.path.join(os.getcwd(), self.constrained_geometry_file)
         if os.path.isfile(geom_file):
             if len(aims2xyz(geom_file)) == 0:
@@ -170,25 +170,25 @@ class MoleculeDescription:
             dof_names.remove('centroid')
             dof_names.remove('orientation')
             open(geom_file,'w').close()
-        
+
         updated_order = []
         for i in self.right_order_to_assign:
             if i in dof_names:
                 updated_order.append(i)
         setattr(self, "dof_names", updated_order)
-        
+
         Centroid.range_x = range(self.volume[0], self.volume[1], 1) #Limitation for Centroid
         Centroid.range_y = range(self.volume[2], self.volume[3], 1) #Limitation for Centroid
         Centroid.range_z = range(self.volume[4], self.volume[5], 1) #Limitation for Centroid
         if self.fix_centroid is not None:
-            Centroid.range_x = [self.fix_centroid[0]] 
+            Centroid.range_x = [self.fix_centroid[0]]
             Centroid.range_y = [self.fix_centroid[1]]
             Centroid.range_z = [self.fix_centroid[2]]
-        
+
     def create_template_sdf(self):
         """Assign new attribute (template_sdf_string) to the object."""
         self.template_sdf_string = template_sdf(self.smiles)
-          
+
 class Structure:
     """Create 3D structures."""
     index = 0
@@ -304,7 +304,7 @@ class Structure:
                     dof.get_weighted_values(weights)
                 else:
                     dof.get_random_values()
-                    print 'Initial random values for {} are {}'.format(dof.name ,dof.values) 
+                    print 'Initial random values for {} are {}'.format(dof.name ,dof.values)
                 new_string = dof.apply_on_string(new_string)
         self.sdf_string = new_string
         for dof in self.dof:
@@ -314,7 +314,7 @@ class Structure:
 ############
     def adjust_position(self):
         values_old = centroid_measure(self.sdf_string)
-        values_new = np.array([0, 0, values_old[2] + 0.5])
+        values_new = np.array([self.mol_info.volume[0], self.mol_info.volume[2], values_old[2] + 0.5])
         #~ values = np.array([choice(Centroid.range_x), choice(Centroid.range_y), choice(Centroid.range_z)])
         new_string = centroid_set(self.sdf_string, values_new)
         self.sdf_string = new_string
@@ -325,15 +325,15 @@ class Structure:
         for dof in self.dof:
             if dof.type == 'centroid':
                 dof.get_random_values()
-                print 'Initial random values for {} are {}'.format(dof.name ,dof.values) 
+                print 'Initial random values for {} are {}'.format(dof.name ,dof.values)
                 new_string = dof.apply_on_string(new_string)
         self.sdf_string = new_string
         for dof in self.dof:
             if dof.type == 'centroid':
                 dof.update_values(self.sdf_string)
-                print 'Updated values for {} are {}'.format(dof.name, dof.values)      
+                print 'Updated values for {} are {}'.format(dof.name, dof.values)
 
-    def is_geometry_valid(self):          
+    def is_geometry_valid(self):
         """Return True if the geometry is valid."""
         check = check_geo_sdf(self.sdf_string)
         return check
@@ -385,7 +385,7 @@ class Structure:
         if obj1.mol_info.rmsd_type == 'internal_coord':
             all_bool = []
             for dof1, dof2 in zip(obj1.dof, obj2.dof):
-                
+
                 all_bool.append(dof1.is_equal(dof2,
                                               obj1.mol_info.rmsd_cutoff_uniq,
                                               obj1.mol_info.chiral))
