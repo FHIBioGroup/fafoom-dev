@@ -1,6 +1,6 @@
 [Molecule]
 
-smiles="[C]"
+smiles="CC(=O)N[C@H](C(=O)NC)C"
 
 
 smarts_torsion= "[*]~[!$(*#*)&!D1]-&!@[!$(*#*)&!D1]~[*]"

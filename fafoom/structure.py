@@ -29,6 +29,7 @@ from pyaims import AimsObject
 from pyff import FFObject
 from pynwchem import NWChemObject
 from pyorca import OrcaObject
+from pyforcefield import FFobject
 
 from deg_of_freedom import Centroid
 from measure import centroid_set, centroid_measure
@@ -430,6 +431,19 @@ class Structure:
                 dof.update_values(self.sdf_string)
         else:
             print_output("The FHI-aims relaxation failed")
+
+    def perform_FF(self, sourcedir, execution_string, dirname):
+        FF_object = FFobject(sourcedir)
+        FF_object.generate_input(self.sdf_string)
+        FF_object.build_storage(dirname)
+        FF_object.run_FF(execution_string)
+        self.energy = FF_object.get_energy()
+        self.initial_sdf_string = self.sdf_string
+        self.sdf_string = xyz2sdf(FF_object.get_FF_string_opt(), self.mol_info.template_sdf_string)
+
+        for dof in self.dof:
+            setattr(dof, "initial_values", dof.values)
+            dof.update_values(self.sdf_string)
 
     def perform_nwchem(self, functional, basis_set, execution_string):
         """Generate the NWChem input, run NWChem, assign new attributes and

@@ -100,6 +100,9 @@ def detect_energy_function(params):
                                            'rdkit']:
             print_output("Local optimization will be performed with RDKit.")
             energy_function = "ff"
+        elif params['energy_function'] in ['FF', 'ForceField', 'INTERFACE']:
+            print_output("Local optimization will be performed with INTERFACE ForceField.")
+            energy_function = "INTERFACE"
         else:
             print_output("Unknown type of energy function."
                          " The code terminates.")
@@ -129,6 +132,9 @@ def optimize(structure, energy_function, params, name=None):
                 linked_params[str(key)] = params[str(key)]
         structure.perform_ff(params['force_field'], **linked_params)
 
+    elif energy_function == 'INTERFACE':
+        print 'found'
+        structure.perform_FF(params['sourcedir'], params['ff_call'], name)
 
 def perform_backup(mol, population, blacklist, iteration, min_energy):
     """Write object representation to files for a future restart."""

@@ -10,7 +10,7 @@ import fafoom.run_utilities as run_util
 
 from rdkit import Chem
 from rdkit.Chem import AllChem
-from rdkit.Chem import Draw
+# from rdkit.Chem import Draw
 
 from fafoom.measure import centroid_measure
 from fafoom.utilities import sdf2xyz, check_for_clashes
@@ -33,33 +33,39 @@ cnt_max = 200
 population, blacklist = [], []
 min_energy = []
 
-smil = '[NH3+][C@H](C(=O)N1[C@H](C(=O)N[C@H](C(=O)[O-])Cc2ccccc2)CCC1)Cc1[nH]c[nH+]c1'
-m = Chem.MolFromSmiles(smil)
-Draw.MolToFile(m,'N2_HisHProPhe_C2.pdf', size=(250, 250), imageType='pdf',fitImage=True )
+# smil = '[NH3+][C@H](C(=O)N1[C@H](C(=O)N[C@H](C(=O)[O-])Cc2ccccc2)CCC1)Cc1[nH]c[nH+]c1'
+# m = Chem.MolFromSmiles(smil)
+# Draw.MolToFile(m,'N2_HisHProPhe_C2.pdf', size=(250, 250), imageType='pdf',fitImage=True )
 #***********************************************************************
 """
-Creation of the folders for valid and invalid structures. 
-It helps to visually inspect produced structures. 
+Creation of the folders for valid and invalid structures.
+It helps to visually inspect produced structures.
 """
 
 if os.path.exists(os.path.join(os.getcwd(),'invalid')):
     shutil.rmtree(os.path.join(os.getcwd(),'invalid'))
     os.mkdir(os.path.join(os.getcwd(),'invalid'))
 else:
-    os.mkdir(os.path.join(os.getcwd(),'invalid'))   
-    
+    os.mkdir(os.path.join(os.getcwd(),'invalid'))
+
 if os.path.exists(os.path.join(os.getcwd(),'valid')):
     shutil.rmtree(os.path.join(os.getcwd(),'valid'))
     os.mkdir(os.path.join(os.getcwd(),'valid'))
 else:
     os.mkdir(os.path.join(os.getcwd(),'valid'))
+
+if os.path.exists(os.path.join(os.getcwd(),'valid_for_FF')):
+    shutil.rmtree(os.path.join(os.getcwd(),'valid_for_FF'))
+    os.mkdir(os.path.join(os.getcwd(),'valid_for_FF'))
+else:
+    os.mkdir(os.path.join(os.getcwd(),'valid_for_FF'))
 #=======================================================================
 
 if opt == "simple":
     mol = MoleculeDescription(p_file)
     # Assign the permanent attributes to the molecule.
     mol.get_parameters()
-    mol.create_template_sdf()   
+    mol.create_template_sdf()
     # Check for potential degree of freedom related parameters.
     linked_params = run_util.find_linked_params(mol, params)
     print_output("Number of atoms: "+str(mol.atoms))
@@ -76,32 +82,45 @@ if opt == "simple":
         print_output("New trial")
         str3d = Structure(mol)
         str3d.generate_structure()
+        # test_ff = FFobject(os.path.join(os.getcwd(),'adds','FF'))
         #~ print '\n{}'.format(sdf2xyz(str3d.sdf_string))
-        aims_object = AimsObject(os.path.join(os.getcwd(),'adds')) #Need for creation of the input file. Does not affect the algoritm.
+        # aims_object = AimsObject(os.path.join(os.getcwd(),'adds')) #Need for creation of the input file. Does not affect the algoritm.
         if not str3d.is_geometry_valid():
             print_output("The geometry of "+str(str3d)+" is invalid. Copied to /invalid")
-            aims_object.generate_input(str3d.sdf_string) #generates input
-            shutil.copy('geometry.in', os.path.join(os.getcwd(),'invalid','geometry_'+str(cnt)+'.in')) #copy invalid geometry to "invalid" folder
+            # aims_object.generate_input(str3d.sdf_string) #generates input
+            # shutil.copy('geometry.in', os.path.join(os.getcwd(),'invalid','geometry_'+str(cnt)+'.in')) #copy invalid geometry to "invalid" folder
             cnt += 1
             continue
         if str3d not in blacklist:
             print_output("The geometry of "+str(str3d)+" is valid, copied to /valid")
-            if not check_for_clashes(str3d.sdf_string, os.path.join(aims_object.sourcedir, 'geometry.in.constrained')):
-                check = False
-                for i in range(15):
-                    str3d.adjust_centroid()
-                    check = check_for_clashes(str3d.sdf_string, os.path.join(aims_object.sourcedir, 'geometry.in.constrained'))
-                    if check:
-                        break
-                if check == False:
-                    print 'Increase the volume!!!'
+            if 'centroid' not in mol.dof_names:
+                str3d.adjust_position()
+                if not check_for_clashes(str3d.sdf_string, os.path.join(mol.constrained_geometry_file)):
+                    check = False
+                    for i in range(50):
+                        print 'Before {}'.format(centroid_measure(str3d.sdf_string))
+                        str3d.adjust_position()
+                        print 'After {}'.format(centroid_measure(str3d.sdf_string))
+                        check = check_for_clashes(str3d.sdf_string, os.path.join(mol.constrained_geometry_file))
+                        if check:
+                            break
+    		if check == False:
+    		    print 'Increase the volume!!!'
                     break
-            aims_object.generate_input(str3d.sdf_string) #generates input
-            os.mkdir(os.path.join(os.getcwd(),'valid',str(cnt)+'_geometry')) # creates the folder for particular structure inside th "valid" folder
-            shutil.copy('geometry.in',os.path.join(os.getcwd(), 'valid', str(cnt)+'_geometry','geometry.in')) # copy input to self-titled folder
+	    # print str3d.sdf_string
+            # test_ff.generate_input(str3d.sdf_string)
+            # test_ff.build_storage(str(cnt)+'_geometry')
+            # test_ff.run_FF('~/programs/namd/namd2 Configure.conf > result.out')
+            # aims_object.generate_input(str3d.sdf_string) #generates input
+            # os.mkdir(os.path.join(os.getcwd(),'valid',str(cnt)+'_geometry')) # creates the folder for particular structure inside th "valid" folder
+            # shutil.copy('geometry.in',os.path.join(os.getcwd(), 'valid', str(cnt)+'_geometry','geometry.in')) # copy input to self-titled folder
 ############            draw_picture(os.path.join(os.getcwd(), 'valid', str(cnt)+'_geometry','geometry.in'), image_write = 'yes') # Part of post-processing module. Under construction. Produce nice image with PyMol
-            name = "initial_%d" % (len(population))
+            name = os.path.join(os.getcwd(), 'valid', str(cnt)+'_geometry')
+            # name = "initial_%d" % (len(population))
             # Perform the local optimization
+            print 'energy_function {}'.format(energy_function)
+            print 'params {}'.format(params)
+            print 'name {}'.format(name)
             run_util.optimize(str3d, energy_function, params, name)
             run_util.check_for_kill()
             str3d.send_to_blacklist(blacklist)

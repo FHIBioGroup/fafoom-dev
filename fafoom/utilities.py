@@ -474,6 +474,9 @@ def sdf2xyz(sdf_string):
     # xyz_string = ''.join(coord)
     # return xyz_string
 
+def update_sdf_from_pdb(sdf_file, psf_file, pdb_optimized):
+    print 'works'
+    # return updated_ssdf_file
 
 def aims2sdf(aims_string, sdf_template_string):
     """Convert a aims string to a sdf string. Template for the sdf string is

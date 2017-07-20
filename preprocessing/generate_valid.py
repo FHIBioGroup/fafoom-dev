@@ -78,41 +78,40 @@ if opt == "simple":
         str3d = Structure(mol)
         str3d.generate_structure()
         #~ print '\n{}'.format(sdf2xyz(str3d.sdf_string))
-        test_ff = ForceField(os.path.join(os.getcwd(),'adds','FF'))
+        test_ff = FFobject(os.path.join(os.getcwd(),'adds','FF'))
         # test_ff.update_pdb_coords(str3d.sdf_string)
         aims_object = AimsObject(os.path.join(os.getcwd(),'adds')) #Need for creation of the input file. Does not affect the algoritm.
         if not str3d.is_geometry_valid():
             print_output("The geometry of "+str(str3d)+" is invalid. Copied to /invalid")
             aims_object.generate_input(str3d.sdf_string) #generates input
             shutil.copy('geometry.in', os.path.join(os.getcwd(),'invalid','geometry_'+str(cnt)+'.in')) #copy invalid geometry to "invalid" folder
+            cnt += 1
             continue
-        else:
+        if str3d not in blacklist:
             print_output("The geometry of "+str(str3d)+" is valid, copied to /valid")
-	    if 'centroid' not in mol.dof_names:
-		str3d.adjust_position()
-	    if not check_for_clashes(str3d.sdf_string, os.path.join(aims_object.sourcedir, 'geometry.in.constrained')):
-		check = False
-		for i in range(50):
-		    print 'Before {}'.format(centroid_measure(str3d.sdf_string))
-		    str3d.adjust_position()
-		    print 'After {}'.format(centroid_measure(str3d.sdf_string))
-		    check = check_for_clashes(str3d.sdf_string, os.path.join(aims_object.sourcedir, 'geometry.in.constrained'))
-		    if check:
-			break
+            if 'centroid' not in mol.dof_names:
+                str3d.adjust_position()
+                if not check_for_clashes(str3d.sdf_string, os.path.join(aims_object.sourcedir, 'geometry.in.constrained')):
+                    check = False
+                    for i in range(50):
+                        print 'Before {}'.format(centroid_measure(str3d.sdf_string))
+                        str3d.adjust_position()
+                        print 'After {}'.format(centroid_measure(str3d.sdf_string))
+                        check = check_for_clashes(str3d.sdf_string, os.path.join(aims_object.sourcedir, 'geometry.in.constrained'))
+                        if check:
+                            break
 		if check == False:
 		    print 'Increase the volume!!!'
-		    break
-	    print str3d.sdf_string
+                break
+	    # print str3d.sdf_string
+            name = str(cnt)+'_geometry'
+            # run_util.optimize(str3d, energy_function, params, name)
             test_ff.generate_input(str3d.sdf_string)
-            os.mkdir(os.path.join(os.getcwd(),'valid_for_FF',str(cnt)+'_geometry'))
-            shutil.copy('all.pdb',os.path.join(os.getcwd(), 'valid_for_FF', str(cnt)+'_geometry','all.pdb'))
-            shutil.copy('all.psf',os.path.join(os.getcwd(), 'valid_for_FF', str(cnt)+'_geometry','all.psf'))
-            shutil.copy('Configure.conf',os.path.join(os.getcwd(), 'valid_for_FF', str(cnt)+'_geometry','Configure.conf'))
-            shutil.copy('par_all22_prot_metals.inp',os.path.join(os.getcwd(), 'valid_for_FF', str(cnt)+'_geometry','par_all22_prot_metals.inp'))
+            test_ff.build_storage(str(cnt)+'_geometry')
+            test_ff.run_FF('~/programs/namd/namd2 Configure.conf > result.out')
 
-
-
-
+            # os.system('cd {} && ~/programs/namd/namd2 Configure.conf > result.out'.format(os.path.join(os.getcwd(), 'valid_for_FF', str(cnt)+'_geometry')))
+            # test_ff.analysis()
             #~ aims_object.generate_input(str3d.sdf_string) #generates input
             #~ os.mkdir(os.path.join(os.getcwd(),'valid',str(cnt)+'_geometry')) # creates the folder for particular structure inside th "valid" folder
             #~ shutil.copy('geometry.in',os.path.join(os.getcwd(), 'valid', str(cnt)+'_geometry','geometry.in')) # copy input to self-titled folder
