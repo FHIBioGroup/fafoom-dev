@@ -19,7 +19,7 @@ from __future__ import division
 from operator import itemgetter
 import numpy as np
 
-import os
+import os, sys, re
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit.Chem import rdMolTransforms
@@ -122,7 +122,6 @@ def quaternion_measure(sdf_string, atom_1_indx, atom_2_indx):
     if np.dot(np.cross(unit_vector(eigs_after[x_index]), x_axis), z_axis) > 0:
         angle_x[0,0] = -angle_x[0,0]
     quaternion_of_the_molecule = np.array([angle_x[0,0], eigvec_1[z_index, 0], eigvec_1[z_index, 1], eigvec_1[z_index, 2]])
-    print 'MEASURE {}'.format(quaternion_of_the_molecule)
     return quaternion_of_the_molecule
 
 def quaternion_measure_coords(coords_and_masses, atom_1_indx, atom_2_indx):
@@ -170,12 +169,7 @@ def align_to_axes(coords_and_masses, atom_1_indx, atom_2_indx): #Will align...
     return rotated
 
 def quaternion_set(sdf_string, quaternion_to_set, atom_1_indx, atom_2_indx):
-    mol = Chem.MolFromMolBlock(sdf_string, removeHs=False)
-    pos = mol.GetConformer()
-    coords_and_masses = np.array([np.array([pos.GetAtomPosition(i).x,
-                                            pos.GetAtomPosition(i).y,
-                                            pos.GetAtomPosition(i).z,
-                                            mol.GetAtomWithIdx(i).GetMass()]) for i in range(mol.GetNumAtoms())])
+    coords_and_masses = coords_and_masses_from_sdf(sdf_string)
     center = get_centre_of_mass(coords_and_masses)
     aligned = align_to_axes(coords_and_masses, atom_1_indx, atom_2_indx)
     first_rot = produce_quaternion(quaternion_to_set[0], np.array([0, 0, 1]))
@@ -199,19 +193,15 @@ def quaternion_set_coords(coords_and_masses, quaternion_to_set, atom_1_indx, ato
     return produce_coords_and_masses(rotation_2, coords_and_masses[:,3])
 
 def get_coords(sdf_string):
-    mol = Chem.MolFromMolBlock(sdf_string, removeHs=False)
-    pos = mol.GetConformer()
-    coords = np.array([np.array([pos.GetAtomPosition(i).x, pos.GetAtomPosition(i).y, pos.GetAtomPosition(i).z]) for i in range(mol.GetNumAtoms())])        #Return Atom Masses.
-    return coords
+    coords_and_masses = coords_and_masses_from_sdf(sdf_string)
+    return coords_and_masses[:,:3]
 
 def get_coords_and_masses(sdf_string):
-    mol = Chem.MolFromMolBlock(sdf_string, removeHs=False)
-    pos = mol.GetConformer()
-    coords_and_masses = np.array([np.array([pos.GetAtomPosition(i).x, pos.GetAtomPosition(i).y, pos.GetAtomPosition(i).z, mol.GetAtomWithIdx(i).GetMass()]) for i in range(mol.GetNumAtoms())])        #Return Atom Masses.
+    coords_and_masses = coords_and_masses_from_sdf(sdf_string)
     return coords_and_masses
 
 def get_centre_of_mass_from_sdf(sdf_string):
-    coords_and_masses = get_coords_and_masses(sdf_string)
+    coords_and_masses = coords_and_masses_from_sdf(sdf_string)
     center_of_mass = np.average(coords_and_masses[:,:3], axis=0, weights=coords_and_masses[:,3])
     return center_of_mass
 
@@ -220,11 +210,16 @@ def get_centre_of_mass(coords_and_masses):
     return center_of_mass
 
 def update_coords_sdf(sdf_string, new_coords):
-    mol = Chem.MolFromMolBlock(sdf_string, removeHs=False)
-    for i in range(0, mol.GetNumAtoms()):
-        mol.GetConformer().SetAtomPosition(i, new_coords[i])
-    sdf_string = Chem.MolToMolBlock(mol)
-    return sdf_string
+    updated_sdf_string  = ''
+    k = 0
+    for i in sdf_string.split('\n'):
+        old_coords_found = re.match(r'(\s+.?\d+\.\d+\s+.?\d+\.\d+\s+.?\d+\.\d+(\s+\w+.+))', i)
+        if old_coords_found:
+            updated_sdf_string = updated_sdf_string + '{:10.4f}{:10.4f}{:10.4f}{}\n'.format(new_coords[k][0], new_coords[k][1], new_coords[k][2], old_coords_found.group(2))
+            k+=1
+        else:
+            updated_sdf_string = updated_sdf_string + i + '\n'
+    return updated_sdf_string
 
 def get_tensor_of_inertia(coords_and_masses):
 	###Source: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC15493/pdf/pq000978.pdf ###

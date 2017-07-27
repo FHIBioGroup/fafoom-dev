@@ -457,14 +457,15 @@ def aims2xyz_extended(aims_file): # returns [coord_1, coord_2, coord_3, Atom_sym
     return xyz_coords_array
 
 def sdf2xyz_list(sdf_string):
-    mol = Chem.MolFromMolBlock(sdf_string, removeHs=False)
-    pos = mol.GetConformer()
-    coords_and_masses = np.array([np.array([VDW_radii[mol.GetAtomWithIdx(i).GetSymbol()]*bohrtoang,
-                                            float(pos.GetAtomPosition(i).x),
-                                            float(pos.GetAtomPosition(i).y),
-                                            float(pos.GetAtomPosition(i).z)])
-                                            for i in range(mol.GetNumAtoms())])
-    return coords_and_masses
+    xyz_list = []
+    for line in sdf_string.split('\n'):
+        coords_found = re.match(r'(\s*(.?\d+\.\d+)\s*(.?\d+\.\d+)\s*(.?\d+\.\d+)\s*(\w+)\s+)', line)
+        if coords_found:
+            xyz_list.append(np.array([float(VDW_radii[coords_found.group(5)]*bohrtoang),
+                                    float(coords_found.group(2)),
+                                    float(coords_found.group(3)),
+                                    float(coords_found.group(4))]))
+    return np.array(xyz_list)
 
 def sdf2aims(sdf_string):
     """Convert a sdf string to a aims string."""
@@ -504,10 +505,6 @@ def coords_and_masses_from_sdf(sdf_string):
                                     float(coords_found.group(4)),
                                     float(atom_masses[coords_found.group(5)])]))
     return np.array(xyz_list)
-
-def update_sdf_from_pdb(sdf_file, psf_file, pdb_optimized):
-    print 'works'
-    # return updated_ssdf_file
 
 def aims2sdf(aims_string, sdf_template_string):
     """Convert a aims string to a sdf string. Template for the sdf string is

@@ -24,7 +24,7 @@ import itertools
 
 import numpy as np
 
-from utilities import remover_file, sdf2aims, string2file, generate_extended_input, aims2xyz, sdf2xyz_list, check_for_clashes, update_coords_aims, align_to_origin
+from utilities import remover_file, sdf2aims, string2file, generate_extended_input, aims2xyz, check_for_clashes, update_coords_aims, align_to_origin
 
 
 class AimsObject():
@@ -34,7 +34,7 @@ class AimsObject():
         'control.in' file
         """
         self.sourcedir = sourcedir
-       
+
     def generate_input(self, sdf_string):
         """Create input files for FHI-aims.
         Args:
@@ -50,7 +50,7 @@ class AimsObject():
         name = 'control.in'
         src = os.path.join(self.sourcedir, name)
         shutil.copy(src, os.getcwd())
-            
+
 
     def build_storage(self, dirname):
         """Create a directory for storing the FHI-aims input and output.

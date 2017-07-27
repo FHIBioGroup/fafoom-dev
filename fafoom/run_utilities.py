@@ -133,7 +133,6 @@ def optimize(structure, energy_function, params, name=None):
         structure.perform_ff(params['force_field'], **linked_params)
 
     elif energy_function == 'INTERFACE':
-        print 'found'
         structure.perform_FF(params['sourcedir'], params['ff_call'], name)
 
 
