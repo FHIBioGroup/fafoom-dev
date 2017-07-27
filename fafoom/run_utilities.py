@@ -136,6 +136,7 @@ def optimize(structure, energy_function, params, name=None):
         print 'found'
         structure.perform_FF(params['sourcedir'], params['ff_call'], name)
 
+
 def perform_backup(mol, population, blacklist, iteration, min_energy):
     """Write object representation to files for a future restart."""
     backup("backup_mol.dat", mol)

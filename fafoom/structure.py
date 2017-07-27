@@ -40,6 +40,7 @@ from random import choice
 from utilities import (
     aims2sdf,
     check_geo_sdf,
+    check_geo_sdf_after_crossover,
     file2dict,
     lowest_cartesian,
     mirror_sdf,
@@ -47,7 +48,9 @@ from utilities import (
     set_default,
     xyz2sdf,
     aims2xyz,
-    aims2xyz_extended
+    aims2xyz_extended,
+    sdf2xyz,
+    VDW_radii
 
 )
 import random
@@ -91,8 +94,7 @@ class MoleculeDescription:
                         'smarts_torsion':"[*]~[!$(*#*)&!D1]-&!@[!$(*#*)&!D1]~[*]",
                         'constrained_geometry_file':'adds/geometry.in.constrained',
                         'right_order_to_assign':['torsion', 'cistrans', 'centroid', 'orientation'],
-                        'volume':(-10,11, -10, 11, -10, 11),
-                        'fix_centroid':None}
+                        'volume':(-10,11, -10, 11, -10, 11)}
 
         params = set_default(params, dict_default)
         for key in params:
@@ -181,10 +183,6 @@ class MoleculeDescription:
         Centroid.range_x = range(self.volume[0], self.volume[1], 1) #Limitation for Centroid
         Centroid.range_y = range(self.volume[2], self.volume[3], 1) #Limitation for Centroid
         Centroid.range_z = range(self.volume[4], self.volume[5], 1) #Limitation for Centroid
-        if self.fix_centroid is not None:
-            Centroid.range_x = [self.fix_centroid[0]]
-            Centroid.range_y = [self.fix_centroid[1]]
-            Centroid.range_z = [self.fix_centroid[2]]
 
     def create_template_sdf(self):
         """Assign new attribute (template_sdf_string) to the object."""
@@ -305,38 +303,66 @@ class Structure:
                     dof.get_weighted_values(weights)
                 else:
                     dof.get_random_values()
-                    print 'Initial random values for {} are {}'.format(dof.name ,dof.values)
+                    # print 'Initial random values for {} are {}'.format(dof.name ,dof.values)
                 new_string = dof.apply_on_string(new_string)
         self.sdf_string = new_string
         for dof in self.dof:
             dof.update_values(self.sdf_string)
-            print 'Updated values for {} are {}'.format(dof.name, dof.values)
+            # print 'Updated values for {} are {}'.format(dof.name, dof.values)
 
 ############
     def adjust_position(self):
+        bohrtoang=0.52917721
+        mol = [float(i) for i in np.array(sdf2xyz(self.sdf_string))[:,3]]
+        surr = [float(i) for i in aims2xyz(self.mol_info.constrained_geometry_file)[:,3]]
+        z_min = min(mol)
+        z_max = max(surr)
+        atom_min =  sdf2xyz(self.sdf_string)[mol.index(z_min)][0]
+        atom_max =  aims2xyz(self.mol_info.constrained_geometry_file)[surr.index(z_max)][0]
+        dist = (VDW_radii[atom_min])*bohrtoang #+ VDW_radii[atom_max]
         values_old = centroid_measure(self.sdf_string)
-        values_new = np.array([self.mol_info.volume[0], self.mol_info.volume[2], values_old[2] + 0.5])
-        #~ values = np.array([choice(Centroid.range_x), choice(Centroid.range_y), choice(Centroid.range_z)])
+        values_new = np.array([self.mol_info.volume[0] + np.random.random_sample(), self.mol_info.volume[2]+ np.random.random_sample(), values_old[2] + (z_max - z_min) + dist])
         new_string = centroid_set(self.sdf_string, values_new)
         self.sdf_string = new_string
+        for dof in self.dof:
+            dof.update_values(self.sdf_string)
 ############
+
+    def adjust_position_after_crossover(self):
+        bohrtoang=0.52917721
+        mol = [float(i) for i in np.array(sdf2xyz(self.sdf_string))[:,3]]
+        surr = [float(i) for i in aims2xyz(self.mol_info.constrained_geometry_file)[:,3]]
+        z_min = min(mol)
+        z_max = max(surr)
+        atom_min =  sdf2xyz(self.sdf_string)[mol.index(z_min)][0]
+        atom_max =  aims2xyz(self.mol_info.constrained_geometry_file)[surr.index(z_max)][0]
+        dist = (VDW_radii[atom_min])*bohrtoang #+ VDW_radii[atom_max]
+        values_old = centroid_measure(self.sdf_string)
+        values_new = np.array([values_old[0], values_old[1], values_old[2] + (z_max - z_min) + dist])
+        new_string = centroid_set(self.sdf_string, values_new)
+        self.sdf_string = new_string
+        for dof in self.dof:
+            dof.update_values(self.sdf_string)
 
     def adjust_centroid(self):
         new_string = deepcopy(self.mol_info.template_sdf_string)
         for dof in self.dof:
             if dof.type == 'centroid':
                 dof.get_random_values()
-                print 'Initial random values for {} are {}'.format(dof.name ,dof.values)
                 new_string = dof.apply_on_string(new_string)
         self.sdf_string = new_string
         for dof in self.dof:
             if dof.type == 'centroid':
                 dof.update_values(self.sdf_string)
-                print 'Updated values for {} are {}'.format(dof.name, dof.values)
 
     def is_geometry_valid(self):
         """Return True if the geometry is valid."""
         check = check_geo_sdf(self.sdf_string)
+        return check
+
+    def is_geometry_valid_after_crossover(self):
+        """Return True if the geometry is valid."""
+        check = check_geo_sdf_after_crossover(self.sdf_string)
         return check
 
     def __eq__(self, other):
@@ -498,10 +524,7 @@ class Structure:
         child1 = Structure(self.mol_info)
         child2 = Structure(self.mol_info)
 
-        for dof_par1, dof_par2, dof_child1, dof_child2 in zip(self.dof,
-                                                              other.dof,
-                                                              child1.dof,
-                                                              child2.dof):
+        for dof_par1, dof_par2, dof_child1, dof_child2 in zip(self.dof, other.dof, child1.dof, child2.dof):
             if dof_par1.type == dof_par2.type:
                 a, b = crossover(getattr(dof_par1, "values"),
                                  getattr(dof_par2, "values"))

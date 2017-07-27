@@ -7,7 +7,7 @@ from fafoom import MoleculeDescription, Structure, selection, print_output,\
 import fafoom.run_utilities as run_util
 #from visual import draw_picture
 
-
+from numpy import array
 from rdkit import Chem
 from rdkit.Chem import AllChem
 # from rdkit.Chem import Draw
@@ -30,7 +30,8 @@ params = set_default(params, dict_default)
 energy_function = run_util.detect_energy_function(params)
 
 cnt_max = 200
-population, blacklist = [], []
+population = []
+blacklist = [] #Blacklist
 min_energy = []
 
 # smil = '[NH3+][C@H](C(=O)N1[C@H](C(=O)N[C@H](C(=O)[O-])Cc2ccccc2)CCC1)Cc1[nH]c[nH+]c1'
@@ -60,6 +61,7 @@ if os.path.exists(os.path.join(os.getcwd(),'valid_for_FF')):
 else:
     os.mkdir(os.path.join(os.getcwd(),'valid_for_FF'))
 #=======================================================================
+aims_object = AimsObject(os.path.join(os.getcwd(),'adds'))
 
 if opt == "simple":
     mol = MoleculeDescription(p_file)
@@ -93,20 +95,9 @@ if opt == "simple":
             continue
         if str3d not in blacklist:
             print_output("The geometry of "+str(str3d)+" is valid, copied to /valid")
-            if 'centroid' not in mol.dof_names:
+            str3d.adjust_position()
+            if not check_for_clashes(str3d.sdf_string, os.path.join(mol.constrained_geometry_file)):
                 str3d.adjust_position()
-                if not check_for_clashes(str3d.sdf_string, os.path.join(mol.constrained_geometry_file)):
-                    check = False
-                    for i in range(50):
-                        print 'Before {}'.format(centroid_measure(str3d.sdf_string))
-                        str3d.adjust_position()
-                        print 'After {}'.format(centroid_measure(str3d.sdf_string))
-                        check = check_for_clashes(str3d.sdf_string, os.path.join(mol.constrained_geometry_file))
-                        if check:
-                            break
-    		if check == False:
-    		    print 'Increase the volume!!!'
-                    break
 	    # print str3d.sdf_string
             # test_ff.generate_input(str3d.sdf_string)
             # test_ff.build_storage(str(cnt)+'_geometry')
@@ -118,19 +109,19 @@ if opt == "simple":
             name = os.path.join(os.getcwd(), 'valid', str(cnt)+'_geometry')
             # name = "initial_%d" % (len(population))
             # Perform the local optimization
-            print 'energy_function {}'.format(energy_function)
-            print 'params {}'.format(params)
-            print 'name {}'.format(name)
+            # print 'energy_function {}'.format(energy_function)
+            # print 'params {}'.format(params)
+            # print 'name {}'.format(name)
             run_util.optimize(str3d, energy_function, params, name)
             run_util.check_for_kill()
-            str3d.send_to_blacklist(blacklist)
+            str3d.send_to_blacklist(blacklist) #Blacklist
             population.append(str3d)
             print_output(str(str3d)+", energy: "+str(float(str3d)) +
                          ", was added to the population")
             run_util.relax_info(str3d)
             cnt += 1
         else:
-            print_output(blacklist)
+            print_output(blacklist) #Blacklist
             print_output("Geomerty of "+str(str3d)+" is fine, but already "
                          "known.")
             cnt += 1
@@ -144,7 +135,7 @@ if opt == "simple":
     for i in range(len(population)):
         print_output(str(population[i])+" "+str(float(population[i])))
     min_energy.append(population[0].energy)
-    print_output("Blacklist: " + ', '.join([str(v) for v in blacklist]))
+    print_output("Blacklist: " + ', '.join([str(v) for v in blacklist])) #Blacklist
     iteration = 0
 
 
@@ -153,22 +144,18 @@ if opt == "restart":
     print_output(" \n ___Restart will be performed___")
     with open("backup_mol.dat", 'r') as inf:
         mol = eval(inf.readline())
-    inf.close()
     with open("backup_population.dat", 'r') as inf:
         for line in inf:
             population.append(eval(line))
-    inf.close()
     with open("backup_blacklist.dat", 'r') as inf:
         for line in inf:
             blacklist.append(eval(line))
-    inf.close()
+    inf.close()  #Blacklist
     with open("backup_min_energy.dat", 'r') as inf:
         for line in inf:
             min_energy.append(eval(line))
-    inf.close()
     with open("backup_iteration.dat", 'r') as inf:
         iteration_tmp = eval(inf.readline())
-    inf.close()
     linked_params = run_util.find_linked_params(mol, params)
     population.sort()
     for i in range(len(population)):
@@ -197,10 +184,13 @@ def mutate_and_relax(candidate, name, iteration, cnt_max, **kwargs):
             continue
 
         if candidate not in blacklist:
+            candidate.adjust_position_after_crossover()
+            if not check_for_clashes(candidate.sdf_string, os.path.join(mol.constrained_geometry_file)):
+                candidate.adjust_position_after_crossover()
             name = "generation_%d_%s" % (iteration, name)
             run_util.optimize(candidate, energy_function, params, name)
             run_util.check_for_kill()
-            candidate.send_to_blacklist(blacklist)
+            #candidate.send_to_blacklist(blacklist) #Blacklist
             print_output(str(candidate)+":, energy: "+str(float(
                 candidate))+", is temporary added to the population")
             run_util.relax_info(candidate)
@@ -224,10 +214,38 @@ while iteration < params['max_iter']:
     cnt = 0
     while param < params['prob_for_crossing'] and cnt < cnt_max:
         child1, child2 = Structure.crossover(parent1, parent2)
-        if child1.is_geometry_valid() and child2.is_geometry_valid():
+        if child1.is_geometry_valid_after_crossover() and child2.is_geometry_valid_after_crossover():
+            aims_object.generate_input(child1.sdf_string) #generates input
+            shutil.copy('geometry.in', os.path.join(os.getcwd(),'invalid','geometry_child1_not_adjusted'+str(cnt)+'.in')) #copy invalid geometry to "invalid" folder
+
+            child1.adjust_position_after_crossover()
+            child2.adjust_position_after_crossover()
+            aims_object.generate_input(child1.sdf_string) #generates input
+            shutil.copy('geometry.in', os.path.join(os.getcwd(),'invalid','geometry_child1_'+str(cnt)+'.in')) #copy invalid geometry to "invalid" folder
+            aims_object.generate_input(child2.sdf_string) #generates input
+            shutil.copy('geometry.in', os.path.join(os.getcwd(),'invalid','geometry_child2_'+str(cnt)+'.in')) #copy invalid geometry to "invalid" folder
+            aims_object.generate_input(parent1.sdf_string) #generates input
+            shutil.copy('geometry.in', os.path.join(os.getcwd(),'invalid','geometry_parent1_'+str(cnt)+'.in')) #copy invalid geometry to "invalid" folder
+            aims_object.generate_input(parent2.sdf_string) #generates input
+            shutil.copy('geometry.in', os.path.join(os.getcwd(),'invalid','geometry_parent2_'+str(cnt)+'.in')) #copy invalid geometry to "invalid" folder
+
             print_output("Crossover outcome: "+str(child1)+(", ")+str(child2))
             break
         else:
+            # print 'Parent1 {}'.format(str(getattr(parent1.dof[0], "values")))
+            # print 'Parent2 {}'.format(str(getattr(parent2.dof[0], "values")))
+            # print 'Child1 {}'.format(str(getattr(child1.dof[0], "values")))
+            # print 'Child2 {}\n'.format(str(getattr(child2.dof[0], "values")))
+            # aims_object.generate_input(child1.sdf_string) #generates input
+            # shutil.copy('geometry.in', os.path.join(os.getcwd(),'invalid','geometry_child1_'+str(cnt)+'.in')) #copy invalid geometry to "invalid" folder
+            # aims_object.generate_input(child2.sdf_string) #generates input
+            # shutil.copy('geometry.in', os.path.join(os.getcwd(),'invalid','geometry_child2_'+str(cnt)+'.in')) #copy invalid geometry to "invalid" folder
+            # aims_object.generate_input(parent1.sdf_string) #generates input
+            # shutil.copy('geometry.in', os.path.join(os.getcwd(),'invalid','geometry_parent1_'+str(cnt)+'.in')) #copy invalid geometry to "invalid" folder
+            # aims_object.generate_input(parent2.sdf_string) #generates input
+            # shutil.copy('geometry.in', os.path.join(os.getcwd(),'invalid','geometry_parent2_'+str(cnt)+'.in')) #copy invalid geometry to "invalid" folder
+            #
+            # sys.exit(0)
             print_output("The geometries created via crossover are invalid.")
             cnt += 1
             continue

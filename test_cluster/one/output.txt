@@ -2469,3 +2469,13 @@ Structure 466
 Values of centroid: [-3.00003546 -3.99997877  2.99999933]
 The FHI-aims relaxation failed
 Kill.dat file discovered. The code terminates
+Local optimization will be performed with FHI-aims.
+ 
+ ___Restart will be performed___
+Setting a default value for volume: (-10, 11, -10, 11, -10, 11)
+Setting a default value for fix_centroid: None
+Local optimization will be performed with FHI-aims.
+ 
+ ___Restart will be performed___
+Setting a default value for volume: (-10, 11, -10, 11, -10, 11)
+Setting a default value for fix_centroid: None

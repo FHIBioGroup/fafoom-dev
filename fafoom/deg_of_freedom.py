@@ -32,6 +32,7 @@ from operator import itemgetter
 from rdkit.Chem import rdMolTransforms
 from utilities import *
 import numpy as np
+np.set_printoptions(suppress=True)
 
 class DOF:
 
@@ -43,7 +44,7 @@ class DOF:
 
 class Orientation(DOF):
     '''Find and handle orientation of the molecule. '''
-    
+
     values_options = [range(0, 1, 90), np.arange(-2, 2, 1)] #values_options[0] - Defines angle, values_options[1] - defines orientaion.
 
     @staticmethod
@@ -59,17 +60,17 @@ class Orientation(DOF):
 
     def __init__(self, positions):
         """Initialaize the Centroid object from the positions."""
-        self.name = 'Orientation'        
+        self.name = 'Orientation'
         self.type = "orientation"
         self.positions = positions
 
     def apply_on_string(self, string, values_to_set=None):
         mol = Chem.MolFromMolBlock(string, removeHs=False)
         atom_1_indx = 0
-        atom_2_indx = mol.GetNumHeavyAtoms() - 1   
+        atom_2_indx = mol.GetNumHeavyAtoms() - 1
         if values_to_set is not None:
             self.values = np.array(values_to_set)
-        string = quaternion_set(string, self.values, atom_1_indx, atom_2_indx) 
+        string = quaternion_set(string, self.values, atom_1_indx, atom_2_indx)
         return string
 
     def get_random_values(self):
@@ -77,7 +78,7 @@ class Orientation(DOF):
         self.values = np.array([choice(Orientation.values_options[0]),
                                 choice(Orientation.values_options[1]),
                                 choice(Orientation.values_options[1]),
-                                choice(Orientation.values_options[1])])  
+                                choice(Orientation.values_options[1])])
         """Need to improve eigenvalue problem. The follows works for now:"""
         if np.linalg.norm(np.array(self.values[1:])) == 0:
             self.values = np.array([self.values[0], 0.0, 0.00001, 0.99999])
@@ -100,7 +101,7 @@ class Orientation(DOF):
                            for i in range(len(self.positions))]
         else:
             self.values = np.array([choice(Orientation.values_options)
-                           for i in range(len(self.positions))])        
+                           for i in range(len(self.positions))])
 
     def mutate_values(self, max_mutations=None, weights=None):
 
@@ -121,7 +122,7 @@ class Orientation(DOF):
             return False
         else:
             return True
-                             
+
 class Centroid(DOF):
     '''Find and handle centre of the molecule. '''
     range_x = [i for i in range(-10, 11, 1)]
@@ -141,7 +142,7 @@ class Centroid(DOF):
 
     def __init__(self, positions):
         """Initialaize the Centroid object from the positions."""
-        self.name = 'Centroid'        
+        self.name = 'Centroid'
         self.type = "centroid"
         self.positions = positions
 
@@ -157,7 +158,7 @@ class Centroid(DOF):
 
     def update_values(self, string):
         self.values = centroid_measure(string)
- 
+
     def get_weighted_values(self, weights):
         if len(weights) == len(Centroid.values_options):
             self.values = [Centroid.values_options[find_one_in_list(sum(
@@ -165,7 +166,7 @@ class Centroid(DOF):
                            for i in range(len(self.values))]
         else:
             self.values = np.array([choice(Centroid.values_options)
-                           for i in range(len(self.values))])        
+                           for i in range(len(self.values))])
 
     def mutate_values(self, max_mutations=None, weights=None):
         if max_mutations is None:
@@ -504,7 +505,7 @@ class CisTrans(DOF):
             pattern_cistrans = Chem.MolFromSmarts(smarts_cistrans)
             cistrans = list(mol.GetSubstructMatches(pattern_cistrans))
             positions = cleaner(cistrans)
-        return positions      
+        return positions
 
     def __init__(self, positions):
         self.name = 'CisTrans'
@@ -602,9 +603,3 @@ class CisTrans(DOF):
 #~ print 'Final centroid:'
 #~ print centroid_measure(string)
 #***********************************************************************
-
-
-
-
-
-

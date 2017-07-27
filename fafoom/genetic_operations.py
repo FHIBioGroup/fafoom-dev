@@ -142,14 +142,18 @@ def mutation(list_for_mut, max_mutations, options, weights=None,
     if max_mutations < 0:
         raise ValueError("The max. number of mutations cannot be negative")
     mut_numb = random.randint(1, min(max_mutations, len(list_for_mut)))
+    print 'Max mutations {} for list {}'.format(max_mutations, list_for_mut)
     pos = random.sample(range(len(list_for_mut)), mut_numb)
+    print 'POS {}'.format(pos)
     for p in pos:
         current_value = list_for_mut[p]
+        print 'Current value {}'.format(current_value)
         banned = find_closest(current_value, options, periodic)
         cnt = 0
         while cnt < 100:
             if weights is None:
                 new_value = random.sample(options, 1)[0]
+                print 'NEW value {}'.format(new_value)
             else:
                 new_value = options[find_one_in_list(sum(weights), weights)]
 
