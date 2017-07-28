@@ -19,17 +19,17 @@ from __future__ import division
 import math
 from copy import copy
 from random import choice
-from rdkit import Chem
+# from rdkit import Chem
 
 from measure import *
 
 from genetic_operations import mutation
 
-from rdkit import Chem
-from rdkit.Chem import AllChem
+# from rdkit import Chem
+# from rdkit.Chem import AllChem
 
 from operator import itemgetter
-from rdkit.Chem import rdMolTransforms
+# from rdkit.Chem import rdMolTransforms
 from utilities import *
 import numpy as np
 np.set_printoptions(suppress=True)
@@ -48,14 +48,9 @@ class Orientation(DOF):
     values_options = [range(0, 1, 90), np.arange(-2, 2, 1)] #values_options[0] - Defines angle, values_options[1] - defines orientaion.
 
     @staticmethod
-    def find(smiles, positions=None):
+    def find(sdf_string, positions=None):
         if positions is None:
-            mol = Chem.MolFromSmiles(smiles)
-            if mol is None:
-                raise ValueError("The smiles is invalid")
-            pattern_cent = Chem.MolFromSmarts(smiles)
-            cent = list(mol.GetSubstructMatches(pattern_cent))
-            positions = cleaner(cent)
+            positions = range(1, len(coords_and_masses_from_sdf(sdf_string))+1)
         return positions #returns all atoms
 
     def __init__(self, positions):
@@ -65,9 +60,9 @@ class Orientation(DOF):
         self.positions = positions
 
     def apply_on_string(self, string, values_to_set=None):
-        mol = Chem.MolFromMolBlock(string, removeHs=False)
+        # mol = Chem.MolFromMolBlock(string, removeHs=False)
         atom_1_indx = 0
-        atom_2_indx = mol.GetNumHeavyAtoms() - 1
+        atom_2_indx = 1
         if values_to_set is not None:
             self.values = np.array(values_to_set)
         string = quaternion_set(string, self.values, atom_1_indx, atom_2_indx)
@@ -89,9 +84,9 @@ class Orientation(DOF):
 
 
     def update_values(self, string):
-        mol = Chem.MolFromMolBlock(string, removeHs=False)
+        # mol = Chem.MolFromMolBlock(string, removeHs=False)
         atom_1_indx = 0
-        atom_2_indx = mol.GetNumHeavyAtoms() - 1
+        atom_2_indx = 1
         self.values = quaternion_measure(string, atom_1_indx, atom_2_indx)
 
     def get_weighted_values(self, weights):
@@ -129,15 +124,11 @@ class Centroid(DOF):
     range_y = [i for i in range(-10, 11, 1)]
     range_z = [i for i in range(-10, 11, 1)]
     values_options = [range_x, range_y, range_z]
+
     @staticmethod
-    def find(smiles, positions=None):
+    def find(sdf_string, positions=None):
         if positions is None:
-            mol = Chem.MolFromSmiles(smiles)
-            if mol is None:
-                raise ValueError("The smiles is invalid")
-            pattern_cent = Chem.MolFromSmarts(smiles)
-            cent = list(mol.GetSubstructMatches(pattern_cent))
-            positions = cleaner(cent)
+            positions = range(1, len(coords_and_masses_from_sdf(sdf_string))+1)
         return positions #returns all atoms
 
     def __init__(self, positions):
@@ -191,8 +182,9 @@ class Torsion(DOF):
     values_options = range(-179, 181, 1)
 
     @staticmethod
-    def find(smiles, smarts_torsion="[*]~[!$(*#*)&!D1]-&!@[!$(*#*)&!D1]~[*]",
-             filter_smarts_torsion=None, positions=None):
+    def find(sdf_string, positions=None):
+    # def find(sdf_string, smarts_torsion="[*]~[!$(*#*)&!D1]-&!@[!$(*#*)&!D1]~[*]",
+    #          filter_smarts_torsion=None, positions=None):
         """Find the positions of rotatable bonds in the molecule.
 
         Args(required):
@@ -206,31 +198,31 @@ class Torsion(DOF):
             positions (list of tuples) : if the positions (in terms of atom
             indicies) of the torsions is known, they can be passed directly
         """
-        if positions is None:
-            mol = Chem.MolFromSmiles(smiles)
-            if mol is None:
-                raise ValueError("The smiles is invalid")
-            pattern_tor = Chem.MolFromSmarts(smarts_torsion)
-            torsion = list(mol.GetSubstructMatches(pattern_tor))
-
-            if filter_smarts_torsion:
-                pattern_custom = Chem.MolFromSmarts(filter_smarts_torsion)
-                custom = list(mol.GetSubstructMatches(pattern_custom))
-                to_del_bef_custom = []
-
-                for x in reversed(range(len(torsion))):
-                    for y in reversed(range(len(custom))):
-                        ix1, ix2 = ig(1)(torsion[x]), ig(2)(torsion[x])
-                        iy1, iy2 = ig(1)(custom[y]), ig(2)(custom[y])
-                        if (ix1 == iy1 and ix2 == iy2) or (ix1 == iy2 and
-                                                           ix2 == iy1):
-                            to_del_bef_custom.append(x)
-
-                custom_torsion = copy(torsion)
-                custom_torsion = [v for i, v in enumerate(custom_torsion)
-                                  if i not in set(to_del_bef_custom)]
-                torsion = custom_torsion
-            positions = cleaner(torsion)
+        # if positions is None:
+        #     mol = Chem.MolFromSmiles(smiles)
+        #     if mol is None:
+        #         raise ValueError("The smiles is invalid")
+        #     pattern_tor = Chem.MolFromSmarts(smarts_torsion)
+        #     torsion = list(mol.GetSubstructMatches(pattern_tor))
+        #
+        #     if filter_smarts_torsion:
+        #         pattern_custom = Chem.MolFromSmarts(filter_smarts_torsion)
+        #         custom = list(mol.GetSubstructMatches(pattern_custom))
+        #         to_del_bef_custom = []
+        #
+        #         for x in reversed(range(len(torsion))):
+        #             for y in reversed(range(len(custom))):
+        #                 ix1, ix2 = ig(1)(torsion[x]), ig(2)(torsion[x])
+        #                 iy1, iy2 = ig(1)(custom[y]), ig(2)(custom[y])
+        #                 if (ix1 == iy1 and ix2 == iy2) or (ix1 == iy2 and
+        #                                                    ix2 == iy1):
+        #                     to_del_bef_custom.append(x)
+        #
+        #         custom_torsion = copy(torsion)
+        #         custom_torsion = [v for i, v in enumerate(custom_torsion)
+        #                           if i not in set(to_del_bef_custom)]
+        #         torsion = custom_torsion
+        #     positions = cleaner(torsion)
         return positions
 
     def __init__(self, positions):

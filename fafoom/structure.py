@@ -92,6 +92,7 @@ class MoleculeDescription:
                         'optimize_centroid': True,
                         'optimize_orientation': True,
                         'smarts_torsion':"[*]~[!$(*#*)&!D1]-&!@[!$(*#*)&!D1]~[*]",
+                        'sdf_string_template':'adds/mol.sdf',
                         'constrained_geometry_file':'adds/geometry.in.constrained',
                         'right_order_to_assign':['torsion', 'cistrans', 'centroid', 'orientation'],
                         'volume':(-10,11, -10, 11, -10, 11)}
@@ -142,10 +143,17 @@ class MoleculeDescription:
                 return False
         return True
 
+    def create_template_sdf(self):
+        """Assign new attribute (template_sdf_string) to the object."""
+        self.template_sdf_string = template_sdf(self.sdf_string_template)
+
     def get_parameters(self):
+        with open(os.path.join(os.getcwd(), self.sdf_string_template), 'r') as sdf_file:
+            self.sdf_string_template = sdf_file.read()
+
         """Assign permanent attributes (number of atoms, number of bonds and
         degrees of freedom related attributes) to the object."""
-        self.atoms, self.bonds = get_atoms_and_bonds(self.smiles)
+        self.atoms, self.bonds = get_atoms_and_bonds(self.sdf_string_template)
         self_copy = deepcopy(self)
         dof_names = []
         limits_names = []
@@ -156,7 +164,7 @@ class MoleculeDescription:
                 for attr, value in self_copy.__dict__.iteritems():
                     if type_of_dof in str(attr).split('_'):
                         linked_attr[attr] = value
-                pos = get_positions(type_of_dof, self.smiles, **linked_attr)
+                pos = get_positions(type_of_dof, self.sdf_string_template, **linked_attr)
                 if len(pos) != 0:
                     setattr(self, type_of_dof, pos)
                     dof_names.append(type_of_dof)
@@ -184,9 +192,7 @@ class MoleculeDescription:
         Centroid.range_y = range(self.volume[2], self.volume[3], 1) #Limitation for Centroid
         Centroid.range_z = range(self.volume[4], self.volume[5], 1) #Limitation for Centroid
 
-    def create_template_sdf(self):
-        """Assign new attribute (template_sdf_string) to the object."""
-        self.template_sdf_string = template_sdf(self.smiles)
+
 
 class Structure:
     """Create 3D structures."""

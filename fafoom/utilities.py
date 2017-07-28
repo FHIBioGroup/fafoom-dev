@@ -21,12 +21,8 @@ import numpy as np
 import math
 import shutil
 import ConfigParser
-
-# from rdkit import Chem
-# from rdkit.Chem import AllChem
-
 from operator import itemgetter
-# from rdkit.Chem import rdMolTransforms
+
 
 # Flow-handling
 # In Bohr

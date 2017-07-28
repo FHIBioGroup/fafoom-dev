@@ -16,13 +16,14 @@
 #   along with fafoom.  If not, see <http://www.gnu.org/licenses/>.
 ''' Communicate between the structure and the degrees of freedom.'''
 from __future__ import division
-from rdkit import Chem
-from rdkit.Chem import AllChem
+# from rdkit import Chem
+# from rdkit.Chem import AllChem
 from deg_of_freedom import Torsion, CisTrans, PyranoseRing, Centroid, Orientation
-from utilities import check_geo_sdf
+from utilities import *
+from measure import *
 
 
-def get_atoms_and_bonds(smiles):
+def get_atoms_and_bonds(sdf_string):
     """Build the molecule from SMILES and return the number of atoms and bonds.
 
     Args(required):
@@ -30,14 +31,18 @@ def get_atoms_and_bonds(smiles):
     Returns:
         Number of atoms, number of bonds
     """
-    mol = Chem.MolFromSmiles(smiles)
-    if mol is None:
-        raise ValueError("The smiles is invalid")
-    mol = Chem.AddHs(mol)
-    return mol.GetNumAtoms(), mol.GetNumBonds()
 
+    n_at = len(coords_and_masses_from_sdf(sdf_string))
+    n_bonds = len(conn_list_from_sdf(sdf_string))
+    return n_at, n_bonds
+    # mol = Chem.MolFromSmiles(smiles)
+    # if mol is None:
+    #     raise ValueError("The smiles is invalid")
+    # mol = Chem.AddHs(mol)
+    # return mol.GetNumAtoms(), mol.GetNumBonds()
+#smiles="[NH3+][C@H](C(=O)N1[C@H](C(=O)N[C@H](C(=O)[O-])Cc2ccccc2)CCC1)Cc1[nH]c[nH+]c1"
 
-def get_positions(type_of_deg, smiles, **kwargs):
+def get_positions(type_of_deg, sdf_string, **kwargs):
     """Find the positions (tuples of atom indicies) of the degrees of freedom.
 
     Args(required):
@@ -55,21 +60,31 @@ def get_positions(type_of_deg, smiles, **kwargs):
         list of touples defining the positions of the degree of freedom
     """
 
+
+
+
+    '''  #####################################  '''
+    ''' Switch only to [list_of_torsional] option'''
+    '''  #####################################  '''
+
     if type_of_deg == "torsion":
         if 'list_of_torsion' in kwargs:
-            return Torsion.find(smiles, positions=kwargs['list_of_torsion'])
-        else:
-            if 'smarts_torsion' in kwargs:
-                if 'filter_smarts_torsion' in kwargs:
-                    return Torsion.find(smiles,
-                                        smarts_torsion=kwargs['smarts_torsion'],
-                                        filter_smarts_torsion=
-                                        kwargs['filter_smarts_torsion'])
-                else:
-                    return Torsion.find(smiles,
-                                        smarts_torsion=kwargs['smarts_torsion'])
-            else:
-                return Torsion.find(smiles)
+            return Torsion.find(sdf_string, positions=kwargs['list_of_torsion'])
+        # else:
+        #     if 'smarts_torsion' in kwargs:
+        #         if 'filter_smarts_torsion' in kwargs:
+        #             return Torsion.find(smiles,
+        #                                 smarts_torsion=kwargs['smarts_torsion'],
+        #                                 filter_smarts_torsion=
+        #                                 kwargs['filter_smarts_torsion'])
+        #         else:
+        #             return Torsion.find(smiles,
+        #                                 smarts_torsion=kwargs['smarts_torsion'])
+        #     else:
+        #         return Torsion.find(smiles)
+
+    '''  #####################################  '''
+
     if type_of_deg == "cistrans":
         if 'list_of_cistrans' in kwargs:
             return CisTrans.find(smiles, positions=kwargs['list_of_cistrans'])
@@ -80,22 +95,25 @@ def get_positions(type_of_deg, smiles, **kwargs):
     if type_of_deg == "pyranosering":
         if 'list_of_pyranosering' in kwargs:
             return PyranoseRing.find(smiles,
-                                     positions=kwargs['list_of_pyranosering'])
+                                     positions=kwargs['list_of_pyranosering']) ###NEEED TO CLARIFY
         else:
             return PyranoseRing.find(smiles)
 
+    '''  #####################################  '''
+
     if type_of_deg == "centroid":
         if 'list_of_centroid' in kwargs:
-            return Centroid.find(smiles,
+            return Centroid.find(sdf_string,
                                      positions=kwargs['list_of_centroid'])
         else:
-            return Centroid.find(smiles)
+            return Centroid.find(sdf_string)
+
     if type_of_deg == "orientation":
         if 'list_of_orientation' in kwargs:
-            return Orientation.find(smiles,
+            return Orientation.find(sdf_string,
                                      positions=kwargs['list_of_orientation'])
         else:
-            return Orientation.find(smiles)
+            return Orientation.find(sdf_string)
 
 def create_dof_object(type_of_deg, positions):
     """Initialize the degree of freedom from the positions
@@ -117,7 +135,7 @@ def create_dof_object(type_of_deg, positions):
     if type_of_deg == "orientation":
         return Orientation(positions)
 
-def template_sdf(smiles):
+def template_sdf(sdf_string):
     """Create a template sdf string and writes it to file.
 
     Args(required):
@@ -125,19 +143,21 @@ def template_sdf(smiles):
     Returns:
         sdf string
     """
-    cnt = 0
-    sdf_check = True
-    while sdf_check:
-        mol = Chem.MolFromSmiles(smiles)
-        mol = Chem.AddHs(mol)
-        AllChem.EmbedMolecule(mol)
-        AllChem.UFFOptimizeMolecule(mol)
-        Chem.SDWriter('mol.sdf').write(mol)
-        sdf_string = Chem.MolToMolBlock(mol)
-        check = check_geo_sdf(sdf_string)
-        if check:
-            sdf_check = False
-            Chem.SDWriter('mol.sdf').write(mol)
-        else:
-            cnt += 1
+    # with open(os.path.join(os.getcwd(), sdf_file), 'r') as sdf_file:
+    #     sdf_string = sdf_file.read()
+    # cnt = 0
+    # sdf_check = True
+    # while sdf_check:
+    #     mol = Chem.MolFromSmiles(smiles)
+    #     mol = Chem.AddHs(mol)
+    #     AllChem.EmbedMolecule(mol)
+    #     AllChem.UFFOptimizeMolecule(mol)
+    #     Chem.SDWriter('mol.sdf').write(mol)
+    #     sdf_string = Chem.MolToMolBlock(mol)
+    #     check = check_geo_sdf(sdf_string)
+    #     if check:
+    #         sdf_check = False
+    #         Chem.SDWriter('mol.sdf').write(mol)
+    #     else:
+    #         cnt += 1
     return sdf_string

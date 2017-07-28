@@ -1,7 +1,5 @@
 #!/usr/bin/python
 import os, sys, re
-from rdkit import Chem
-
 defaults_file = '/home/maksimov/scripts/pymol/defaults.pml'
 path = os.getcwd()
 open_file = sys.argv[1]
