@@ -20,9 +20,6 @@ from operator import itemgetter
 import numpy as np
 
 import os, sys, re
-# from rdkit import Chem
-# from rdkit.Chem import AllChem
-from rdkit.Chem import rdMolTransforms
 from numpy.linalg import inv
 from utilities import get_vec, tor_rmsd, xyz2sdf, sdf2xyz, coords_and_masses_from_sdf, update_coords_sdf
 
@@ -181,20 +178,20 @@ def quaternion_set(sdf_string, quaternion_to_set, atom_1_indx, atom_2_indx):
     updated_sdf_string = update_coords_sdf(sdf_string, rotation_2)
     return updated_sdf_string
 
-def quaternion_set_coords(coords_and_masses, quaternion_to_set, atom_1_indx, atom_2_indx):
-    center = get_centre_of_mass(coords_and_masses)
-    aligned = align_to_axes(coords_and_masses, atom_1_indx, atom_2_indx)
-    first_rot = produce_quaternion(quaternion_to_set[0], np.array([0, 0, 1]))
-    rotation_1 = Rotation(aligned[:,:3], center, first_rot)
-    angle_2 = angle_between(np.array([0, 0, 1]), quaternion_to_set[1:])
-    vec_2 = np.cross(np.array([0, 0, 1]), quaternion_to_set[1:])
-    quat_2 = produce_quaternion(angle_2, vec_2)
-    rotation_2 = Rotation(rotation_1, center, quat_2)
-    return produce_coords_and_masses(rotation_2, coords_and_masses[:,3])
-
-def get_coords(sdf_string):
-    coords_and_masses = coords_and_masses_from_sdf(sdf_string)
-    return coords_and_masses[:,:3]
+# def quaternion_set_coords(coords_and_masses, quaternion_to_set, atom_1_indx, atom_2_indx):
+#     center = get_centre_of_mass(coords_and_masses)
+#     aligned = align_to_axes(coords_and_masses, atom_1_indx, atom_2_indx)
+#     first_rot = produce_quaternion(quaternion_to_set[0], np.array([0, 0, 1]))
+#     rotation_1 = Rotation(aligned[:,:3], center, first_rot)
+#     angle_2 = angle_between(np.array([0, 0, 1]), quaternion_to_set[1:])
+#     vec_2 = np.cross(np.array([0, 0, 1]), quaternion_to_set[1:])
+#     quat_2 = produce_quaternion(angle_2, vec_2)
+#     rotation_2 = Rotation(rotation_1, center, quat_2)
+#     return produce_coords_and_masses(rotation_2, coords_and_masses[:,3])
+#
+# def get_coords(sdf_string):
+#     coords_and_masses = coords_and_masses_from_sdf(sdf_string)
+#     return coords_and_masses[:,:3]
 
 def get_coords_and_masses(sdf_string):
     coords_and_masses = coords_and_masses_from_sdf(sdf_string)

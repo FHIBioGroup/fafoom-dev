@@ -22,13 +22,11 @@ import math
 import shutil
 import ConfigParser
 
-from rdkit import Chem
-from rdkit.Chem import AllChem
+# from rdkit import Chem
+# from rdkit.Chem import AllChem
 
 from operator import itemgetter
-from rdkit.Chem import rdMolTransforms
-
-import shutil
+# from rdkit.Chem import rdMolTransforms
 
 # Flow-handling
 # In Bohr
@@ -107,7 +105,22 @@ def string2file(string, filename):
         target.write(string)
     target.close()
 
+def coords_and_masses_from_sdf(sdf_string):
+    """Convert a sdf_string to a xyz_list."""
+    xyz_list = []
+    for line in sdf_string.split('\n'):
+        coords_found = re.match(r'(\s*(.?\d+\.\d+)\s*(.?\d+\.\d+)\s*(.?\d+\.\d+)\s*(\w+)\s+)', line)
+        if coords_found:
+            xyz_list.append(np.array([float(coords_found.group(2)),
+                                    float(coords_found.group(3)),
+                                    float(coords_found.group(4)),
+                                    float(atom_masses[coords_found.group(5)])]))
+    return np.array(xyz_list)
 
+def get_centre_of_mass_from_sdf(sdf_string):
+    coords_and_masses = coords_and_masses_from_sdf(sdf_string)
+    center_of_mass = np.average(coords_and_masses[:,:3], axis=0, weights=coords_and_masses[:,3])
+    return center_of_mass
 
 def generate_extended_input(string, constrained_part_file, filename):
     with open(constrained_part_file, 'r') as part:
@@ -196,12 +209,41 @@ def tor_rmsd(p, vec):
 
 
 def get_cartesian_rms(sdf_string1, sdf_string2):
+    COM1 = get_centre_of_mass_from_sdf(sdf_string1)
+    COM2 = get_centre_of_mass_from_sdf(sdf_string2)
     """Return the optimal RMS after aligning two structures."""
-    ref = Chem.MolFromMolBlock(sdf_string1, removeHs=False)
-    probe = Chem.MolFromMolBlock(sdf_string2, removeHs=False)
-    rms = AllChem.GetBestRMS(ref, probe)
-    return rms
+    coords1 = coords_and_masses_from_sdf(sdf_string1)[:,:3] - COM1
+    coords2 = coords_and_masses_from_sdf(sdf_string2)[:,:3] - COM2
 
+    P = coords1
+    Q = coords2
+
+    '''Kabsh'''
+    C = np.dot(np.transpose(P), Q)
+    V, S, W = np.linalg.svd(C)
+    d = (np.linalg.det(V) * np.linalg.det(W)) < 0.0
+    if d:
+        S[-1] = -S[-1]
+        V[:, -1] = -V[:, -1]
+    U = np.dot(V, W)
+    P = np.dot(P, U)
+
+    D = len(P[0])
+    N = len(P)
+    rmsd = 0.0
+    for v, w in zip(P, Q):
+        rmsd += sum([(v[i] - w[i])**2.0 for i in range(D)])
+    # print 'Kabsh rmsd {}'.format(np.sqrt(rmsd/N))
+    # #rmsd_type="internal_coord"
+    #
+    # ref = Chem.MolFromMolBlock(sdf_string1, removeHs=False)
+    # probe = Chem.MolFromMolBlock(sdf_string2, removeHs=False)
+    # rms = AllChem.GetBestRMS(ref, probe)
+    #
+    # print 'OLD ONE RMS {}\n'.format(rms)
+    #
+    # return rms
+    return np.sqrt(rmsd/N)
 
 def lowest_cartesian(string1, string2, **linked_strings):
     """Select lowest Cartesian RMS for two structures (for nonchiral and
@@ -506,17 +548,6 @@ def sdf2xyz(sdf_string):
                             float(coords_found.group(4))])
     return xyz_list
 
-def coords_and_masses_from_sdf(sdf_string):
-    """Convert a sdf_string to a xyz_list."""
-    xyz_list = []
-    for line in sdf_string.split('\n'):
-        coords_found = re.match(r'(\s*(.?\d+\.\d+)\s*(.?\d+\.\d+)\s*(.?\d+\.\d+)\s*(\w+)\s+)', line)
-        if coords_found:
-            xyz_list.append(np.array([float(coords_found.group(2)),
-                                    float(coords_found.group(3)),
-                                    float(coords_found.group(4)),
-                                    float(atom_masses[coords_found.group(5)])]))
-    return np.array(xyz_list)
 
 def aims2sdf(aims_string, sdf_template_string):
     """Convert a aims string to a sdf string. Template for the sdf string is
