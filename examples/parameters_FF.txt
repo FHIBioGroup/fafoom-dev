@@ -8,7 +8,7 @@ filter_smarts_torsion= "C~[$(C=O)]-[$(NC)]~[C]"
 rmsd_type="internal_coord"
 rmsd_cutoff_uniq=0.25
 chiral=False
-optimize_torsion=False
+optimize_torsion=True
 optimize_cistrans=False
 optimize_centroid=True
 optimize_orientation=True

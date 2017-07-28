@@ -24,7 +24,7 @@ from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit.Chem import rdMolTransforms
 from numpy.linalg import inv
-from utilities import get_vec, tor_rmsd, xyz2sdf, sdf2xyz, coords_and_masses_from_sdf
+from utilities import get_vec, tor_rmsd, xyz2sdf, sdf2xyz, coords_and_masses_from_sdf, update_coords_sdf
 
 def ig(x):
     return itemgetter(x)
@@ -246,22 +246,28 @@ def centroid_measure(sdf_string):
     return get_centre_of_mass_from_sdf(sdf_string)
 
 def centroid_set(sdf_string, values_to_set):
-    atoms_list = []
-    mol = Chem.MolFromMolBlock(sdf_string, removeHs=False)
-    for i in range(0, mol.GetNumAtoms()):
-        pos = mol.GetConformer().GetAtomPosition(i)
-        atoms_list.append(np.array([pos.x, pos.y, pos.z]))
+    atoms_list = coords_and_masses_from_sdf(sdf_string)[:,:3]
     new_coordinates = []
     shift = values_to_set - centroid_measure(sdf_string)
-    new_coordinates = [i+shift for i in atoms_list]
-    for i in range(0, mol.GetNumAtoms()):
-        mol.GetConformer().SetAtomPosition(i, new_coordinates[i])
-    sdf_string = Chem.MolToMolBlock(mol)
+    new_coordinates = [i + shift for i in atoms_list]
+    sdf_string = update_coords_sdf(sdf_string, new_coordinates)
     return sdf_string
 
-def dihedral_measure(sdf_string, position):
-    """ Measure the dihedral angle.
+def calculate_normal_vector(list_of_atoms, xyz):
+    """Calculate the normal vector of a plane by
+    cross product of two vectors belonging to it.
 
+    Args:
+        list_of_atoms: list of 3 atoms
+        xyz: numpy array with atoms xyz position
+    """
+    r0 = xyz[list_of_atoms[1], :] - xyz[list_of_atoms[0], :]
+    r1 = xyz[list_of_atoms[2], :] - xyz[list_of_atoms[1], :]
+    cross_product = np.cross(r1, r0)
+    return cross_product
+
+def dihedral_measure(sdf_string, list_of_atoms):
+    """ Measure the dihedral angle.
     Args:
         sdf_string (string)
         position (list): 4 atoms defining the dihedral
@@ -270,14 +276,92 @@ def dihedral_measure(sdf_string, position):
     Raises:
         ValueError: If the lenght of the list is not equal 4.
     """
-    if len(position) != 4:
+    if len(list_of_atoms) != 4:
         raise ValueError("The position needs to be defined by 4 integers")
-    mol = Chem.MolFromMolBlock(sdf_string, removeHs=False)
-    val = float(rdMolTransforms.GetDihedralDeg(
-                mol.GetConformer(),
-                ig(0)(position), ig(1)(position),
-                ig(2)(position), ig(3)(position)))
-    return float('{0:.2f}'.format(val))
+    coords = coords_and_masses_from_sdf(sdf_string)[:,:3]
+    plane1 = calculate_normal_vector(list_of_atoms[:3], coords)
+    plane2 = calculate_normal_vector(list_of_atoms[1:], coords)
+    #Calculate the axis of rotation (axor)
+    axor = np.cross(plane1, plane2)
+    #Calculate a norm of normal vectors:
+    norm_plane1 = np.sqrt(np.sum(plane1**2))
+    norm_plane2 = np.sqrt(np.sum(plane2**2))
+    norm = norm_plane1 * norm_plane2
+    #Measure the angle between two planes:
+    dot_product = np.dot(plane1, plane2)/norm
+    alpha = np.arccos(dot_product)
+    #The cosine function is symetric thus, to distinguish between
+    #negative and positive angles, one has to calculate if the fourth
+    #point is above or below the plane defined by first 3 points:
+    ppoint = - np.dot(plane1, coords[list_of_atoms[0], :])
+    dpoint = (np.dot(plane1, coords[list_of_atoms[3], :])+ppoint)/norm_plane1
+    if dpoint >= 0:
+        return -(alpha*180.0)/np.pi
+    else:
+        return (alpha*180.0)/np.pi
+
+def construct_graph(sdf_string):
+    conn_list = []
+    for line in sdf_string.split('\n'):
+    	bond_found  = re.match(r'(\s*(\d+)\s+(\d+)\s+(\d+)\s+\d+$)', line)
+    	if bond_found:
+    	    conn_list.append([int(bond_found.group(2)), int(bond_found.group(3)), int(bond_found.group(4))])
+    graph = {}
+    for i in conn_list:
+	if i[0] not in graph:
+	    graph[i[0]] = [i[1]]
+	else:
+	    graph[i[0]].append(i[1])
+    for i in conn_list:
+	if i[1] not in graph:
+	    graph[i[1]] = [i[0]]
+	else:
+	    graph[i[1]].append(i[0])
+    return graph
+
+def getRoots(aNeigh):
+    def findRoot(aNode,aRoot):
+        while aNode != aRoot[aNode][0]:
+            aNode = aRoot[aNode][0]
+        return (aNode,aRoot[aNode][1])
+    myRoot = {}
+    for myNode in aNeigh.keys():
+        myRoot[myNode] = (myNode,0)
+    for myI in aNeigh:
+        for myJ in aNeigh[myI]:
+            (myRoot_myI,myDepthMyI) = findRoot(myI,myRoot)
+            (myRoot_myJ,myDepthMyJ) = findRoot(myJ,myRoot)
+            if myRoot_myI != myRoot_myJ:
+                myMin = myRoot_myI
+                myMax = myRoot_myJ
+                if  myDepthMyI > myDepthMyJ:
+                    myMin = myRoot_myJ
+                    myMax = myRoot_myI
+                myRoot[myMax] = (myMax,max(myRoot[myMin][1]+1,myRoot[myMax][1]))
+                myRoot[myMin] = (myRoot[myMax][0],-1)
+    myToRet = {}
+    for myI in aNeigh:
+        if myRoot[myI][0] == myI:
+            myToRet[myI] = []
+    for myI in aNeigh:
+        myToRet[findRoot(myI,myRoot)[0]].append(myI)
+    return myToRet
+
+def insertBreak(graph, atom1, atom2):
+    graph[atom1].pop(graph[atom1].index(atom2))
+    graph[atom2].pop(graph[atom2].index(atom1))
+    return graph
+
+def carried_atoms(sdf_string, positions):
+    ''' Returns list of carried atoms'''
+    graph = construct_graph(sdf_string)
+    graph_with_break = insertBreak(graph, positions[1]+1, positions[2]+1)
+    if positions[2] in getRoots(graph_with_break).values()[0]:
+        return getRoots(graph_with_break).values()[0]
+    else:
+        return getRoots(graph_with_break).values()[1]
+
+
 
 def dihedral_set(sdf_string, position, value):
     """ Set the dihedral angle.
@@ -293,13 +377,21 @@ def dihedral_set(sdf_string, position, value):
     """
     if len(position) != 4:
         raise ValueError("The position needs to be defined by 4 integers")
-    mol = Chem.MolFromMolBlock(sdf_string, removeHs=False)
-    rdMolTransforms.SetDihedralDeg(mol.GetConformer(), ig(0)(position),
-                                   ig(1)(position), ig(2)(position),
-                                   ig(3)(position), value)
 
-    return Chem.MolToMolBlock(mol)
+    coords = coords_and_masses_from_sdf(sdf_string)[:,:3]
+    atoms_to_carry = carried_atoms(sdf_string, position)
+    angle_old = dihedral_measure(sdf_string, position)
+    ang_to_rotate = angle_old - value
+    vector = coords[position[2]] - coords[position[1]]
+    quat = produce_quaternion(ang_to_rotate, vector)
+    new_coords = []
+    for i in range(len(coords)):
+        if i+1 in atoms_to_carry:
+            new_coords.append(Rotation(coords[i], coords[position[1]], quat))
+        else:
+            new_coords.append(coords[i])
 
+    return update_coords_sdf(sdf_string, new_coords)
 
 def pyranosering_set(sdf_string, position, new_dih, new_ang):
     """ Set the pyranosering.
@@ -336,20 +428,6 @@ def pyranosering_set(sdf_string, position, new_dih, new_ang):
         molecule = Chem.MolFromMolBlock(sdf_string, removeHs=False)
         return molecule
 
-    def calculate_normal_vector(list_of_atoms, xyz):
-        """Calculate the normal vector of a plane by
-        cross product of two vectors belonging to it.
-
-        Args:
-            list_of_atoms: list of 3 atoms
-            xyz: numpy array with atoms xyz position
-        """
-
-        r0 = xyz[list_of_atoms[1], :] - xyz[list_of_atoms[0], :]
-        r1 = xyz[list_of_atoms[2], :] - xyz[list_of_atoms[1], :]
-        cross_product = np.cross(r1, r0)
-
-        return cross_product
 
     def measure_angle(list_of_atoms, xyz):
         """Calculate an angle between three atoms:
@@ -375,38 +453,38 @@ def pyranosering_set(sdf_string, position, new_dih, new_ang):
 
         return angle*180.0/np.pi, axor
 
-    def measure_dihedral(list_of_atoms, xyz):
-        """Calculate a dihedral angle between two planes defined by
-        a list of four atoms. It returns the angle and the rotation axis
-        required to set a new dihedral.
-
-        Args:
-            list_of_atoms: list of 4 atoms
-            xyz: numpy array with atom xyz positions
-        """
-
-        plane1 = calculate_normal_vector(list_of_atoms[:3], xyz)
-        plane2 = calculate_normal_vector(list_of_atoms[1:], xyz)
-        #Calculate the axis of rotation (axor)
-        axor = np.cross(plane1, plane2)
-
-        #Calculate a norm of normal vectors:
-        norm_plane1 = np.sqrt(np.sum(plane1**2))
-        norm_plane2 = np.sqrt(np.sum(plane2**2))
-        norm = norm_plane1 * norm_plane2
-        #Measure the angle between two planes:
-        dot_product = np.dot(plane1, plane2)/norm
-        alpha = np.arccos(dot_product)
-
-        #The cosine function is symetric thus, to distinguish between
-        #negative and positive angles, one has to calculate if the fourth
-        #point is above or below the plane defined by first 3 points:
-        ppoint = - np.dot(plane1, xyz[list_of_atoms[0], :])
-        dpoint = (np.dot(plane1, xyz[list_of_atoms[3], :])+ppoint)/norm_plane1
-        if dpoint >= 0:
-            return -(alpha*180.0)/np.pi, axor
-        else:
-            return (alpha*180.0)/np.pi, axor
+    # def measure_dihedral(list_of_atoms, xyz):
+    #     """Calculate a dihedral angle between two planes defined by
+    #     a list of four atoms. It returns the angle and the rotation axis
+    #     required to set a new dihedral.
+    #
+    #     Args:
+    #         list_of_atoms: list of 4 atoms
+    #         xyz: numpy array with atom xyz positions
+    #     """
+    #
+    #     plane1 = calculate_normal_vector(list_of_atoms[:3], xyz)
+    #     plane2 = calculate_normal_vector(list_of_atoms[1:], xyz)
+    #     #Calculate the axis of rotation (axor)
+    #     axor = np.cross(plane1, plane2)
+    #
+    #     #Calculate a norm of normal vectors:
+    #     norm_plane1 = np.sqrt(np.sum(plane1**2))
+    #     norm_plane2 = np.sqrt(np.sum(plane2**2))
+    #     norm = norm_plane1 * norm_plane2
+    #     #Measure the angle between two planes:
+    #     dot_product = np.dot(plane1, plane2)/norm
+    #     alpha = np.arccos(dot_product)
+    #
+    #     #The cosine function is symetric thus, to distinguish between
+    #     #negative and positive angles, one has to calculate if the fourth
+    #     #point is above or below the plane defined by first 3 points:
+    #     ppoint = - np.dot(plane1, xyz[list_of_atoms[0], :])
+    #     dpoint = (np.dot(plane1, xyz[list_of_atoms[3], :])+ppoint)/norm_plane1
+    #     if dpoint >= 0:
+    #         return -(alpha*180.0)/np.pi, axor
+    #     else:
+    #         return (alpha*180.0)/np.pi, axor
 
     def determine_carried_atoms(at1, at2, conn_mat):
         """Find all atoms necessary to be carried over during rotation
@@ -415,7 +493,6 @@ def pyranosering_set(sdf_string, position, new_dih, new_ang):
         Args:
             at1, at2: two atoms number
         """
-
         #1. Zero the connections in connectivity matrix
         tmp_conn = np.copy(conn_mat)
         tmp_conn[at1, at2] = 0
@@ -471,6 +548,7 @@ def pyranosering_set(sdf_string, position, new_dih, new_ang):
             xyz[at, :] = np.dot(rot1, xyz[at, :]-translation)
             xyz[at, :] = xyz[at, :]+translation
         return xyz
+
 
     def set_dihedral(list_of_atoms, new_dih, atoms_ring, xyz, conn_mat):
         """Set a new dihedral angle between two planes defined by
@@ -633,13 +711,6 @@ def pyranosering_measure(sdf_string, position, dict_of_options):
         rmsd_dict[key] = (tor_rmsd(2, get_vec(all_ang, dict_of_options[key])))
 
     return int(min(rmsd_dict.iteritems(), key=ig(1))[0])
-
-
-
-
-
-
-
 
 
 

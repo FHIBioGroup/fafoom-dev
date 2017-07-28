@@ -365,6 +365,18 @@ def get_ind_from_sdfline(sdf_line):
 
     return ind1, ind2
 
+def update_coords_sdf(sdf_string, new_coords):
+    updated_sdf_string  = ''
+    k = 0
+    for i in sdf_string.split('\n'):
+        old_coords_found = re.match(r'(\s+.?\d+\.\d+\s+.?\d+\.\d+\s+.?\d+\.\d+(\s+\w+.+))', i)
+        if old_coords_found:
+            updated_sdf_string = updated_sdf_string + '{:10.4f}{:10.4f}{:10.4f}{}\n'.format(new_coords[k][0], new_coords[k][1], new_coords[k][2], old_coords_found.group(2))
+            k+=1
+        else:
+            updated_sdf_string = updated_sdf_string + i + '\n'
+    return updated_sdf_strings
+
 def update_coords_aims(aims_file, new_coords):
     i = 0
     full_path = os.path.realpath(aims_file)

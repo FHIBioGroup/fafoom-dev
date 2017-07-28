@@ -12,7 +12,7 @@ from rdkit import Chem
 from rdkit.Chem import AllChem
 # from rdkit.Chem import Draw
 
-from fafoom.measure import centroid_measure
+from fafoom.measure import *
 from fafoom.utilities import sdf2xyz, check_for_clashes
 
 # Decide for restart or a simple run.
