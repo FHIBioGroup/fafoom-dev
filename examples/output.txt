@@ -11,46 +11,4 @@ Number of identified orientation: 1
 Identified orientation: [(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28)]
 ___Initialization___
 New trial
-The geometry of Structure 1 is invalid. Copied to /invalid
-New trial
-The geometry of Structure 2 is invalid. Copied to /invalid
-New trial
-The geometry of Structure 3 is invalid. Copied to /invalid
-New trial
-The geometry of Structure 4 is invalid. Copied to /invalid
-New trial
-The geometry of Structure 5 is invalid. Copied to /invalid
-New trial
-The geometry of Structure 6 is invalid. Copied to /invalid
-New trial
-The geometry of Structure 7 is invalid. Copied to /invalid
-New trial
-The geometry of Structure 8 is invalid. Copied to /invalid
-New trial
-The geometry of Structure 9 is invalid. Copied to /invalid
-New trial
-The geometry of Structure 10 is invalid. Copied to /invalid
-New trial
-The geometry of Structure 11 is invalid. Copied to /invalid
-New trial
-The geometry of Structure 12 is invalid. Copied to /invalid
-New trial
-The geometry of Structure 13 is invalid. Copied to /invalid
-New trial
-The geometry of Structure 14 is invalid. Copied to /invalid
-New trial
-The geometry of Structure 15 is invalid. Copied to /invalid
-New trial
-The geometry of Structure 16 is invalid. Copied to /invalid
-New trial
-The geometry of Structure 17 is invalid. Copied to /invalid
-New trial
-The geometry of Structure 18 is invalid. Copied to /invalid
-New trial
-The geometry of Structure 19 is invalid. Copied to /invalid
-New trial
-The geometry of Structure 20 is invalid. Copied to /invalid
-New trial
-The geometry of Structure 21 is invalid. Copied to /invalid
-New trial
-The geometry of Structure 22 is valid, copied to /valid
+The geometry of Structure 1 is valid, copied to /valid

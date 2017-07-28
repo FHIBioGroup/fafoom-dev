@@ -20,8 +20,8 @@ from operator import itemgetter
 import numpy as np
 
 import os, sys, re
-from rdkit import Chem
-from rdkit.Chem import AllChem
+# from rdkit import Chem
+# from rdkit.Chem import AllChem
 from rdkit.Chem import rdMolTransforms
 from numpy.linalg import inv
 from utilities import get_vec, tor_rmsd, xyz2sdf, sdf2xyz, coords_and_masses_from_sdf, update_coords_sdf
@@ -300,8 +300,16 @@ def dihedral_measure(sdf_string, list_of_atoms):
     else:
         return (alpha*180.0)/np.pi
 
-def construct_graph(sdf_string):
+def conn_list_from_sdf(sdf_string):
     conn_list = []
+    for line in sdf_string.split('\n'):
+    	bond_found  = re.match(r'(\s*(\d+)\s+(\d+)\s+(\d+)\s+\d+$)', line)
+    	if bond_found:
+    	    conn_list.append([int(bond_found.group(2)), int(bond_found.group(3)), int(bond_found.group(4))])
+    return conn_list
+
+def construct_graph(sdf_string):
+    conn_list = conn_list_from_sdf(sdf_string)
     for line in sdf_string.split('\n'):
     	bond_found  = re.match(r'(\s*(\d+)\s+(\d+)\s+(\d+)\s+\d+$)', line)
     	if bond_found:
@@ -424,9 +432,9 @@ def pyranosering_set(sdf_string, position, new_dih, new_ang):
                        ['C0', 'C1', 'C2', 'C3', 'C4', 'O', 'O0']):
         atoms_ring[name] = position[n]
 
-    def initialize(sdf_string):
-        molecule = Chem.MolFromMolBlock(sdf_string, removeHs=False)
-        return molecule
+    # def initialize(sdf_string):
+    #     molecule = Chem.MolFromMolBlock(sdf_string, removeHs=False)
+    #     return molecule
 
 
     def measure_angle(list_of_atoms, xyz):
@@ -453,38 +461,38 @@ def pyranosering_set(sdf_string, position, new_dih, new_ang):
 
         return angle*180.0/np.pi, axor
 
-    # def measure_dihedral(list_of_atoms, xyz):
-    #     """Calculate a dihedral angle between two planes defined by
-    #     a list of four atoms. It returns the angle and the rotation axis
-    #     required to set a new dihedral.
-    #
-    #     Args:
-    #         list_of_atoms: list of 4 atoms
-    #         xyz: numpy array with atom xyz positions
-    #     """
-    #
-    #     plane1 = calculate_normal_vector(list_of_atoms[:3], xyz)
-    #     plane2 = calculate_normal_vector(list_of_atoms[1:], xyz)
-    #     #Calculate the axis of rotation (axor)
-    #     axor = np.cross(plane1, plane2)
-    #
-    #     #Calculate a norm of normal vectors:
-    #     norm_plane1 = np.sqrt(np.sum(plane1**2))
-    #     norm_plane2 = np.sqrt(np.sum(plane2**2))
-    #     norm = norm_plane1 * norm_plane2
-    #     #Measure the angle between two planes:
-    #     dot_product = np.dot(plane1, plane2)/norm
-    #     alpha = np.arccos(dot_product)
-    #
-    #     #The cosine function is symetric thus, to distinguish between
-    #     #negative and positive angles, one has to calculate if the fourth
-    #     #point is above or below the plane defined by first 3 points:
-    #     ppoint = - np.dot(plane1, xyz[list_of_atoms[0], :])
-    #     dpoint = (np.dot(plane1, xyz[list_of_atoms[3], :])+ppoint)/norm_plane1
-    #     if dpoint >= 0:
-    #         return -(alpha*180.0)/np.pi, axor
-    #     else:
-    #         return (alpha*180.0)/np.pi, axor
+    def measure_dihedral_tor(list_of_atoms, xyz):
+        """Calculate a dihedral angle between two planes defined by
+        a list of four atoms. It returns the angle and the rotation axis
+        required to set a new dihedral.
+
+        Args:
+            list_of_atoms: list of 4 atoms
+            xyz: numpy array with atom xyz positions
+        """
+
+        plane1 = calculate_normal_vector(list_of_atoms[:3], xyz)
+        plane2 = calculate_normal_vector(list_of_atoms[1:], xyz)
+        #Calculate the axis of rotation (axor)
+        axor = np.cross(plane1, plane2)
+
+        #Calculate a norm of normal vectors:
+        norm_plane1 = np.sqrt(np.sum(plane1**2))
+        norm_plane2 = np.sqrt(np.sum(plane2**2))
+        norm = norm_plane1 * norm_plane2
+        #Measure the angle between two planes:
+        dot_product = np.dot(plane1, plane2)/norm
+        alpha = np.arccos(dot_product)
+
+        #The cosine function is symetric thus, to distinguish between
+        #negative and positive angles, one has to calculate if the fourth
+        #point is above or below the plane defined by first 3 points:
+        ppoint = - np.dot(plane1, xyz[list_of_atoms[0], :])
+        dpoint = (np.dot(plane1, xyz[list_of_atoms[3], :])+ppoint)/norm_plane1
+        if dpoint >= 0:
+            return -(alpha*180.0)/np.pi, axor
+        else:
+            return (alpha*180.0)/np.pi, axor
 
     def determine_carried_atoms(at1, at2, conn_mat):
         """Find all atoms necessary to be carried over during rotation
@@ -566,7 +574,7 @@ def pyranosering_set(sdf_string, position, new_dih, new_ang):
         """
 
         #Determine the axis of rotation:
-        old_dih, axor = measure_dihedral(list_of_atoms, xyz)
+        old_dih, axor = measure_dihedrall_tor(list_of_atoms, xyz)
         norm_axor = np.sqrt(np.sum(axor**2))
         normalized_axor = axor/norm_axor
 
@@ -600,13 +608,19 @@ def pyranosering_set(sdf_string, position, new_dih, new_ang):
 
         return xyz
 
-    def mutate_ring(molecule, new_dih, new_ang):
+    def mutate_ring(sdf_string, new_dih, new_ang):
         """Mutate a ring to given conformation defined as a list of torsional
         angles accoring to the 10.1016/S0040-4020(00)01019-X (IUPAC) paper
         """
-        n_at = molecule.GetNumAtoms()
-        n_bonds = molecule.GetNumBonds()
-        m_string = Chem.MolToMolBlock(molecule)
+        ###
+        n_at = len(coords_and_masses_from_sdf(sdf_string))
+        n_bonds = len(conn_list_from_sdf(sdf_string))
+        m_string = sdf_string
+        ###was before:
+        # n_at = molecule.GetNumAtoms()
+        # n_bonds = molecule.GetNumBonds()
+        # m_string = Chem.MolToMolBlock(molecule)
+        ###
 
         #Split the string to xyz, connectivity matrix and atom list
         m_coords = m_string.split('\n')[4:4+n_at]
@@ -648,7 +662,7 @@ def pyranosering_set(sdf_string, position, new_dih, new_ang):
         imdih = []
         for at in ['C1', 'C0', 'O', 'O0']:
             imdih.append(atoms_ring[at])
-        test_anomer = measure_dihedral(imdih, xyz)[0]
+        test_anomer = measure_dihedrall_tor(imdih, xyz)[0]
         if test_anomer > 0.0:
             atoms_ring['O0b'] = atoms_ring.pop('O0')
         else:
@@ -673,8 +687,8 @@ def pyranosering_set(sdf_string, position, new_dih, new_ang):
         xyz_string = ''.join(a)
         return xyz_string
 
-    molecule = initialize(sdf_string)
-    sdf_string = xyz2sdf(mutate_ring(molecule, new_dih, new_ang), sdf_string)
+    # molecule = initialize(sdf_string)
+    sdf_string = xyz2sdf(mutate_ring(sdf_string, new_dih, new_ang), sdf_string)
 
     return sdf_string
 
@@ -711,38 +725,3 @@ def pyranosering_measure(sdf_string, position, dict_of_options):
         rmsd_dict[key] = (tor_rmsd(2, get_vec(all_ang, dict_of_options[key])))
 
     return int(min(rmsd_dict.iteritems(), key=ig(1))[0])
-
-
-
-#~ smiles = '[NH3+][C@H](C(=O)N1[C@H](C(=O)N[C@H](C(=O)O)Cc2ccccc2)CCC1)Cc1nc[nH]c1'
-#~ pat_1 = Chem.MolFromSmarts('[C@H]C(=O)O')
-#~ pat_2 = Chem.MolFromSmarts('[NX3H2,NX4H3+][C@H]')
-#~ mol = Chem.MolFromSmiles(smiles)
-#~ mol = Chem.AddHs(mol)
-#~ AllChem.EmbedMolecule(mol)
-#~ string = Chem.MolToMolBlock(mol)
-
-#~ first_heavy_atom_indx = 0                           #First heavy atom
-#~ last_heavy_atom = mol.GetNumHeavyAtoms() - 1        #Last Heavy atom
-#~ coords_and_masses = get_coords_and_masses(string)
-#~ center = get_centre_of_mass(coords_and_masses)
-#~ coords_and_masses = produce_coords_and_masses(Rotation(coords_and_masses[:,:3], center, np.array([45, 1, 1, 1])), coords_and_masses[:,3])
-#~ string = update_coords_sdf(string, coords_and_masses[:,:3])
-#~ if 'test.xyz' in os.listdir(os.getcwd()):
-    #~ os.remove('test.xyz')
-#~ initial = open('initial.xyz', 'w')
-#~ initial.write(sdf2xyz(string))
-#~ initial.close()
-
-#~ aligned = align_to_axes(coords_and_masses, first_heavy_atom_indx, last_heavy_atom)
-#~ cent = get_centre_of_mass(aligned)
-#~ al = update_coords_sdf(string, aligned[:,:3])
-#~ aligned_file = open('aligned.xyz', 'w')
-#~ aligned_file.write(sdf2xyz(al))
-#~ aligned_file.close()
-#~ quat_set = np.array([0, 1, 1, 1])
-#~ after_setting = quaternion_set_coords(coords_and_masses, quat_set, first_heavy_atom_indx, last_heavy_atom)
-#~ sett = update_coords_sdf(string, after_setting[:,:3])
-#~ setted = open('setted_111.xyz', 'w')
-#~ setted.write(sdf2xyz(sett))
-#~ setted.close()
