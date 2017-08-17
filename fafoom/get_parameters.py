@@ -63,9 +63,9 @@ def get_positions(type_of_deg, sdf_string, **kwargs):
 
 
 
-    '''  #####################################  '''
-    ''' Switch only to [list_of_torsional] option'''
-    '''  #####################################  '''
+    '''    ####################################   '''
+    ''' Switch only to [list_of_torsional] option '''
+    '''    ####################################   '''
 
     if type_of_deg == "torsion":
         if 'list_of_torsion' in kwargs:
@@ -87,17 +87,17 @@ def get_positions(type_of_deg, sdf_string, **kwargs):
 
     if type_of_deg == "cistrans":
         if 'list_of_cistrans' in kwargs:
-            return CisTrans.find(smiles, positions=kwargs['list_of_cistrans'])
-        else:
-            return CisTrans.find(smiles,
-                                 smarts_cistrans=kwargs['smarts_cistrans'])
+            return CisTrans.find(sdf_string, positions=kwargs['list_of_cistrans'])
+        # else:
+        #     return CisTrans.find(smiles,
+        #                          smarts_cistrans=kwargs['smarts_cistrans'])
 
     if type_of_deg == "pyranosering":
         if 'list_of_pyranosering' in kwargs:
-            return PyranoseRing.find(smiles,
+            return PyranoseRing.find(sdf_string,
                                      positions=kwargs['list_of_pyranosering']) ###NEEED TO CLARIFY
-        else:
-            return PyranoseRing.find(smiles)
+        # else:
+        #     return PyranoseRing.find(smiles)
 
     '''  #####################################  '''
 

@@ -175,8 +175,10 @@ class MoleculeDescription:
         geom_file = os.path.join(os.getcwd(), self.constrained_geometry_file)
         if os.path.isfile(geom_file):
             if len(aims2xyz(geom_file)) == 0:
-                dof_names.remove('centroid')
-                dof_names.remove('orientation')
+                if 'centroid' in dof_names:
+                    dof_names.remove('centroid')
+                if 'orientation' in dof_names:
+                    dof_names.remove('orientation')
         else:
             dof_names.remove('centroid')
             dof_names.remove('orientation')
@@ -309,12 +311,12 @@ class Structure:
                     dof.get_weighted_values(weights)
                 else:
                     dof.get_random_values()
-                    # print 'Initial random values for {} are {}'.format(dof.name ,dof.values)
+                    print 'Initial random values for {} are {}'.format(dof.name ,dof.values)
                 new_string = dof.apply_on_string(new_string)
         self.sdf_string = new_string
         for dof in self.dof:
             dof.update_values(self.sdf_string)
-            # print 'Updated values for {} are {}'.format(dof.name, dof.values)
+            print 'Updated values for {} are {}'.format(dof.name, dof.values)
 
 ############
     def adjust_position(self):

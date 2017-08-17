@@ -266,8 +266,7 @@ class Torsion(DOF):
         if values_to_set is not None:
             self.values = values_to_set
         for i in range(len(self.positions)):
-            string = dihedral_set(string, self.positions[i],
-                                  self.values[i])
+            string = dihedral_set(string, self.positions[i],self.values[i])
         return string
 
     def mutate_values(self, max_mutations=None, weights=None):
@@ -407,14 +406,15 @@ class PyranoseRing(DOF):
     values_options = range(0, len(dict_for_ring_dih), 1)
 
     @staticmethod
-    def find(smiles, pyranosering_pattern="C1(CCCCO1)O", positions=None):
-        if positions is None:
-            mol = Chem.MolFromSmiles(smiles)
-            if mol is None:
-                raise ValueError("The smiles is invalid")
-            pattern_pyranosering = Chem.MolFromSmarts(pyranosering_pattern)
-            pyranosering = list(mol.GetSubstructMatches(pattern_pyranosering))
-            positions = pyranosering
+    def find(smiles, positions=None):
+    # def find(smiles, pyranosering_pattern="C1(CCCCO1)O", positions=None):
+        # if positions is None:
+        #     mol = Chem.MolFromSmiles(smiles)
+        #     if mol is None:
+        #         raise ValueError("The smiles is invalid")
+        #     pattern_pyranosering = Chem.MolFromSmarts(pyranosering_pattern)
+        #     pyranosering = list(mol.GetSubstructMatches(pattern_pyranosering))
+        #     positions = pyranosering
         return positions
 
     def __init__(self, positions):
@@ -489,14 +489,14 @@ class CisTrans(DOF):
     values_options = [0.0, 180.0]
 
     @staticmethod
-    def find(smiles, smarts_cistrans=None, positions=None):
-        if positions is None:
-            mol = Chem.MolFromSmiles(smiles)
-            if mol is None:
-                raise ValueError("The smiles is invalid")
-            pattern_cistrans = Chem.MolFromSmarts(smarts_cistrans)
-            cistrans = list(mol.GetSubstructMatches(pattern_cistrans))
-            positions = cleaner(cistrans)
+    def find(sdf_string, positions=None):
+        # if positions is None:
+        #     mol = Chem.MolFromSmiles(smiles)
+        #     if mol is None:
+        #         raise ValueError("The smiles is invalid")
+        #     pattern_cistrans = Chem.MolFromSmarts(smarts_cistrans)
+        #     cistrans = list(mol.GetSubstructMatches(pattern_cistrans))
+        #     positions = cleaner(cistrans)
         return positions
 
     def __init__(self, positions):
@@ -558,40 +558,3 @@ class CisTrans(DOF):
             return False
         else:
             return True
-#=======================================================================
-#~ '''
-#~ For test of the module only
-#~ '''
-
-#~ smiles = 'CC(=O)N[C@H](C(=O)NC)C'
-#~ obj = Centroid(smiles)
-#~ mol = Chem.MolFromSmiles(obj.positions)
-#~ mol = Chem.AddHs(mol)
-#~ AllChem.EmbedMolecule(mol)
-#~ string = Chem.MolToMolBlock(mol)
-
-
-
-
-#~ coords_and_masses = get_coords_and_masses(string)
-#~ positions = coords_and_masses[:,:3]
-#~ weights = coords_and_masses[:,3]
-
-#~ quaternion = np.array([90,0,0,1])
-#~ quaternion_set(string, quaternion)
-
-#~ print 'Marianas tensor of inertia:\n{}'.format(cm_and_inertia(positions, weights))
-#~ print 'My tensor of inertia:\n{}'.format(get_tensor_of_inertia(string))
-#~ print 'Initial coordinates:'
-#~ print sdf2xyz(string)
-#~ print 'Initial centroid:'
-#~ print centroid_measure(string)
-#~ obj.get_random_values()
-#~ print 'Centroid will be set to:'
-#~ print obj.values
-#~ string = obj.apply_on_string(string, obj.values)
-#~ print 'Final coordinates:'
-#~ print sdf2xyz(string)
-#~ print 'Final centroid:'
-#~ print centroid_measure(string)
-#***********************************************************************

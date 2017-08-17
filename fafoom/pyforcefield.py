@@ -3,7 +3,7 @@ import shutil
 import os,re
 import subprocess
 import itertools
-import pybel
+#import pybel
 import numpy as np
 
 from utilities import sdf2xyz
@@ -36,6 +36,8 @@ class FFobject():
             shutil.copy(os.path.join(self.sourcedir, 'prepare_psf.run'), os.getcwd())
         if not os.path.exists(os.path.join(os.getcwd(),'par_all22_prot_metals.inp')):
             shutil.copy(os.path.join(self.sourcedir, 'par_all22_prot_metals.inp'), os.getcwd())
+        if not os.path.exists(os.path.join(os.getcwd(),'top_all22_prot_metals.inp')):
+            shutil.copy(os.path.join(self.sourcedir, 'top_all22_prot_metals.inp'), os.getcwd())
         if not os.path.exists(os.path.join(os.getcwd(),'psfgen')):
             shutil.copy(os.path.join(self.sourcedir, 'psfgen'), os.getcwd())
 
@@ -49,13 +51,17 @@ class FFobject():
         with open(os.path.join(self.sourcedir, 'mol.pdb'),'r') as molfile:
             lines = molfile.readlines()
             for line in lines:
-                pdb_line_found = re.match(r'((\w+)\s+(\d+)\s+(...)\s+(\w\w\w)\s+(\w+)\s+(\d+)\s+(.?\d+\.\d+)\s+(.?\d+\.\d+)\s+(.?\d+\.\d+)\s+(.?\d+\.\d+)\s+(.?\d+\.\d+)\s+(\w+)\s+(\w+))', line)
+                pdb_line_found = re.match(r'((\w+)\s+(\d+)\s+(....?)\s+(\w\w\w\w?)(\s+\w+)?\s+(\d+)\s+(.?\d+\.\d+)\s+(.?\d+\.\d+)\s+(.?\d+\.\d+)\s+(.?\d+\.\d+)\s+(.?\d+\.\d+)\s+(\w+)\s+(\w+))', line)
                 if pdb_line_found:
+                    if pdb_line_found.group(6) is None:
+                        chain = 'A'
+                    else:
+                        chain = pdb_line_found.group(6)
                     pdb_file.append([pdb_line_found.group(2),
                                      pdb_line_found.group(3),
                                      pdb_line_found.group(4),
                                      pdb_line_found.group(5),
-                                     pdb_line_found.group(6),
+                                     chain,
                                      pdb_line_found.group(7),
                                      pdb_line_found.group(8),
                                      pdb_line_found.group(9),
@@ -86,7 +92,7 @@ class FFobject():
         # print updated_pdb
         with open(os.path.join(os.getcwd(), 'mol.pdb'), 'a') as updated_file:
             for line in updated_pdb:
-                updated_file.write('{:6} {:>4}  {:3} {:>3} {} {:>3}    {:>7} {:>7} {:>7} {:>3} {:>5}   {:4} {:>2}\n'.format(line[0], line[1], line[2], line[3], line[4], line[5], line[6], line[7], line[8], line[9], line[10], line[11], line[12]))
+                updated_file.write('{:6} {:>4} {:4} {:>3} {} {:>3}    {:>7} {:>7} {:>7} {:>3} {:>5}   {:4} {:>2}\n'.format(line[0], line[1], line[2], line[3], line[4], line[5], line[6], line[7], line[8], line[9], line[10], line[11], line[12]))
 
         os.system('cd {} && ./prepare_psf.run'.format(os.getcwd()))
 

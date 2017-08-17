@@ -20,6 +20,9 @@ from operator import itemgetter
 import numpy as np
 
 import os, sys, re
+# from rdkit import Chem
+# from rdkit.Chem import AllChem
+# from rdkit.Chem import rdMolTransforms
 from numpy.linalg import inv
 from utilities import get_vec, tor_rmsd, xyz2sdf, sdf2xyz, coords_and_masses_from_sdf, update_coords_sdf
 
@@ -178,20 +181,20 @@ def quaternion_set(sdf_string, quaternion_to_set, atom_1_indx, atom_2_indx):
     updated_sdf_string = update_coords_sdf(sdf_string, rotation_2)
     return updated_sdf_string
 
-# def quaternion_set_coords(coords_and_masses, quaternion_to_set, atom_1_indx, atom_2_indx):
-#     center = get_centre_of_mass(coords_and_masses)
-#     aligned = align_to_axes(coords_and_masses, atom_1_indx, atom_2_indx)
-#     first_rot = produce_quaternion(quaternion_to_set[0], np.array([0, 0, 1]))
-#     rotation_1 = Rotation(aligned[:,:3], center, first_rot)
-#     angle_2 = angle_between(np.array([0, 0, 1]), quaternion_to_set[1:])
-#     vec_2 = np.cross(np.array([0, 0, 1]), quaternion_to_set[1:])
-#     quat_2 = produce_quaternion(angle_2, vec_2)
-#     rotation_2 = Rotation(rotation_1, center, quat_2)
-#     return produce_coords_and_masses(rotation_2, coords_and_masses[:,3])
-#
-# def get_coords(sdf_string):
-#     coords_and_masses = coords_and_masses_from_sdf(sdf_string)
-#     return coords_and_masses[:,:3]
+def quaternion_set_coords(coords_and_masses, quaternion_to_set, atom_1_indx, atom_2_indx):
+    center = get_centre_of_mass(coords_and_masses)
+    aligned = align_to_axes(coords_and_masses, atom_1_indx, atom_2_indx)
+    first_rot = produce_quaternion(quaternion_to_set[0], np.array([0, 0, 1]))
+    rotation_1 = Rotation(aligned[:,:3], center, first_rot)
+    angle_2 = angle_between(np.array([0, 0, 1]), quaternion_to_set[1:])
+    vec_2 = np.cross(np.array([0, 0, 1]), quaternion_to_set[1:])
+    quat_2 = produce_quaternion(angle_2, vec_2)
+    rotation_2 = Rotation(rotation_1, center, quat_2)
+    return produce_coords_and_masses(rotation_2, coords_and_masses[:,3])
+
+def get_coords(sdf_string):
+    coords_and_masses = coords_and_masses_from_sdf(sdf_string)
+    return coords_and_masses[:,:3]
 
 def get_coords_and_masses(sdf_string):
     coords_and_masses = coords_and_masses_from_sdf(sdf_string)
@@ -307,21 +310,23 @@ def conn_list_from_sdf(sdf_string):
 
 def construct_graph(sdf_string):
     conn_list = conn_list_from_sdf(sdf_string)
-    for line in sdf_string.split('\n'):
-    	bond_found  = re.match(r'(\s*(\d+)\s+(\d+)\s+(\d+)\s+\d+$)', line)
-    	if bond_found:
-    	    conn_list.append([int(bond_found.group(2)), int(bond_found.group(3)), int(bond_found.group(4))])
+    # print conn_list
+    # for line in sdf_string.split('\n'):
+    # 	bond_found  = re.match(r'(\s*(\d+)\s+(\d+)\s+(\d+)\s+\d+$)', line)
+    # 	if bond_found:
+    # 	    conn_list.append([int(bond_found.group(2)), int(bond_found.group(3)), int(bond_found.group(4))])
     graph = {}
+    # print 'CON LIST {}'.format(conn_list)
     for i in conn_list:
-	if i[0] not in graph:
-	    graph[i[0]] = [i[1]]
-	else:
-	    graph[i[0]].append(i[1])
+    	if i[0] not in graph:
+    	    graph[i[0]] = [i[1]]
+    	else:
+    	    graph[i[0]].append(i[1])
     for i in conn_list:
-	if i[1] not in graph:
-	    graph[i[1]] = [i[0]]
-	else:
-	    graph[i[1]].append(i[0])
+    	if i[1] not in graph:
+    	    graph[i[1]] = [i[0]]
+    	else:
+    	    graph[i[1]].append(i[0])
     return graph
 
 def getRoots(aNeigh):
@@ -429,9 +434,9 @@ def pyranosering_set(sdf_string, position, new_dih, new_ang):
                        ['C0', 'C1', 'C2', 'C3', 'C4', 'O', 'O0']):
         atoms_ring[name] = position[n]
 
-    # def initialize(sdf_string):
-    #     molecule = Chem.MolFromMolBlock(sdf_string, removeHs=False)
-    #     return molecule
+    def initialize(sdf_string):
+        molecule = Chem.MolFromMolBlock(sdf_string, removeHs=False)
+        return molecule
 
 
     def measure_angle(list_of_atoms, xyz):
@@ -605,14 +610,14 @@ def pyranosering_set(sdf_string, position, new_dih, new_ang):
 
         return xyz
 
-    def mutate_ring(sdf_string, new_dih, new_ang):
+    def mutate_ring(molecule, new_dih, new_ang):
         """Mutate a ring to given conformation defined as a list of torsional
         angles accoring to the 10.1016/S0040-4020(00)01019-X (IUPAC) paper
         """
-        ###
+
         n_at = len(coords_and_masses_from_sdf(sdf_string))
         n_bonds = len(conn_list_from_sdf(sdf_string))
-        m_string = sdf_string
+        m_
         ###was before:
         # n_at = molecule.GetNumAtoms()
         # n_bonds = molecule.GetNumBonds()
@@ -684,8 +689,8 @@ def pyranosering_set(sdf_string, position, new_dih, new_ang):
         xyz_string = ''.join(a)
         return xyz_string
 
-    # molecule = initialize(sdf_string)
-    sdf_string = xyz2sdf(mutate_ring(sdf_string, new_dih, new_ang), sdf_string)
+    molecule = initialize(sdf_string)
+    sdf_string = xyz2sdf(mutate_ring(molecule, new_dih, new_ang), sdf_string)
 
     return sdf_string
 

@@ -12,32 +12,176 @@ Number of identified orientation: 55
 Identified orientation: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55]
 ___Initialization___
 New trial
-The geometry of Structure 1 is valid, copied to /valid
-Structure 1, energy: -21134.4432, was added to the population
-Structure 1
-Values of torsion before: [-71.561128248501348, -56.799242618875134, -20.942128633017248, 152.4663972461054, 2.7237729297888222, -111.00173833540155, 62.786180561036247, -118.59779862475828] and after local opt: [-73.223311696713253, -57.874694675526065, -25.231675601446661, 155.27984320323773, 2.9782625685819064, -111.53239766953034, 61.843228355501665, -119.46683455667237]
-Values of centroid before: [ 13.78298648  10.95027406  14.51611323] and after local opt: [ 13.77666229  10.95471126  14.52244219]
-Values of orientation before: [-0.00052624 -0.00000207 -0.44721805 -0.89442496] and after local opt: [ 0.10037759  0.00037853 -0.42954823 -0.90304384]
+The geometry of Structure 1 is invalid. Copied to /invalid
 New trial
-The geometry of Structure 2 is valid, copied to /valid
-Structure 2, energy: -21021.4815, was added to the population
-Structure 2
-Values of torsion before: [-71.562325254657509, -56.792167853231916, -20.946575659776741, 152.46053911636099, 2.7053584556945114, -111.0150699281576, 62.786418269107344, -118.60257316492807] and after local opt: [-67.135361144547929, -60.013621819331185, -22.205899281237858, 155.13926353256642, 5.958405702182187, -111.80502795911157, 63.121866237233235, -113.8781264225051]
-Values of centroid before: [ 13.69629074  10.33805124  14.75430549] and after local opt: [ 13.69418152  10.33501559  14.77132659]
-Values of orientation before: [ 0.00031617 -0.00000187  0.44721272 -0.89442763] and after local opt: [-0.83388702  0.00330431  0.43126631 -0.90221863]
+The geometry of Structure 2 is invalid. Copied to /invalid
 New trial
-The geometry of Structure 3 is valid, copied to /valid
-Structure 3, energy: -21124.3122, was added to the population
-Structure 3
-Values of torsion before: [-71.563690797796809, -56.784084824365927, -20.980533942616372, 152.45803264696659, 2.7115054855508927, -110.99383288697781, 62.777335732224401, -118.60641512479827] and after local opt: [-68.307571302669402, -55.835591187627827, -33.254659768390972, 154.7686952585224, -1.7765972949988182, -111.86990639337813, 63.397876588715121, -119.81164355529701]
-Values of centroid before: [ 13.16785026  10.65505938  14.9061259 ] and after local opt: [ 13.15468505  10.64167246  14.89728356]
-Values of orientation before: [ 0.00009239  0.00000003  0.00000774  1.        ] and after local opt: [ 0.02297002  0.00458346 -0.00424074  0.9999805 ]
+The geometry of Structure 3 is invalid. Copied to /invalid
 New trial
-The geometry of Structure 4 is valid, copied to /valid
-Structure 4, energy: -21092.9037, was added to the population
-Structure 4
-Values of torsion before: [-71.567497810848266, -56.774861996094749, -20.973380401184897, 152.46009803244141, 2.712389282663124, -111.0047896370354, 62.790200260318052, -118.59070037344861] and after local opt: [-65.401026840549662, -57.999113807562445, -26.321940647228082, 155.15581285507082, 2.2609613915195461, -111.25064808674644, 62.212014075846675, -119.0467221894674]
-Values of centroid before: [ 13.95051072  10.0575394   17.71917661] and after local opt: [ 13.95519705  10.06355755  17.71603133]
-Values of orientation before: [ 0.00009842 -0.57734902 -0.57735129 -0.57735049] and after local opt: [ 0.79041426 -0.56869921 -0.57979296 -0.58345636]
+The geometry of Structure 4 is invalid. Copied to /invalid
 New trial
-The geometry of Structure 5 is valid, copied to /valid
+The geometry of Structure 5 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 6 is valid, copied to /valid
+Structure 6, energy: -21111.937, was added to the population
+Structure 6
+Values of torsion before: [-108.99625499137447, -147.00967842396696, -58.942406905775428, -111.00761299787703, -30.597948654750716, 100.00019002036612, 87.000813466834359, -134.19005802272113] and after local opt: [-102.07246639893054, -149.17600673257152, -65.702320737243625, -108.38609145165883, -33.191560981409751, 101.64562480908813, 82.448272237416262, -138.01264481054523]
+Values of centroid before: [ 13.85236121  10.74350364  16.91706679] and after local opt: [ 13.8477917   10.7410413   16.91918915]
+Values of orientation before: [ 0.00045814 -0.40824249 -0.81649612 -0.40825502] and after local opt: [ 0.65077917 -0.40051756 -0.81556632 -0.41765687]
+New trial
+The geometry of Structure 7 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 8 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 9 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 10 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 11 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 12 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 13 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 14 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 15 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 16 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 17 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 18 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 19 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 20 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 21 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 22 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 23 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 24 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 25 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 26 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 27 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 28 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 29 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 30 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 31 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 32 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 33 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 34 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 35 is valid, copied to /valid
+Structure 35, energy: -20860.9501, was added to the population
+Structure 35
+Values of torsion before: [-44.996659696937364, 74.998067426390477, -134.93605077819603, 78.997352037592933, -17.614327723980043, 58.00462962852454, 17.992259086413174, 69.802214493103094] and after local opt: [-46.950367459901223, 72.519186272058377, -142.63002827315466, 81.102447630799787, -21.370312875492171, 57.343518112505052, 15.526386736271331, 62.244582305218671]
+Values of centroid before: [ 13.804677    10.67974483  14.33810695] and after local opt: [ 13.81489814  10.67175449  14.37170889]
+Values of orientation before: [-0.00004472  0.00000027  0.44720461 -0.89443168] and after local opt: [ 0.6512935  -0.00265369  0.42119335 -0.90696699]
+New trial
+The geometry of Structure 36 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 37 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 38 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 39 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 40 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 41 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 42 is valid, copied to /valid
+Structure 42, energy: -21063.5857, was added to the population
+Structure 42
+Values of torsion before: [-53.996700184140856, -73.997158328924456, -28.933039251730264, 143.00483901865221, 39.415492370130913, -93.99929464432563, -178.00393935207035, -143.17400180131315] and after local opt: [-52.414711929904939, -74.664556855169607, -33.514170489496991, 143.961466419098, 42.339008040724302, -94.597899042838804, -179.40293789965665, -140.48348700424256]
+Values of centroid before: [ 13.15369745  10.5742352   19.06367459] and after local opt: [ 13.15531429  10.57007029  19.05422151]
+Values of orientation before: [ 0.00019101 -1.         -0.00000056 -0.00000221] and after local opt: [-0.56938897 -0.9999729   0.00387258  0.00626172]
+New trial
+The geometry of Structure 43 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 44 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 45 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 46 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 47 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 48 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 49 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 50 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 51 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 52 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 53 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 54 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 55 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 56 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 57 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 58 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 59 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 60 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 61 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 62 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 63 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 64 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 65 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 66 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 67 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 68 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 69 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 70 is valid, copied to /valid
+Structure 70, energy: -21064.6047, was added to the population
+Structure 70
+Values of torsion before: [172.00723447330762, 36.000553327789909, -171.94440855793968, -25.995287270982672, -46.592037921652306, 6.9874818948200739, 57.008163210376139, 17.799258152176193] and after local opt: [-176.99447361992986, 44.150108528011671, -169.61119817838397, -31.137202594963274, -51.033609442052821, 10.082795992529435, 55.830302361458045, 19.618199561501775]
+Values of centroid before: [ 13.63774086  10.73618618  15.94564861] and after local opt: [ 13.63953752  10.73711827  15.94871571]
+Values of orientation before: [-0.00021969  0.33333059 -0.66666546 -0.66666925] and after local opt: [-0.06569215  0.33292346 -0.66828963 -0.66524502]
+New trial
+The geometry of Structure 71 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 72 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 73 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 74 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 75 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 76 is invalid. Copied to /invalid
+New trial
+The geometry of Structure 77 is valid, copied to /valid

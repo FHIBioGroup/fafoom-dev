@@ -1,6 +1,7 @@
 #!/usr/bin/python
-import sys
+import sys, os
 from rdkit import Chem
+from rdkit.Chem import AllChem
 from operator import itemgetter
 from copy import copy
 
@@ -22,11 +23,16 @@ def cleaner(list_to_clean):
 
 smiles = sys.argv[1] #Read smiles 
 smarts_torsion= "[*]~[!$(*#*)&!D1]-&!@[!$(*#*)&!D1]~[*]" #Definitions of torsion in smarts notation
-filter_smarts_torsion= "C~[$(C=O)]-[$(NC)]~[C]" # definition of torsions for peptides???
+smarts_cistrans= "C~[$(C=O)]-[$(NC)]~[C]"
+filter_smarts_torsion= "C~[$(C=O)]-[$(NC)]~[C]" # definition of cistrans for peptides
+
 
 mol = Chem.MolFromSmiles(smiles) #Produce molecule from smiles code
 pattern_tor = Chem.MolFromSmarts(smarts_torsion) #Pattern for torsion
+pattern_cis = Chem.MolFromSmarts(smarts_cistrans)
 torsion = list(mol.GetSubstructMatches(pattern_tor)) #Obtain all the torsions
+cistrans = list(mol.GetSubstructMatches(pattern_cis))
+
 
 if filter_smarts_torsion: #Filter particular torsions from all obtained previously
     pattern_custom = Chem.MolFromSmarts(filter_smarts_torsion)
@@ -44,4 +50,13 @@ if filter_smarts_torsion: #Filter particular torsions from all obtained previous
 		      if i not in set(to_del_bef_custom)]
     torsion = custom_torsion
 positions = cleaner(torsion) #Return list consist of tuples which contain 4-atoms define torsion angle 
-print positions
+
+print 'list_of_torsion  = {}'.format(positions)
+print 'list_of_cistrans = {}'.format(cistrans)
+
+
+#Produce mol.sdf file of the molecule
+mol = Chem.AddHs(mol)
+AllChem.EmbedMolecule(mol)
+with open(os.path.join(os.getcwd(),'mol.sdf'),'w') as molecule:
+    molecule.write(Chem.MolToMolBlock(mol))

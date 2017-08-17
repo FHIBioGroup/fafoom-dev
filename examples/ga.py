@@ -8,8 +8,8 @@ import fafoom.run_utilities as run_util
 #from visual import draw_picture
 
 from numpy import array
-from rdkit import Chem
-from rdkit.Chem import AllChem
+#from rdkit import Chem
+#from rdkit.Chem import AllChem
 # from rdkit.Chem import Draw
 
 from fafoom.measure import *
@@ -190,7 +190,7 @@ def mutate_and_relax(candidate, name, iteration, cnt_max, **kwargs):
             name = "generation_%d_%s" % (iteration, name)
             run_util.optimize(candidate, energy_function, params, name)
             run_util.check_for_kill()
-            #candidate.send_to_blacklist(blacklist) #Blacklist
+            candidate.send_to_blacklist(blacklist) #Blacklist
             print_output(str(candidate)+":, energy: "+str(float(
                 candidate))+", is temporary added to the population")
             run_util.relax_info(candidate)

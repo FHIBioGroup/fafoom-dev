@@ -318,7 +318,7 @@ def distance(x, y):
     return np.sqrt((x[0]-y[0])**2+(x[1]-y[1])**2+(x[2]-y[2])**2)
 
 
-def check_geo_sdf(sdf_string):
+def check_geo_sdf(sdf_string, flag=0.9):
     """Check geometry from a sdf_string for clashes.
     Returns:
         True for clash-free geometries and False for invalid geometries
@@ -345,7 +345,7 @@ def check_geo_sdf(sdf_string):
     for x in range(atoms):
         for y in range(x+1, atoms):
             if [x+1, y+1] not in bonds_list and [y+1, x+1] not in bonds_list:
-                if dist[x][y] < VDW_radii[atoms_names[x]]*bohrtoang or dist[x][y] < VDW_radii[atoms_names[y]]*bohrtoang:
+                if dist[x][y] < VDW_radii[atoms_names[x]]*bohrtoang*flag or dist[x][y] < VDW_radii[atoms_names[y]]*bohrtoang*flag:
                     check = False
                     return check
     return check
