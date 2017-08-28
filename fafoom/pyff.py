@@ -18,9 +18,9 @@
 '''Wrapper for RDKit force-field routines'''
 from __future__ import division
 import os
-#from rdkit import Chem
-#from rdkit.Chem import AllChem
-#from rdkit.Chem import ChemicalForceFields
+from rdkit import Chem
+from rdkit.Chem import AllChem
+from rdkit.Chem import ChemicalForceFields
 
 kcalmol2eV = 0.0433641
 

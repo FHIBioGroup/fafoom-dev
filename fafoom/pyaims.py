@@ -51,6 +51,21 @@ class AimsObject():
         src = os.path.join(self.sourcedir, name)
         shutil.copy(src, os.getcwd())
 
+    def generate_input_single_point(self, sdf_string):
+        """Create input files for FHI-aims.
+        Args:
+            sdf_string (str)
+        """
+        self.aims_string = sdf2aims(sdf_string)
+        string2file(self.aims_string, 'geometry.in')
+        if os.path.join(self.sourcedir, 'geometry.in.constrained'):
+            constrained_part_file = os.path.join(self.sourcedir, 'geometry.in.constrained')
+            if len(aims2xyz(constrained_part_file)) == 1: #If one atom - put it to the origin.
+                align_to_origin(constrained_part_file)
+            generate_extended_input(self.aims_string, constrained_part_file, 'geometry.in')
+        name = 'control_single_point.in'
+        src = os.path.join(self.sourcedir, name)
+        shutil.copy(src, os.path.join(os.getcwd(), 'control.in'))
 
     def build_storage(self, dirname):
         """Create a directory for storing the FHI-aims input and output.

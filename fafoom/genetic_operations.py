@@ -121,6 +121,32 @@ def crossover(list1, list2):
     else:
         return list1, list2
 
+def crossover_random(list1, list2):
+    """Exchange parts of two lists.
+
+    Args:
+        list1 (list): list of values
+        list2 (list): list of values
+    Returns:
+        two lists (converted numpy arrays)
+    Raises:
+        ValueError: if the length of the lists differ
+    """
+    if len(list1) != len(list2):
+        raise ValueError("No length match between the lists")   
+    if len(list1) > 0:
+        parents = [list1, list2]    # parents
+        child_1, child_2 = [], []
+        for i in range(len(parents[0])): 
+            flip = random.randint(0, 1)
+            child_1.append(parents[flip][i])
+            if flip == 0:
+                child_2.append(parents[1][i])   
+            else:
+                child_2.append(parents[0][i]) 
+        return child_1, child_2
+    else:
+        return list1, list2
 
 def mutation(list_for_mut, max_mutations, options, weights=None,
              periodic=False):

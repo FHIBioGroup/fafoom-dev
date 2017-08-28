@@ -52,6 +52,33 @@ def simple_or_restart():
         remover_file("kill.dat")
     return opt
 
+def simple_or_restart_for_random():
+    """ Select the type of run. If the all backup files are present the run
+    will be restarted. Otherwise, the directory will be cleaned and a new run
+    will be started."""
+
+    for_restart = ["backup_mol.dat", "backup_blacklist.dat"]
+    opt = "restart"
+    for filename in for_restart:
+        if glob.glob(filename):
+            pass
+        else:
+            opt = "simple"
+    if opt == "simple":
+        print_output("Cleaning up the directory")
+        for d in glob.glob("initial_*"):
+            remover_dir(d)
+        for d in glob.glob("generation_*_child*"):
+            remover_dir(d)
+        remover_dir("blacklist")
+        for f in ["control.in", "geometry.in", "output.txt",
+                  "aims.out", "kill.dat"]:
+            remover_file(f)
+        for f in for_restart:
+            remover_file(f)
+    if opt == "restart":
+        remover_file("kill.dat")
+    return opt
 
 def str_info(struct):
     """ Prints the information about the structure to the output file"""
@@ -135,6 +162,31 @@ def optimize(structure, energy_function, params, name=None):
     elif energy_function == 'INTERFACE':
         structure.perform_FF(params['sourcedir'], params['ff_call'], name)
 
+def single_point(structure, energy_function, params, name=None):
+    """Perform local optimization."""
+    if energy_function == "aims":
+        structure.perform_aims_single_point(params['sourcedir'], params['aims_call'], name)
+    elif energy_function == "nwchem":
+        structure.perform_nwchem(params['functional'], params['basis_set'],
+                                 params['nwchem_call'])
+    elif energy_function == "orca":
+        linked_params = {}
+        for key in ["chargemult", "nprocs", "optsteps"]:
+            if key in params:
+                linked_params[str(key)] = params[str(key)]
+        structure.perform_orca(params['commandline'],
+                               params['memory'],
+                               params['orca_call'], **linked_params)
+    elif energy_function == "ff":
+        linked_params = {}
+        for key in ["steps", "force_tol", "energy_tol"]:
+            if key in params:
+                linked_params[str(key)] = params[str(key)]
+        structure.perform_ff(params['force_field'], **linked_params)
+
+    elif energy_function == 'INTERFACE':
+        structure.perform_FF(params['sourcedir'], params['ff_call'], name)
+
 
 def perform_backup(mol, population, blacklist, iteration, min_energy):
     """Write object representation to files for a future restart."""
@@ -143,6 +195,15 @@ def perform_backup(mol, population, blacklist, iteration, min_energy):
     backup("backup_blacklist.dat", blacklist)
     backup("backup_iteration.dat", iteration)
     backup("backup_min_energy.dat", min_energy)
+
+def perform_backup_for_random(mol, blacklist):
+    """Write object representation to files for a future restart."""
+    backup("backup_mol.dat", mol)
+    backup("backup_blacklist.dat", blacklist)
+
+def perform_backup_for_FF(blacklist):
+    """Write object representation to files for a future restart."""
+    backup("backup_blacklist_FF.dat", blacklist)
 
 
 def find_linked_params(mol, params):

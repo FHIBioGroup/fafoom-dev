@@ -330,6 +330,7 @@ def construct_graph(sdf_string):
     return graph
 
 def getRoots(aNeigh):
+    #source: https://stackoverflow.com/questions/10301000/python-connected-components
     def findRoot(aNode,aRoot):
         while aNode != aRoot[aNode][0]:
             aNode = aRoot[aNode][0]

@@ -24,7 +24,7 @@ from get_parameters import (
     get_positions,
     template_sdf
 )
-from genetic_operations import crossover
+from genetic_operations import crossover, crossover_random
 from pyaims import AimsObject
 from pyff import FFObject
 from pynwchem import NWChemObject
@@ -180,8 +180,10 @@ class MoleculeDescription:
                 if 'orientation' in dof_names:
                     dof_names.remove('orientation')
         else:
-            dof_names.remove('centroid')
-            dof_names.remove('orientation')
+            if 'centroid' in dof_names:
+                dof_names.remove('centroid')
+            if 'orientation' in dof_names:
+                dof_names.remove('orientation')
             open(geom_file,'w').close()
 
         updated_order = []
@@ -311,12 +313,12 @@ class Structure:
                     dof.get_weighted_values(weights)
                 else:
                     dof.get_random_values()
-                    print 'Initial random values for {} are {}'.format(dof.name ,dof.values)
+                    #print 'Initial random values for {} are {}'.format(dof.name ,dof.values)
                 new_string = dof.apply_on_string(new_string)
         self.sdf_string = new_string
         for dof in self.dof:
             dof.update_values(self.sdf_string)
-            print 'Updated values for {} are {}'.format(dof.name, dof.values)
+            #print 'Updated values for {} are {}'.format(dof.name, dof.values)
 
 ############
     def adjust_position(self):
@@ -466,6 +468,27 @@ class Structure:
         else:
             print_output("The FHI-aims relaxation failed")
 
+    def perform_aims_single_point(self, sourcedir, execution_string, dirname):
+        """Generate the FHI-aims input, run FHI-aims, store the output, assign
+        new attributes and update attribute values."""
+
+        aims_object = AimsObject(sourcedir)
+        aims_object.generate_input_single_point(self.sdf_string)
+        aims_object.build_storage(dirname)
+        success = aims_object.run_aims(execution_string)
+        aims_object.clean_and_store()
+        for dof in self.dof:
+            setattr(dof, "initial_values", dof.values)
+            dof.update_values(self.sdf_string)
+        #~ if success:
+
+            #~ self.energy = aims_object.get_energy()
+            #~ self.initial_sdf_string = self.sdf_string
+            #~ self.sdf_string = aims2sdf(aims_object.get_aims_string_opt(),
+                                       #~ self.mol_info.template_sdf_string)
+        #~ else:
+            #~ print_output("The FHI-aims relaxation failed")
+
     def perform_FF(self, sourcedir, execution_string, dirname):
         FF_object = FFobject(sourcedir)
         FF_object.generate_input(self.sdf_string)
@@ -534,7 +557,7 @@ class Structure:
 
         for dof_par1, dof_par2, dof_child1, dof_child2 in zip(self.dof, other.dof, child1.dof, child2.dof):
             if dof_par1.type == dof_par2.type:
-                a, b = crossover(getattr(dof_par1, "values"),
+                a, b = crossover_random(getattr(dof_par1, "values"),
                                  getattr(dof_par2, "values"))
                 setattr(dof_child1, "values", a)
                 setattr(dof_child2, "values", b)
