@@ -45,7 +45,7 @@ class DOF:
 class Orientation(DOF):
     '''Find and handle orientation of the molecule. '''
 
-    values_options = [range(0, 1, 90), np.arange(-2, 2, 1)] #values_options[0] - Defines angle, values_options[1] - defines orientaion.
+    values_options = [range(0, 361, 90), np.arange(-3, 4, 1)] #values_options[0] - Defines angle, values_options[1] - defines orientaion.
 
     @staticmethod
     def find(sdf_string, positions=None):
@@ -101,13 +101,13 @@ class Orientation(DOF):
     def mutate_values(self, max_mutations=None, weights=None):
 
         if max_mutations is None:
-            max_mutations = 3
-        values_to_mutate = range(-2,2, 1)
+            max_mutations = 4
+        values_to_mutate = range(-3, 4, 1)
         self.values = mutation(self.values, max_mutations,
                                values_to_mutate, weights, periodic=False)
 
     def is_equal(self, other, threshold, chiral=True):
-        threshold = 60
+        threshold = 15
         values = []
         angle_between(self.values[1:], other.values[1:])
         values.append(angle_between(self.values[1:], other.values[1:]))

@@ -35,12 +35,11 @@ bohrtoang=0.52917721
 def backup(filename, obj):
     """ Write the representation of an object (or objects) to a file."""
     with open(filename, 'w') as outf:
-
         if hasattr(obj, "__len__"):
             for i in range(len(obj)):
                 outf.write("%s\n" % repr(obj[i]))
         else:
-            outf.write("%s\n" % repr(obj))
+            outf.write("%s\n" % repr(obj).replace('\n', 'NEWLINE'))
     outf.close()
 
 
@@ -147,8 +146,8 @@ def set_default(params, dict_default):
     dict."""
     for key in dict_default:
         if key not in params:
-            print_output("Setting a default value for "+str(key)+": " +
-                         str(dict_default[key]))
+            # print_output("Setting a default value for "+str(key)+": " +
+            #              str(dict_default[key]))
             params[str(key)] = dict_default[key]
     return params
 
@@ -217,7 +216,7 @@ def tor_rmsd(p, vec):
 
 
 def get_cartesian_rms(sdf_string1, sdf_string2, removeHs=False):
-    
+
     COM1 = get_centre_of_mass_from_sdf(sdf_string1, removeHs = True)
     COM2 = get_centre_of_mass_from_sdf(sdf_string2, removeHs = True)
     """Return the optimal RMS after aligning two structures."""

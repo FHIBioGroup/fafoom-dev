@@ -20,6 +20,22 @@ def produce_xyz(path, sorted_dict):
     	xyz.write('Comment\n')
     	for i in sorted_dict:
     	    xyz.write('{}   {}   {}   {}\n'.format(i[0].split(':')[-1], i[1][1][0], i[1][1][1], i[1][1][2]))
+def make_constrains(some_file):
+    if os.path.exists(os.path.join(os.getcwd(), 'temp_file.pdb')):
+        os.remove(os.path.join(os.getcwd(), 'temp_file.pdb'))
+    temp_file = open(os.path.join(os.getcwd(), 'temp_file.pdb'), 'a')
+    with open(os.path.join(os.getcwd(), some_file), 'r') as to_up:
+        lines = to_up.readlines()
+        for line in lines:
+            if 'SUR' in line:
+                pdb_line_found = re.match(r'((.+)(1.00  0.00      SUR)(.+))', line)
+                if pdb_line_found:
+                    temp_file.write('{}{}{}\n'.format(pdb_line_found.group(2),pdb_line_found.group(3).replace('0.00', '1.00'), pdb_line_found.group(4)))
+            else:
+                temp_file.write(line)
+    temp_file.close()
+    shutil.move(os.path.join(os.getcwd(), 'temp_file.pdb'), os.path.join(os.getcwd(), 'all.pdb'))
+
 
 class FFobject():
     """Create and handle ForceField object."""
@@ -86,6 +102,7 @@ class FFobject():
         """ Create folder for storing input and output of FF local optimization"""
         self.dirname = dirname
         os.mkdir(os.path.join(dirname))
+        make_constrains('all.pdb')
         shutil.copy('all.pdb', os.path.join(dirname, 'all.pdb'))
         shutil.copy('all.psf', os.path.join(dirname, 'all.psf'))
         shutil.copy(os.path.join(self.sourcedir, 'Configure.conf'), os.path.join(dirname,'Configure.conf'))

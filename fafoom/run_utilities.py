@@ -38,10 +38,10 @@ def simple_or_restart():
             opt = "simple"
     if opt == "simple":
         print_output("Cleaning up the directory")
-        for d in glob.glob("initial_*"):
+        for d in glob.glob("structure_*"):
             remover_dir(d)
-        for d in glob.glob("generation_*_child*"):
-            remover_dir(d)
+        # for d in glob.glob("generation_*_child*"):
+        #     remover_dir(d)
         remover_dir("blacklist")
         for f in ["mol.sdf", "control.in", "geometry.in", "output.txt",
                   "aims.out", "kill.dat"]:
@@ -82,19 +82,18 @@ def simple_or_restart_for_random():
 
 def str_info(struct):
     """ Prints the information about the structure to the output file"""
-    print_output(struct)
+    # print_output(struct)
     for dof in struct.dof:
-        print_output("Values of "+str(dof.type)+": " + str(dof.values))
+        print_output('{}: {}'.format(dof.name, dof.values))
 
 
 def relax_info(struct):
     """ Prints the information about the structure to the output file after
     the local optimization."""
-    print_output(struct)
+    # print_output(struct)
     for dof in struct.dof:
-        print_output("Values of "+str(dof.type)+" before: " +
-                     str(dof.initial_values)+" and after local opt: " +
-                     str(dof.values))
+        print_output('{}: {}\n'.format(dof.name, dof.values))
+        # print_output('Values of {}\nInitial: {}\nResult : {}\n'.format(dof.type, dof.initial_values, dof.values))
 
 
 def check_for_kill():
@@ -247,5 +246,5 @@ def check_for_convergence(iteration, params, min_energy):
         killfile = open("kill.dat", "w")
         killfile.close()
         sys.exit(0)
-    else:
-        print_output("Next iteration will be perfomed")
+        # else:
+        #     print_output("Next iteration will be perfomed")

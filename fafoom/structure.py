@@ -26,7 +26,7 @@ from get_parameters import (
 )
 from genetic_operations import crossover, crossover_random
 from pyaims import AimsObject
-from pyff import FFObject
+#from pyff import FFObject
 from pynwchem import NWChemObject
 from pyorca import OrcaObject
 from pyforcefield import FFobject
@@ -195,7 +195,7 @@ class MoleculeDescription:
         Centroid.range_x = range(self.volume[0], self.volume[1], 1) #Limitation for Centroid
         Centroid.range_y = range(self.volume[2], self.volume[3], 1) #Limitation for Centroid
         Centroid.range_z = range(self.volume[4], self.volume[5], 1) #Limitation for Centroid
-
+        Centroid.values_options = [Centroid.range_x, Centroid.range_y, Centroid.range_z]
 
 
 class Structure:
@@ -573,9 +573,7 @@ class Structure:
         return child1, child2
 
     def mutate(self, **kwargs):
-
         def call_mut(dof, max_mutations=None, weights=None):
-            print_output("Performing mutation for: "+str(dof.type))
             if max_mutations is not None:
                 if hasattr(self.mol_info, "weights_"+str(dof.type)):
                     weights = getattr(self.mol_info, "weights_"+str(dof.type))
@@ -588,6 +586,7 @@ class Structure:
                     dof.mutate_values(weights=weights)
                 else:
                     dof.mutate_values()
+            print_output('{} after mutation: {}'.format(dof.name, dof.values))
 
         for dof in self.dof:
             if 'prob_for_mut_'+str(dof.type) in kwargs:
@@ -596,11 +595,42 @@ class Structure:
                         call_mut(dof, kwargs['max_mutations_'+str(dof.type)])
                     else:
                         call_mut(dof)
+                else:
+                    print_output('Mutation for {} was not performed.'.format(dof.type))
             else:
                 if 'max_mutations_'+str(dof.type) in kwargs:
                     call_mut(dof, kwargs['max_mutations_'+str(dof.type)])
                 else:
                     call_mut(dof)
+
+        new_string = deepcopy(self.sdf_string)
+        for dof in self.dof:
+            new_string = dof.apply_on_string(new_string, dof.values)
+        self.sdf_string = new_string
+        for dof in self.dof:
+            dof.update_values(self.sdf_string)
+
+    def hard_mutate(self, **kwargs):
+        def call_mut(dof, max_mutations=None, weights=None):
+            if max_mutations is not None:
+                if hasattr(self.mol_info, "weights_"+str(dof.type)):
+                    weights = getattr(self.mol_info, "weights_"+str(dof.type))
+                    dof.mutate_values(max_mutations, weights)
+                else:
+                    dof.mutate_values(max_mutations=max_mutations)
+            else:
+                if hasattr(self.mol_info, "weights_"+str(dof.type)):
+                    weights = getattr(self.mol_info, "weights_"+str(dof.type))
+                    dof.mutate_values(weights=weights)
+                else:
+                    dof.mutate_values()
+            print_output('{} after mutation: {}'.format(dof.name, dof.values))
+
+        for dof in self.dof:
+            if 'max_mutations_'+str(dof.type) in kwargs:
+                call_mut(dof, kwargs['max_mutations_'+str(dof.type)])
+            else:
+                call_mut(dof)
 
         new_string = deepcopy(self.sdf_string)
         for dof in self.dof:

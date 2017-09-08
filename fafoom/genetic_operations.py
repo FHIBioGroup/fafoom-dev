@@ -132,18 +132,27 @@ def crossover_random(list1, list2):
     Raises:
         ValueError: if the length of the lists differ
     """
+    def all_same(items):
+        return all(x == items[0] for x in items)
     if len(list1) != len(list2):
-        raise ValueError("No length match between the lists")   
+        raise ValueError("No length match between the lists")
     if len(list1) > 0:
+
         parents = [list1, list2]    # parents
         child_1, child_2 = [], []
-        for i in range(len(parents[0])): 
-            flip = random.randint(0, 1)
-            child_1.append(parents[flip][i])
-            if flip == 0:
-                child_2.append(parents[1][i])   
+        flips = []
+        for i in range(len(parents[0])):
+            flips.append(random.randint(0, 1))
+        while all_same(flips):
+            flips = []
+            for i in range(len(parents[0])):
+                flips.append(random.randint(0, 1))
+        for i in range(len(parents[0])):
+            child_1.append(parents[flips[i]][i])
+            if flips[i] == 0:
+                child_2.append(parents[1][i])
             else:
-                child_2.append(parents[0][i]) 
+                child_2.append(parents[0][i])
         return child_1, child_2
     else:
         return list1, list2
