@@ -1,8 +1,0 @@
-Currently Loaded Modulefiles:
-  1) intel/17.0         3) mkl/2017
-  2) impi/2017.2        4) anaconda/2_4.2.0
- *** check_cpu_consistency_matrix: Consistency of arrays between different MPI tasks not ensured.
-
-real	24m9.275s
-user	624m23.505s
-sys	30m30.546s
