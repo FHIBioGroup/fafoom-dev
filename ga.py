@@ -1,28 +1,22 @@
 #!/usr/bin/python
 import numpy as np
-
-import sys, os, re, shutil
-
+import sys
+import os
 from fafoom import *
-from fafoom import MoleculeDescription, Structure, selection, print_output,\
-    remover_dir, set_default, file2dict
 import fafoom.run_utilities as run_util
-#from visual import draw_picture
-
-from numpy import array
-np.set_printoptions(suppress=True)
-#from rdkit import Chem
-#from rdkit.Chem import AllChem
-# from rdkit.Chem import Draw
-
-from fafoom.measure import *
 from fafoom.utilities import sdf2xyz, check_for_clashes
-
+#Need to correctly write the one-line blacklist:
+np.set_printoptions(suppress=True)
 # Decide for restart or a simple run.
 opt = run_util.simple_or_restart()
 p_file = sys.argv[1]
 if sys.argv is None:
-    p_file = os.path.join(os.getcwd(), 'parameters_FF.txt')
+    if os.path.exists(os.path.join(os.getcwd(), 'parameters.txt')):
+        p_file = os.path.join(os.getcwd(), 'parameters.txt')
+    else:
+        pass
+        #Assign default parameters for calculation
+
 # Build a dictionary from two section of the parameter file.
 params = file2dict(p_file, ['GA settings', 'Run settings'])
 
@@ -34,35 +28,11 @@ dict_default = {'energy_var': 0.001, 'selection': "roulette_wheel",
 params = set_default(params, dict_default)
 energy_function = run_util.detect_energy_function(params)
 
-cnt_max = 25
+cnt_max = 2500
 population = []
-blacklist = [] #Blacklist
+blacklist = []
 min_energy = []
-
-# smil = '[NH3+][C@H](C(=O)N1[C@H](C(=O)N[C@H](C(=O)[O-])Cc2ccccc2)CCC1)Cc1[nH]c[nH+]c1'
-# m = Chem.MolFromSmiles(smil)
-# Draw.MolToFile(m,'N2_HisHProPhe_C2.pdf', size=(250, 250), imageType='pdf',fitImage=True )
-#***********************************************************************
-"""
-Creation of the folders for valid and invalid structures.
-It helps to visually inspect produced structures.
-"""
-
-# if os.path.exists(os.path.join(os.getcwd(),'invalid')):
-#     shutil.rmtree(os.path.join(os.getcwd(),'invalid'))
-#     os.mkdir(os.path.join(os.getcwd(),'invalid'))
-# else:
-#     os.mkdir(os.path.join(os.getcwd(),'invalid'))
-#
-# if os.path.exists(os.path.join(os.getcwd(),'valid')):
-#     shutil.rmtree(os.path.join(os.getcwd(),'valid'))
-#     os.mkdir(os.path.join(os.getcwd(),'valid'))
-# else:
-#     os.mkdir(os.path.join(os.getcwd(),'valid'))
-
 #=======================================================================
-aims_object = AimsObject(os.path.join(os.getcwd(),'adds'))
-
 if opt == "simple":
     mol = MoleculeDescription(p_file)
     # Assign the permanent attributes to the molecule.
@@ -70,9 +40,8 @@ if opt == "simple":
     mol.create_template_sdf()
     # Check for potential degree of freedom related parameters.
     linked_params = run_util.find_linked_params(mol, params)
+    volume = mol.volume
     print_output('Atoms: {}, Bonds: {}'.format(mol.atoms, mol.bonds))
-    # for dof in mol.dof_names:
-        # print_output('Identified {}: {}'.format(dof, getattr(mol, dof)))
     print_output('\n___Initialization___\n')
     cnt = 0
     # Generate sensible and unique 3d structures.
@@ -92,6 +61,9 @@ if opt == "simple":
                     else:
                         cnt+=1
                         continue
+                if 'centroid' not in mol.dof_names:
+                    if not str3d.check_position(volume):
+                        str3d.adjust_position()
                 name = 'structure_{}'.format(str3d.index)
                 # Perform the local optimization
                 run_util.optimize(str3d, energy_function, params, name)
@@ -105,8 +77,6 @@ if opt == "simple":
                 #print_output(blacklist) #Blacklist
                 print_output("Geomerty of "+str(str3d)+" is fine, but already known.")
                 cnt += 1
-
-
     if cnt == cnt_max:
         print_output("The allowed number of trials for building the "
                      "population has been exceeded. The code terminates.")
@@ -152,8 +122,8 @@ if opt == "restart":
     print_output(" \n ___Reinitialization completed___")
     remover_dir('structure_{}'.format(len(blacklist) + 1))
     remover_dir('structure_{}'.format(len(blacklist) + 2))
-    remover_dir('generation_'+str(iteration)+'_child1')
-    remover_dir('generation_'+str(iteration)+'_child2')
+    # remover_dir('generation_'+str(iteration)+'_child1')
+    # remover_dir('generation_'+str(iteration)+'_child2')
 
 
 def mutate_and_relax(candidate, name, iteration, cnt_max, **kwargs):
@@ -167,20 +137,19 @@ def mutate_and_relax(candidate, name, iteration, cnt_max, **kwargs):
             print_output('Candidate in blacklist')
             print_output('Perform hard_mutate')
             candidate.hard_mutate(**kwargs) #Mutate, since already in blacklist
-
-            if not candidate.is_geometry_valid():
+            if not candidate.is_geometry_valid(): #Check geometry after mutation
                 print_output('Geometry is not valid')
-                candidate = candidate_backup
+                candidate = candidate_backup #Reset structure
                 cnt+=1
                 continue
             else:
                 if not check_for_clashes(candidate.sdf_string, os.path.join(mol.constrained_geometry_file)):
                     print_output('Clash found')
-                    if 'centroid' not in mol.dof_names:
-                        str3d.adjust_position()
+                    if 'centroid' not in mol.dof_names: #If optimization for the COM is turned off
+                        candidate.adjust_position() #Adjust position in z direction
                     else:
                         print_output('Centroid found -- skipp')
-                        candidate = candidate_backup
+                        candidate = candidate_backup #Clash found so structure will be resetted
                         cnt+=1
                         continue
                 name = 'structure_{}'.format(candidate.index)
@@ -205,7 +174,7 @@ def mutate_and_relax(candidate, name, iteration, cnt_max, **kwargs):
                     print_output('Clash found')
                     if 'centroid' not in mol.dof_names:
                         print_output('Perform adjust')
-                        str3d.adjust_position()
+                        candidate.adjust_position()
                     else:
                         print_output('Perform hard_mutate')
                         candidate.hard_mutate(**kwargs)

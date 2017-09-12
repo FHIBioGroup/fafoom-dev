@@ -26,7 +26,7 @@ from get_parameters import (
 )
 from genetic_operations import crossover, crossover_random
 from pyaims import AimsObject
-#from pyff import FFObject
+from pyff import FFObject #ATTENTION!
 from pynwchem import NWChemObject
 from pyorca import OrcaObject
 from pyforcefield import FFobject
@@ -321,6 +321,13 @@ class Structure:
             #print 'Updated values for {} are {}'.format(dof.name, dof.values)
 
 ############
+    def check_position(self, volume):
+        pos = centroid_measure(self.sdf_string)
+        if (volume[0] <= pos[0] <= volume[1]) and (volume[2] <= pos[1] <= volume[3]) and (volume[4] <= pos[2] <= volume[5]):
+            return True
+        else:
+            return False
+
     def adjust_position(self):
         bohrtoang=0.52917721
         mol = [float(i) for i in np.array(sdf2xyz(self.sdf_string))[:,3]]
@@ -331,7 +338,7 @@ class Structure:
         atom_max =  aims2xyz(self.mol_info.constrained_geometry_file)[surr.index(z_max)][0]
         dist = (VDW_radii[atom_min])*bohrtoang #+ VDW_radii[atom_max]
         values_old = centroid_measure(self.sdf_string)
-        values_new = np.array([self.mol_info.volume[0] + np.random.random_sample(), self.mol_info.volume[2]+ np.random.random_sample(), values_old[2] + (z_max - z_min) + dist])
+        values_new = np.array([(self.mol_info.volume[0] + self.mol_info.volume[1])/2, (self.mol_info.volume[2]+ self.mol_info.volume[3])/2, values_old[2] + (z_max - z_min) + dist])
         new_string = centroid_set(self.sdf_string, values_new)
         self.sdf_string = new_string
         for dof in self.dof:
