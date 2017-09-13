@@ -56,14 +56,12 @@ class FFobject():
             shutil.copy(os.path.join(self.sourcedir, 'top_all22_prot_metals.inp'), os.getcwd())
         if not os.path.exists(os.path.join(os.getcwd(),'psfgen')):
             shutil.copy(os.path.join(self.sourcedir, 'psfgen'), os.getcwd())
-        if not os.path.exists(os.path.join(os.getcwd(),'par_all22_prot.prm')):
-            shutil.copy(os.path.join(self.sourcedir, 'par_all22_prot.prm'), os.getcwd())
-        if not os.path.exists(os.path.join(os.getcwd(),'top_all22_prot.rtf')):
-            shutil.copy(os.path.join(self.sourcedir, 'top_all22_prot.rtf'), os.getcwd())
-
+        # if not os.path.exists(os.path.join(os.getcwd(),'par_all22_prot.prm')):
+        #     shutil.copy(os.path.join(self.sourcedir, 'par_all22_prot.prm'), os.getcwd())
+        # if not os.path.exists(os.path.join(os.getcwd(),'top_all22_prot.rtf')):
+        #     shutil.copy(os.path.join(self.sourcedir, 'top_all22_prot.rtf'), os.getcwd())
         with open(os.path.join(os.getcwd(), 'mol.sdf'), 'w') as mol_sdf:
             mol_sdf.write(sdf_string)
-
         """ Update coords in prepared mol.pdb file in the sourcedirectory. """
         self.coords = [i[1:] for i in sdf2xyz(sdf_string)] #Coordinates to update
         """ Extract lines from pdb file for further updating """
@@ -93,9 +91,6 @@ class FFobject():
         with open(os.path.join(os.getcwd(), 'mol.pdb'), 'a') as updated_file:
             for line in updated_pdb:
                 updated_file.write('{: <30}{:>8.3f}{:>8.3f}{:>8.3f}{: >24}\n'.format(line[0], float(line[1]), float(line[2]), float(line[3]), line[4]))
-
-
-
         os.system('cd {} && ./prepare_psf.run'.format(os.getcwd()))
 
     def build_storage(self, dirname):
@@ -113,7 +108,6 @@ class FFobject():
         """ Execute FF local optimization """
         path_to_run = os.path.join(os.getcwd(), self.dirname)
         os.system('cd {} && {}'.format(path_to_run, execution_sctring))
-
         with open(os.path.join(path_to_run, 'result.out'), 'r') as result:
             energies = []
             lines = result.readlines()
@@ -125,7 +119,6 @@ class FFobject():
         # os.system('cd {} && babel -ipdb {} -oxyz {}'.format(path_to_run, 'result.coor', 'result.xyz'))
         old_dict = {}
         new_dict = {}
-
         with open(os.path.join(self.sourcedir,  'mol.pdb'), 'r') as o:
             lines = o.readlines()
             for line in lines:
@@ -144,8 +137,6 @@ class FFobject():
         with open(os.path.join(path_to_run, 'test.xyz'), 'r') as output:
             self.FF_string_opt = output.read()
 
-
-
     def get_energy(self):
         return self.energy
 
@@ -154,8 +145,6 @@ class FFobject():
             raise AttributeError("The calculation wasn't performed yet.")
         else:
             return self.FF_string_opt
-
-
 
     def analysis(self):
         analysis = {}
