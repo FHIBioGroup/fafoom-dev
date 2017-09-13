@@ -303,7 +303,7 @@ def dihedral_measure(sdf_string, list_of_atoms):
 def conn_list_from_sdf(sdf_string):
     conn_list = []
     for line in sdf_string.split('\n'):
-    	bond_found  = re.match(r'(\s*(\d+)\s+(\d+)\s+(\d+)\s+\d+$)', line)
+    	bond_found  = re.match(r'(\s*(\d+)\s+(\d+)\s+(\d+)\s+\d+(\s*?\d*?\s*?\d*?\s*?\d*?\s*?)$)', line)
     	if bond_found:
     	    conn_list.append([int(bond_found.group(2)), int(bond_found.group(3)), int(bond_found.group(4))])
     return conn_list
