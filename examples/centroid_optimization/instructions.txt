@@ -1,0 +1,13 @@
+1. invoke prepare.py in the folder with "mol.smi" file or with smiles code as input:
+
+prepare.py "Your_Smiles_Code_Here"
+
+2. Put produced mol.sdf file or add any geometry of your molecule named mol.sdf in adds directory.
+
+3. Adjust parameters.txt file especially lines with aims_call and volume.
+
+4. Turn on optimization flags to True on your taste.
+
+5. Invoke ga.py parameters.txt
+
+6. Submit all the errors to maksimov@fhi-berlin.mpg.de
