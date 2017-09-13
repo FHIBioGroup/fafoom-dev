@@ -1,1 +1,0 @@
-nohup ~/programs/charmm/charmm ++local +p4 ~/programs/namd/namd2 Configure.conf > result.out &
