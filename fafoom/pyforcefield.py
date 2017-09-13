@@ -7,7 +7,7 @@ import itertools
 import numpy as np
 
 from utilities import sdf2xyz
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 def natural_sort(l):
     convert = lambda text: int(text) if text.isdigit() else text.lower()
