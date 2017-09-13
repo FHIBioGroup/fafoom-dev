@@ -313,12 +313,12 @@ class Structure:
                     dof.get_weighted_values(weights)
                 else:
                     dof.get_random_values()
-                    #print 'Initial random values for {} are {}'.format(dof.name ,dof.values)
+                    # print 'Initial random values for {} are {}'.format(dof.name ,dof.values)
                 new_string = dof.apply_on_string(new_string)
         self.sdf_string = new_string
         for dof in self.dof:
             dof.update_values(self.sdf_string)
-            #print 'Updated values for {} are {}'.format(dof.name, dof.values)
+            # print 'Updated values for {} are {}'.format(dof.name, dof.values)
 
 ############
     def check_position(self, volume):

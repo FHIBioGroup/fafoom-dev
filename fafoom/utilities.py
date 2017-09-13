@@ -479,7 +479,7 @@ def aims2xyz(aims_file):
     with open(aims_file, 'r') as aims:
         lines = aims.readlines()
         for line in lines:
-            atoms = re.match(r'(.*atom\s+(.\d+\.\d+)\s+(.\d+\.\d+)\s+(.\d+\.\d+)\s+(\w+))', line)
+            atoms = re.match(r'(.*atom\s*?(.?\d+\.\d+)\s+(.?\d+\.\d+)\s+(.?\d+\.\d+)\s+(\w+).*?)', line)
             if atoms:
                 xyz_coords.append([str(atoms.group(5)), float(atoms.group(2)), float(atoms.group(3)), float(atoms.group(4))])
     aims.close()
@@ -540,7 +540,7 @@ def sdf2xyz(sdf_string):
     """Convert a sdf_string to a xyz_list."""
     xyz_list = []
     for line in sdf_string.split('\n'):
-        coords_found = re.match(r'(\s*(.?\d+\.\d+)\s*(.?\d+\.\d+)\s*(.?\d+\.\d+)\s*(\w+)\s+)', line)
+        coords_found = re.match(r'(\s*(.?\d+\.\d+)\s*(.?\d+\.\d+)\s*(.?\d+\.\d+)\s*(\w+)\s*?)', line)
         if coords_found:
             xyz_list.append([coords_found.group(5),
                             float(coords_found.group(2)),

@@ -100,7 +100,7 @@ dict_default = {'energy_var': 0.001, 'selection': "roulette_wheel",
 # Set defaults for parameters not defined in the parameter file.
 params = set_default(params, dict_default)
 energy_function = run_util.detect_energy_function(params)
-cnt_max = 15000
+cnt_max = 10000
 population, blacklist = [], []
 min_energy = []
 
@@ -123,7 +123,7 @@ else:
 
 #=======================================================================
 aims_object = AimsObject(os.path.join(os.getcwd(),'adds'))
-ff_object = FFobject(os.path.join(os.getcwd(),'adds', 'FF'))
+#ff_object = FFobject(os.path.join(os.getcwd(),'adds', 'FF'))
 
 if opt == "simple":
     if os.path.exists(os.path.join(os.getcwd(),'RandGen')):
@@ -136,6 +136,7 @@ mol = MoleculeDescription(p_file)
 # Assign the permanent attributes to the molecule.
 mol.get_parameters()
 mol.create_template_sdf()
+volume = mol.volume
 # Check for potential degree of freedom related parameters.
 linked_params = run_util.find_linked_params(mol, params)
 print_output("Number of atoms: "+str(mol.atoms))
@@ -155,26 +156,31 @@ if opt == "restart":
     population = len(os.listdir(os.path.join(os.getcwd(), 'RandGen')))
 
 while population < params['popsize'] and cnt < cnt_max:
-    print_output("New trial")
     str3d = Structure(mol)
     str3d.generate_structure()
     if not str3d.is_geometry_valid():
-        print_output("The geometry of "+str(str3d)+" is invalid. Copied to /invalid")
-        with open(os.path.join(os.getcwd(), 'invalid', 'structure_{}.sdf'.format(cnt)), 'w') as rand_structure:
-            rand_structure.write(str3d.sdf_string) #generates input
-            cnt += 1
+        # print_output("The geometry of "+str(str3d)+" is invalid. Copied to /invalid")
+        # with open(os.path.join(os.getcwd(), 'invalid', 'structure_{}.sdf'.format(cnt)), 'w') as rand_structure:
+        #     rand_structure.write(str3d.sdf_string) #generates input
+        cnt += 1
         continue
     if str3d not in blacklist:
-        # print_output("The geometry of "+str(str3d)+" is valid, copied to /valid")
-        if len(aims2xyz(mol.constrained_geometry_file)) > 0:
-            str3d.adjust_position()
         if not check_for_clashes(str3d.sdf_string, os.path.join(mol.constrained_geometry_file)):
-            str3d.adjust_position()
-        ff_object.generate_input(str3d.sdf_string)
+            if 'centroid' not in mol.dof_names:
+                str3d.adjust_position()
+            else:
+                cnt+=1
+                continue
+        if 'centroid' not in mol.dof_names and len(aims2xyz(os.path.join(os.getcwd(), 'adds', 'geometry.in.constrained'))) > 0:
+            if not str3d.check_position(volume):
+                str3d.adjust_position()
+        aims_object.generate_input(str3d.sdf_string)
         with open(os.path.join(os.getcwd(), 'RandGen', 'structure_{}.sdf'.format(population + 1)), 'w') as rand_structure:
             rand_structure.write(str3d.sdf_string) #generates input
         # name = os.path.join(os.getcwd(), 'valid', str(cnt)+'_geometry')
         str3d.send_to_blacklist(blacklist)
+        for dof in str3d.dof:
+            print('{} {}'.format(dof.name, dof.values))
         population += 1
     else:
         cnt += 1
@@ -184,3 +190,4 @@ while population < params['popsize'] and cnt < cnt_max:
         print_output("The allowed number of trials for building the "
                      "population has been exceeded. The code terminates.")
         run_util.perform_backup_for_random(mol, blacklist)
+run_util.perform_backup_for_random(mol, blacklist)
