@@ -24,7 +24,7 @@ def cleaner(list_to_clean):
     return clean_list
 
 """ Take smiles code """
-if len(sys.argv) == 1:
+if len(sys.argv) == 1 and os.path.exists(os.path.join(os.getcwd(), 'mol.smi')):
     with open(os.path.join(os.getcwd(), 'mol.smi'), 'r') as mol:
         lines = mol.readlines()
         for line in lines:
@@ -32,7 +32,15 @@ if len(sys.argv) == 1:
                 if smiles_found:
                     smiles = smiles_found.group(1)
 else:
-    smiles = sys.argv[1] #Read smiles from input
+    if os.path.exists(os.path.join(os.getcwd(), sys.argv[1])):
+        with open(os.path.join(os.getcwd(), sys.argv[1]), 'r') as mol:
+            lines = mol.readlines()
+            for line in lines:
+                    smiles_found = re.match(r'(\s*?(.+)\s*?)', line)
+                    if smiles_found:
+                        smiles = smiles_found.group(1)
+    else:
+        smiles = sys.argv[1] #Read smiles from input
 
 
 smarts_torsion= "[*]~[!$(*#*)&!D1]-&!@[!$(*#*)&!D1]~[*]" #Definitions of torsion in smarts notation
