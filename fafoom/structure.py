@@ -24,9 +24,9 @@ from get_parameters import (
     get_positions,
     template_sdf
 )
-from genetic_operations import crossover, crossover_random
+from genetic_operations import crossover_single_point, crossover_random_points
 from pyaims import AimsObject
-#from pyff import FFObject 
+#from pyff import FFObject
 from pynwchem import NWChemObject
 from pyorca import OrcaObject
 from pyforcefield import FFobject
@@ -95,7 +95,8 @@ class MoleculeDescription:
                         'sdf_string_template':'adds/mol.sdf',
                         'constrained_geometry_file':'adds/geometry.in.constrained',
                         'right_order_to_assign':['torsion', 'cistrans', 'centroid', 'orientation'],
-                        'volume':(-10,11, -10, 11, -10, 11)}
+                        'volume':(-10,11, -10, 11, -10, 11),
+                        'crossover_method':'random_points'}
 
         params = set_default(params, dict_default)
         for key in params:
@@ -556,7 +557,7 @@ class Structure:
             setattr(dof, "initial_values", dof.values)
             dof.update_values(self.sdf_string)
 
-    def crossover(self, other):
+    def crossover(self, other, method='srandom_points'):
         """Perform the crossover."""
 
         child1 = Structure(self.mol_info)
@@ -564,10 +565,16 @@ class Structure:
 
         for dof_par1, dof_par2, dof_child1, dof_child2 in zip(self.dof, other.dof, child1.dof, child2.dof):
             if dof_par1.type == dof_par2.type:
-                a, b = crossover_random(getattr(dof_par1, "values"),
-                                 getattr(dof_par2, "values"))
-                setattr(dof_child1, "values", a)
-                setattr(dof_child2, "values", b)
+                if method == 'random_points':
+                    a, b = crossover_random_points(getattr(dof_par1, "values"),
+                                     getattr(dof_par2, "values"))
+                    setattr(dof_child1, "values", a)
+                    setattr(dof_child2, "values", b)
+                if method == 'single_point':
+                    a, b = crossover_single_point(getattr(dof_par1, "values"),
+                                     getattr(dof_par2, "values"))
+                    setattr(dof_child1, "values", a)
+                    setattr(dof_child2, "values", b)
 
         for child in child1, child2:
             new_string = deepcopy(child.mol_info.template_sdf_string)

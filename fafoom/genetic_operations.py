@@ -87,9 +87,9 @@ def selection(pop_list, selection_type, energy_range, fitness_sum_limit):
     return parent1, parent2, fitness
 
 
-def crossover(list1, list2):
+def crossover_single_point(list1, list2):
     """Exchange parts of two lists.
-
+        Performs crossing over for randomly placed point (one) in two genes
     Args:
         list1 (list): list of values
         list2 (list): list of values
@@ -121,9 +121,9 @@ def crossover(list1, list2):
     else:
         return list1, list2
 
-def crossover_random(list1, list2):
+def crossover_random_points(list1, list2):
     """Exchange parts of two lists.
-
+        Performs crossing over randomly for randomly placed points in genes.
     Args:
         list1 (list): list of values
         list2 (list): list of values

@@ -208,7 +208,7 @@ while iteration < params['max_iter']:
         print_output('Values for {} parent_2'.format(parent2))
         run_util.str_info(parent2)
         print_output('\n')
-        child1, child2 = Structure.crossover(parent1, parent2)
+        child1, child2 = Structure.crossover(parent1, parent2, method=mol.crossover_method)
         if child1.is_geometry_valid_after_crossover() and child2.is_geometry_valid_after_crossover():
             if not check_for_clashes(child1.sdf_string, os.path.join(mol.constrained_geometry_file)):
                 print_output('Clash found')
