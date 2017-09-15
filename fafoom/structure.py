@@ -26,7 +26,7 @@ from get_parameters import (
 )
 from genetic_operations import crossover, crossover_random
 from pyaims import AimsObject
-from pyff import FFObject #ATTENTION!
+#from pyff import FFObject 
 from pynwchem import NWChemObject
 from pyorca import OrcaObject
 from pyforcefield import FFobject
