@@ -102,9 +102,20 @@ class Orientation(DOF):
 
         if max_mutations is None:
             max_mutations = 4
-        values_to_mutate = range(-3, 4, 1)
-        self.values = mutation(self.values, max_mutations,
-                               values_to_mutate, weights, periodic=False)
+        # values_to_mutate = range(-3, 4, 1)
+        # self.values = mutation(self.values, max_mutations,
+        #                        values_to_mutate, weights, periodic=False)
+        number_of_mutations = np.random.randint(1, max_mutations+1)
+        while True:
+            a = np.random.randint(2, size=4)
+            if sum(a) == number_of_mutations:
+                b = np.logical_not(a).astype(int)
+                break
+        self.values = np.array([float(self.values[0]*b[0] + choice(Orientation.values_options[0])*a[0]),
+                                float(self.values[1]*b[1] + choice(Orientation.values_options[1])*a[1]),
+                                float(self.values[2]*b[2] + choice(Orientation.values_options[1])*a[2]),
+                                float(self.values[3]*b[3] + choice(Orientation.values_options[1])*a[3])])
+
 
     def is_equal(self, other, threshold, chiral=True):
         threshold = 15
@@ -162,8 +173,16 @@ class Centroid(DOF):
     def mutate_values(self, max_mutations=None, weights=None):
         if max_mutations is None:
             max_mutations = 3
-        self.values = mutation(self.values, max_mutations,
-                               Centroid.values_options[2], weights, periodic=False)
+
+        number_of_mutations = np.random.randint(1, max_mutations+1)
+        while True:
+            a = np.random.randint(2, size=3)
+            if sum(a) == number_of_mutations:
+                b = np.logical_not(a).astype(int)
+                break
+        self.values = np.array([float(self.values[0]*b[0] + choice(Centroid.range_x)*a[0]),
+                                float(self.values[1]*b[1] + choice(Centroid.range_y)*a[1]),
+                                float(self.values[2]*b[2] + choice(Centroid.range_z)*a[2])])
 
     def is_equal(self, other, threshold, chiral=True):
         threshold = 0.5 #Distance between two centres of mass should be more that 0.5 Angs. if other values are equal.

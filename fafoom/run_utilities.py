@@ -84,7 +84,7 @@ def str_info(struct):
     """ Prints the information about the structure to the output file"""
     # print_output(struct)
     for dof in struct.dof:
-        print_output('{}: {}'.format(dof.name, dof.values))
+        print_output('{}: {}'.format(dof.name, [float('{:.2f}'.format(x)) for x in dof.values]))
 
 
 def relax_info(struct):
@@ -92,7 +92,7 @@ def relax_info(struct):
     the local optimization."""
     # print_output(struct)
     for dof in struct.dof:
-        print_output('{}: {}\n'.format(dof.name, dof.values))
+        print_output('{}: {}'.format(dof.name, [float('{:.2f}'.format(x)) for x in dof.values]))
         # print_output('Values of {}\nInitial: {}\nResult : {}\n'.format(dof.type, dof.initial_values, dof.values))
 
 

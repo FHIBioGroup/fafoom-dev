@@ -102,7 +102,7 @@ class FFobject():
         shutil.copy('all.psf', os.path.join(dirname, 'all.psf'))
         shutil.copy(os.path.join(self.sourcedir, 'Configure.conf'), os.path.join(dirname,'Configure.conf'))
         shutil.copy(os.path.join(self.sourcedir, 'par_all22_prot_metals.inp'),os.path.join(dirname, 'par_all22_prot_metals.inp'))
-        shutil.copy(os.path.join(self.sourcedir, 'par_all22_prot.prm'),os.path.join(dirname, 'par_all22_prot.prm'))
+        # shutil.copy(os.path.join(self.sourcedir, 'par_all22_prot.prm'),os.path.join(dirname, 'par_all22_prot.prm'))
 
     def run_FF(self, execution_sctring):
         """ Execute FF local optimization """

@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import numpy as np
+from numpy import array
 import sys
 import os
 from fafoom import *
@@ -55,14 +56,17 @@ if opt == "simple":
             continue
         else:
             if str3d not in blacklist:
-                if not check_for_clashes(str3d.sdf_string, os.path.join(mol.constrained_geometry_file)):
+                if not check_for_clashes(str3d.sdf_string, os.path.join(os.getcwd(), mol.constrained_geometry_file)):
                     if 'centroid' not in mol.dof_names:
                         str3d.adjust_position()
                     else:
+                        if cnt==cnt_max-1:
+                            print('Increase the volume!')
+                            print_output('Probably, you should increase the volume.')
                         cnt+=1
                         continue
                 if 'centroid' not in mol.dof_names:
-                    if not str3d.check_position(volume):
+                    if str3d.check_position(volume) == False:
                         str3d.adjust_position()
                 name = 'structure_{}'.format(str3d.index)
                 # Perform the local optimization
@@ -100,9 +104,7 @@ if opt == "restart":
     mol.create_template_sdf()
     # with open("backup_mol.dat", 'r') as inf:
     #     mol = eval(inf.readline())
-    with open("backup_population.dat", 'r') as inf:
-        for line in inf:
-            population.append(eval(line))
+
     with open("backup_blacklist.dat", 'r') as inf:
         for line in inf:
             blacklist.append(eval(line))
@@ -111,8 +113,19 @@ if opt == "restart":
             min_energy.append(eval(line))
     with open("backup_iteration.dat", 'r') as inf:
         iteration_tmp = eval(inf.readline())
+    # with open("backup_population.dat", 'r') as inf:
+    #     for line in inf:
+    #         population.append(eval(line))
     linked_params = run_util.find_linked_params(mol, params)
-    population.sort()
+    temp_dic = {}
+    for i in range(len(blacklist)):
+        temp_dic[blacklist[i].index] = blacklist[i].energy
+    temp_sorted = sorted(temp_dic.items(), key=lambda t: t[1])
+        # print('index in blacklist : {}'.format(blacklist[i].energy))
+        # population.append(blacklist[i])
+    # population.sort()
+    for i in range(params['popsize']):
+        population.append(blacklist[temp_sorted[i][0]-1])
     for i in range(len(population)):
         print_output(str(population[i])+" "+str(float(population[i])))
     print_output("Blacklist: " + ', '.join([str(v) for v in blacklist]))
@@ -144,7 +157,7 @@ def mutate_and_relax(candidate, name, iteration, cnt_max, **kwargs):
                 continue
             else:
                 if not check_for_clashes(candidate.sdf_string, os.path.join(mol.constrained_geometry_file)):
-                    print_output('Clash found')
+                    #print_output('Clash found')
                     if 'centroid' not in mol.dof_names: #If optimization for the COM is turned off
                         candidate.adjust_position() #Adjust position in z direction
                     else:
@@ -171,7 +184,7 @@ def mutate_and_relax(candidate, name, iteration, cnt_max, **kwargs):
                 continue
             else:
                 if not check_for_clashes(candidate.sdf_string, os.path.join(mol.constrained_geometry_file)):
-                    print_output('Clash found')
+                    #print_output('Clash found')
                     if 'centroid' not in mol.dof_names:
                         print_output('Perform adjust')
                         candidate.adjust_position()
@@ -203,15 +216,15 @@ while iteration < params['max_iter']:
     print_output('Try to crossover.')
     cnt = 0
     while param < params['prob_for_crossing'] and cnt < cnt_max:
-        print_output('Values for {} parent_1'.format(parent1))
-        run_util.str_info(parent1)
-        print_output('Values for {} parent_2'.format(parent2))
-        run_util.str_info(parent2)
-        print_output('\n')
+        # print_output('Values for {} parent_1'.format(parent1))
+        # run_util.str_info(parent1)
+        # print_output('Values for {} parent_2'.format(parent2))
+        # run_util.str_info(parent2)
+        # print_output('\n')
         child1, child2 = Structure.crossover(parent1, parent2, method=mol.crossover_method)
         if child1.is_geometry_valid_after_crossover() and child2.is_geometry_valid_after_crossover():
             if not check_for_clashes(child1.sdf_string, os.path.join(mol.constrained_geometry_file)):
-                print_output('Clash found')
+                #print_output('Clash found')
                 if 'centroid' not in mol.dof_names:
                     print_output('Perform adjust')
                     child1.adjust_position()
@@ -220,7 +233,7 @@ while iteration < params['max_iter']:
                     cnt += 1
                     continue
             if not check_for_clashes(child2.sdf_string, os.path.join(mol.constrained_geometry_file)):
-                print_output('Clash found')
+                #print_output('Clash found')
                 if 'centroid' not in mol.dof_names:
                     print_output('Perform adjust')
                     child2.adjust_position()
@@ -228,6 +241,11 @@ while iteration < params['max_iter']:
                     Structure.index = len(blacklist)
                     cnt += 1
                     continue
+            print_output('Values for {} parent_1'.format(parent1))
+            run_util.str_info(parent1)
+            print_output('Values for {} parent_2'.format(parent2))
+            run_util.str_info(parent2)
+            print_output('\n')
             break
         else:
             Structure.index = len(blacklist)

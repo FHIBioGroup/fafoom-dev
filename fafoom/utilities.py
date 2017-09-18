@@ -491,7 +491,7 @@ def aims2xyz_vdw(aims_file):
     with open(aims_file, 'r') as aims:
         lines = aims.readlines()
         for line in lines:
-            atoms = re.match(r'(.*atom\s+(.\d+\.\d+)\s+(.\d+\.\d+)\s+(.\d+\.\d+)\s+(\w+))', line)
+            atoms = re.match(r'(.*?atom\s*?(.\d+\.\d+)\s*?(.\d+\.\d+)\s*?(.\d+\.\d+)\s*?(\w+))', line)
             if atoms:
                 xyz_coords.append([str(atoms.group(5)), float(atoms.group(2)), float(atoms.group(3)), float(atoms.group(4))])
     aims.close()

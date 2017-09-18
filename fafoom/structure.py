@@ -339,7 +339,7 @@ class Structure:
         atom_max =  aims2xyz(self.mol_info.constrained_geometry_file)[surr.index(z_max)][0]
         dist = (VDW_radii[atom_min])*bohrtoang #+ VDW_radii[atom_max]
         values_old = centroid_measure(self.sdf_string)
-        values_new = np.array([(self.mol_info.volume[0] + self.mol_info.volume[1])/2, (self.mol_info.volume[2]+ self.mol_info.volume[3])/2, values_old[2] + (z_max - z_min) + dist])
+        values_new = np.array([(self.mol_info.volume[0] + self.mol_info.volume[1])/2, (self.mol_info.volume[2]+ self.mol_info.volume[3])/2, values_old[2] - (z_min - z_max) + dist])
         new_string = centroid_set(self.sdf_string, values_new)
         self.sdf_string = new_string
         for dof in self.dof:
@@ -565,16 +565,21 @@ class Structure:
 
         for dof_par1, dof_par2, dof_child1, dof_child2 in zip(self.dof, other.dof, child1.dof, child2.dof):
             if dof_par1.type == dof_par2.type:
-                if method == 'random_points':
-                    a, b = crossover_random_points(getattr(dof_par1, "values"),
-                                     getattr(dof_par2, "values"))
-                    setattr(dof_child1, "values", a)
-                    setattr(dof_child2, "values", b)
-                if method == 'single_point':
-                    a, b = crossover_single_point(getattr(dof_par1, "values"),
-                                     getattr(dof_par2, "values"))
-                    setattr(dof_child1, "values", a)
-                    setattr(dof_child2, "values", b)
+                if dof_par1.type == 'orientation':
+                    a,b = getattr(dof_par1, "values"), getattr(dof_par2, "values")
+                    setattr(dof_child1, "values", b)
+                    setattr(dof_child2, "values", a)
+                else:
+                    if method == 'random_points':
+                        a, b = crossover_random_points(getattr(dof_par1, "values"),
+                                         getattr(dof_par2, "values"))
+                        setattr(dof_child1, "values", a)
+                        setattr(dof_child2, "values", b)
+                    if method == 'single_point':
+                        a, b = crossover_single_point(getattr(dof_par1, "values"),
+                                         getattr(dof_par2, "values"))
+                        setattr(dof_child1, "values", a)
+                        setattr(dof_child2, "values", b)
 
         for child in child1, child2:
             new_string = deepcopy(child.mol_info.template_sdf_string)
@@ -600,7 +605,7 @@ class Structure:
                     dof.mutate_values(weights=weights)
                 else:
                     dof.mutate_values()
-            print_output('{} after mutation: {}'.format(dof.name, dof.values))
+            print_output('{} after mutation: {}'.format(dof.name, [float('{:.2f}'.format(x)) for x in dof.values]))
 
         for dof in self.dof:
             if 'prob_for_mut_'+str(dof.type) in kwargs:
@@ -638,7 +643,7 @@ class Structure:
                     dof.mutate_values(weights=weights)
                 else:
                     dof.mutate_values()
-            print_output('{} after mutation: {}'.format(dof.name, dof.values))
+            print_output('{} after mutation: {}'.format(dof.name, [float('{:.2f}'.format(x)) for x in dof.values]))
 
         for dof in self.dof:
             if 'max_mutations_'+str(dof.type) in kwargs:
