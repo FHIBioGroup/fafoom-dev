@@ -354,6 +354,20 @@ def check_geo_sdf(sdf_string, flag=0.8):
                     return check
     return check
 
+def check_geo_if_not_too_far(sdf_string, constrained_geom_file, flag=1.5):
+    """Check geometry from a sdf_string if it is not too far from surrounding.
+    Returns:
+        True if it is not too far
+    """
+    check = False
+    molecule = sdf2xyz_list(sdf_string)
+    constrained = aims2xyz_vdw(constrained_geom_file)
+    for x in molecule:
+        for y in constrained:
+            if np.linalg.norm(x[1:]-y[1:]) < (x[0] + y[0])*flag:
+                check = True
+    return check
+
 def check_geo_sdf_after_crossover(sdf_string, flag=0.8):
     """Check geometry from a sdf_string for clashes after crossover.
 

@@ -32,7 +32,7 @@ from pyorca import OrcaObject
 from pyforcefield import FFobject
 
 from deg_of_freedom import Centroid
-from measure import centroid_set, centroid_measure
+from measure import centroid_set, centroid_measure, get_centre_of_mass_from_sdf
 
 import numpy as np
 from random import choice
@@ -50,7 +50,10 @@ from utilities import (
     aims2xyz,
     aims2xyz_extended,
     sdf2xyz,
-    VDW_radii
+    VDW_radii,
+    aims2xyz_vdw,
+    sdf2xyz_list
+
 
 )
 import random
@@ -344,6 +347,35 @@ class Structure:
         self.sdf_string = new_string
         for dof in self.dof:
             dof.update_values(self.sdf_string)
+
+    def adjust_position_centroid(self, constrained_geom_file):
+        def cart2sph(x, y, z):
+            hxy = np.hypot(x, y)
+            r = np.hypot(hxy, z)
+            az = np.arctan2(y, x)
+            el = np.arctan2(hxy, z)
+            return r, az, el
+
+        def sph2cart(r, az, el):
+            x = r * np.sin(el) * np.cos(az)
+            y = r * np.sin(el) * np.sin(az)
+            z = r * np.cos(el)
+            return x, y, z
+        constrained = aims2xyz_vdw(constrained_geom_file)[0][0]*1.5
+        temp = sdf2xyz_list(self.sdf_string)
+        mol = [np.hypot(np.hypot(float(i[0]), float(i[1])), float(i[2])) for i in np.array(sdf2xyz(self.sdf_string))[:,1:]]
+        bohrtoang=0.52917721
+
+        com = get_centre_of_mass_from_sdf(self.sdf_string)
+        adjustment = cart2sph(com[0], com[1], com[2])[0]/min(mol)*(constrained + temp[mol.index(min(mol))][0])
+
+        values_old = centroid_measure(self.sdf_string)
+        values_new = np.array(sph2cart(adjustment, cart2sph(com[0], com[1], com[2])[1], cart2sph(com[0], com[1], com[2])[2]))
+        new_string = centroid_set(self.sdf_string, values_new)
+        self.sdf_string = new_string
+        for dof in self.dof:
+            if dof.name == 'Centroid':
+                dof.update_values(self.sdf_string)
 ############
 
     def adjust_position_after_crossover(self):

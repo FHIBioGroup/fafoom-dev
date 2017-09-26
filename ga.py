@@ -66,8 +66,12 @@ if opt == "simple":
                         cnt+=1
                         continue
                 if 'centroid' not in mol.dof_names:
-                    if str3d.check_position(volume) == False:
+                    if not str3d.check_position(volume):
                         str3d.adjust_position()
+                else:
+                    if len(aims2xyz(os.path.join(os.getcwd(), mol.constrained_geometry_file))) < 3:
+                        if check_geo_if_not_too_far(str3d.sdf_string, os.path.join(os.getcwd(), mol.constrained_geometry_file), flag=1.5) == False:
+                            str3d.adjust_position_centroid(os.path.join(os.getcwd(), mol.constrained_geometry_file))
                 name = 'structure_{}'.format(str3d.index)
                 # Perform the local optimization
                 run_util.optimize(str3d, energy_function, params, name)
@@ -165,6 +169,11 @@ def mutate_and_relax(candidate, name, iteration, cnt_max, **kwargs):
                         candidate = candidate_backup #Clash found so structure will be resetted
                         cnt+=1
                         continue
+                else:
+                    if len(aims2xyz(os.path.join(os.getcwd(), mol.constrained_geometry_file))) < 3:
+                        if check_geo_if_not_too_far(candidate.sdf_string, os.path.join(os.getcwd(), mol.constrained_geometry_file), flag=1.5) == False:
+                            candidate.adjust_position_centroid(os.path.join(os.getcwd(), mol.constrained_geometry_file))
+
                 name = 'structure_{}'.format(candidate.index)
                 run_util.optimize(candidate, energy_function, params, name)
                 run_util.check_for_kill()
@@ -195,6 +204,16 @@ def mutate_and_relax(candidate, name, iteration, cnt_max, **kwargs):
                             candidate = candidate_backup
                             cnt+=1
                             continue
+                        else:
+                            if len(aims2xyz(os.path.join(os.getcwd(), mol.constrained_geometry_file))) < 3:
+                                if check_geo_if_not_too_far(candidate.sdf_string, os.path.join(os.getcwd(), mol.constrained_geometry_file), flag=1.5) == False:
+                                    candidate.adjust_position_centroid(os.path.join(os.getcwd(), mol.constrained_geometry_file))
+
+                else:
+                    if len(aims2xyz(os.path.join(os.getcwd(), mol.constrained_geometry_file))) < 3:
+                        if check_geo_if_not_too_far(candidate.sdf_string, os.path.join(os.getcwd(), mol.constrained_geometry_file), flag=1.5) == False:
+                            candidate.adjust_position_centroid(os.path.join(os.getcwd(), mol.constrained_geometry_file))
+
                 name = 'structure_{}'.format(candidate.index)
                 run_util.optimize(candidate, energy_function, params, name)
                 run_util.check_for_kill()
