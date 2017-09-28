@@ -171,12 +171,18 @@ while population < params['popsize'] and cnt < cnt_max:
             else:
                 cnt+=1
                 continue
+
+        if len(aims2xyz(os.path.join(os.getcwd(), mol.constrained_geometry_file))) < 3:
+            if check_geo_if_not_too_far(str3d.sdf_string, os.path.join(os.getcwd(), mol.constrained_geometry_file), flag=1.0) == False:
+                str3d.adjust_position_centroid(os.path.join(os.getcwd(), mol.constrained_geometry_file))
+
         if 'centroid' not in mol.dof_names and len(aims2xyz(os.path.join(os.getcwd(), 'adds', 'geometry.in.constrained'))) > 0:
             if not str3d.check_position(volume):
                 str3d.adjust_position()
         aims_object.generate_input(str3d.sdf_string)
-        with open(os.path.join(os.getcwd(), 'RandGen', 'structure_{}.sdf'.format(population + 1)), 'w') as rand_structure:
-            rand_structure.write(str3d.sdf_string) #generates input
+        aims_object.build_storage(os.path.join(os.getcwd(),'RandGen', 'structure_{}'.format(population + 1)))
+        # with open(os.path.join(os.getcwd(), 'RandGen', 'structure_{}.sdf'.format(population + 1)), 'w') as rand_structure:
+            # rand_structure.write(str3d.sdf_string) #generates input
         # name = os.path.join(os.getcwd(), 'valid', str(cnt)+'_geometry')
         str3d.send_to_blacklist(blacklist)
         for dof in str3d.dof:
