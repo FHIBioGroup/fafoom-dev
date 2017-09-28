@@ -75,11 +75,16 @@ if opt == "simple":
                 name = 'structure_{}'.format(str3d.index)
                 # Perform the local optimization
                 run_util.optimize(str3d, energy_function, params, name)
-                run_util.check_for_kill()
-                str3d.send_to_blacklist(blacklist) #Blacklist
-                population.append(str3d)
-                print_output('{}\nEnergy: {}'.format(str3d, float(str3d)))
-                run_util.relax_info(str3d)
+                print 'Optimization started'
+                if run_util.check_for_not_converged(name):
+                    str3d.send_to_blacklist(blacklist)
+                    continue
+                else:
+                # run_util.check_for_kill()
+                    str3d.send_to_blacklist(blacklist) #Blacklist
+                    population.append(str3d)
+                    print_output('{}\nEnergy: {}'.format(str3d, float(str3d)))
+                    run_util.relax_info(str3d)
                 # cnt += 1
             else:
                 #print_output(blacklist) #Blacklist

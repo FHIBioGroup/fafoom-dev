@@ -18,6 +18,7 @@
 from __future__ import division
 import glob
 import sys
+import os, shutil
 
 from utilities import print_output, remover_file, remover_dir, backup
 
@@ -44,7 +45,7 @@ def simple_or_restart():
         #     remover_dir(d)
         remover_dir("blacklist")
         for f in ["mol.sdf", "control.in", "geometry.in", "output.txt",
-                  "aims.out", "kill.dat"]:
+                  "result.out", "kill.dat"]:
             remover_file(f)
         for f in for_restart:
             remover_file(f)
@@ -72,7 +73,7 @@ def simple_or_restart_for_random():
             remover_dir(d)
         remover_dir("blacklist")
         for f in ["control.in", "geometry.in", "output.txt",
-                  "aims.out", "kill.dat"]:
+                  "result.out", "kill.dat"]:
             remover_file(f)
         for f in for_restart:
             remover_file(f)
@@ -95,6 +96,16 @@ def relax_info(struct):
         print_output('{}: {}'.format(dof.name, [float('{:.2f}'.format(x)) for x in dof.values]))
         # print_output('Values of {}\nInitial: {}\nResult : {}\n'.format(dof.type, dof.initial_values, dof.values))
 
+def check_for_not_converged(dirname):
+    """ Check if the not_converged.dat file is present in the directory or in the
+    subdirectories. Folder will be deleted but calculation will be continued."""
+    if len(glob.glob("*/not_converged.dat")) == 0 and len(glob.glob("not_converged.dat")) == 0:
+        pass
+    else:
+        print("Seems that something didn't converged. Don't worry, no problem.")
+        shutil.rmtree(os.path.join(os.getcwd(), dirname))
+        os.remove(os.path.join(os.getcwd(), 'not_converged.dat'))
+        return True
 
 def check_for_kill():
     """ Check if the kill.dat file is present in the directory or in the

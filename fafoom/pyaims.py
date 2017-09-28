@@ -102,24 +102,24 @@ class AimsObject():
             execution_string, stdout=subprocess.PIPE, shell=True)
         out = subprocess.Popen(
             ['cat'], stdin=aims.stdout,
-            stdout=open('aims.out', 'w'), shell=True)
+            stdout=open('result.out', 'w'), shell=True)
         out.wait()
         s0 = "Present geometry is converged"
         s = "Total energy of the DFT / Hartree-Fock s.c.f. calculation      :"
         s2 = "Final atomic structure:"
         not_conv = True
-        searchfile = open("aims.out", "r")
+        searchfile = open("result.out", "r")
         for line in searchfile:
             if s0 in line:
                 not_conv = False
         searchfile.close()
 
         if not_conv:
-            killfile = open("kill.dat", "w")
-            killfile.close()
+            not_converged_file = open("not_converged.dat", "w")
+            not_converged_file.close()
 
         else:
-            searchfile = open("aims.out", "r")
+            searchfile = open("result.out", "r")
             for i, line in enumerate(searchfile, 1):
                 if s in line:
                     a = line.split(" ")
@@ -129,7 +129,7 @@ class AimsObject():
             searchfile.close()
             atoms = len(self.aims_string.splitlines())
             with open('geometry.out', 'w') as file_geo:
-                with open('aims.out') as f:
+                with open('result.out') as f:
                     for line in itertools.islice(f, l_num+1, l_num+1+atoms):
                         file_geo.write(line)
             file_geo.close()
