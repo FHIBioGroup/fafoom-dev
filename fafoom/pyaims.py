@@ -174,8 +174,8 @@ class AimsObject():
         try:
             os.remove('geometry.in')
             os.remove('control.in')
-            shutil.copy('aims.out', self.dirname)
-            os.remove('aims.out')
+            shutil.copy('result.out', self.dirname)
+            os.remove('result.out')
             remover_file('geometry.in.next_step')
             shutil.copy('geometry.out', self.dirname)
             os.remove('geometry.out')

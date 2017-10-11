@@ -31,6 +31,7 @@ cnt_max = 2500
 population, blacklist, min_energy = [], [], []
 #=======================================================================
 if opt == "simple":
+    iteration = 0
     mol = MoleculeDescription(p_file)
     # Assign the permanent attributes to the molecule.
     mol.get_parameters()
@@ -73,7 +74,7 @@ if opt == "simple":
                 run_util.optimize(str3d, energy_function, params, name)
                 print 'Optimization started'
                 if run_util.check_for_not_converged(name):
-                    str3d.send_to_blacklist(blacklist)
+                    # str3d.send_to_blacklist(blacklist)
                     continue
                 else:
                 # run_util.check_for_kill()
@@ -86,6 +87,7 @@ if opt == "simple":
                 #print_output(blacklist) #Blacklist
                 print_output("Geomerty of "+str(str3d)+" is fine, but already known.")
                 cnt += 1
+        run_util.perform_backup(mol, population, blacklist, iteration, min_energy)
     if cnt == cnt_max:
         print_output("The allowed number of trials for building the "
                      "population has been exceeded. The code terminates.")
@@ -97,7 +99,7 @@ if opt == "simple":
         print_output('{:<}   {:>}'.format(population[i], float(population[i])))
     min_energy.append(population[0].energy)
     #print_output("Blacklist: " + ', '.join([str(v) for v in blacklist])) #Blacklist
-    iteration = 0
+
 
 
 if opt == "restart":
@@ -129,8 +131,13 @@ if opt == "restart":
         # print('index in blacklist : {}'.format(blacklist[i].energy))
         # population.append(blacklist[i])
     # population.sort()
-    for i in range(params['popsize']):
-        population.append(blacklist[temp_sorted[i][0]-1])
+    if len(blacklist) > params['popsize']:
+        for i in range(params['popsize']):
+            population.append(blacklist[temp_sorted[i][0]-1])
+    else:
+        for i in range(len(blacklist)):
+            population.append(blacklist[temp_sorted[i][0]-1])
+
     for i in range(len(population)):
         print_output(str(population[i])+" "+str(float(population[i])))
     print_output("Blacklist: " + ', '.join([str(v) for v in blacklist]))

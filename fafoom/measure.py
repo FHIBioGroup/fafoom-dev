@@ -41,6 +41,14 @@ def angle_between(v1, v2):
     v2_u = unit_vector(v2)
     return np.arccos(np.dot(v1_u, v2_u))*180./np.pi
 
+def MolecularAngleBetween(point1, point2, point3):
+    '''Returns angle between two vectors'''
+    v1 = np.array(point2 - point1)
+    v2 = np.array(point3 - point2)
+    v1_u = unit_vector(v1)
+    v2_u = unit_vector(v2)
+    return np.arccos(np.dot(v1_u, v2_u))*180./np.pi
+
 def translate(point, coord):
     translated = coord[:] - point[:]
     return translated
@@ -295,6 +303,43 @@ def dihedral_measure(sdf_string, list_of_atoms):
     #point is above or below the plane defined by first 3 points:
     ppoint = - np.dot(plane1, coords[list_of_atoms[0], :])
     dpoint = (np.dot(plane1, coords[list_of_atoms[3], :])+ppoint)/norm_plane1
+    if dpoint >= 0:
+        return -(alpha*180.0)/np.pi
+    else:
+        return (alpha*180.0)/np.pi
+
+# def MolecularDihedralMeasure(sdf_string, list_of_atoms):
+def MolecularDihedralMeasure(point1, point2, point3, point4):
+    """ Measure the dihedral angle.
+    Args:
+        sdf_string (string)
+        position (list): 4 atoms defining the dihedral
+    Returns:
+        float value
+    Raises:
+        ValueError: If the lenght of the list is not equal 4.
+    """
+    r0 = point2 - point1
+    r1 = point3 - point2
+    r2 = point3 - point2
+    r3 = point4 - point3
+
+    plane1 = np.cross(r1, r0)
+    plane2 = np.cross(r3, r2)
+    #Calculate the axis of rotation (axor)
+    axor = np.cross(plane1, plane2)
+    #Calculate a norm of normal vectors:
+    norm_plane1 = np.sqrt(np.sum(plane1**2))
+    norm_plane2 = np.sqrt(np.sum(plane2**2))
+    norm = norm_plane1 * norm_plane2
+    #Measure the angle between two planes:
+    dot_product = np.dot(plane1, plane2)/norm
+    alpha = np.arccos(dot_product)
+    #The cosine function is symetric thus, to distinguish between
+    #negative and positive angles, one has to calculate if the fourth
+    #point is above or below the plane defined by first 3 points:
+    ppoint = - np.dot(plane1, point1)
+    dpoint = (np.dot(plane1, point4)+ppoint)/norm_plane1
     if dpoint >= 0:
         return -(alpha*180.0)/np.pi
     else:

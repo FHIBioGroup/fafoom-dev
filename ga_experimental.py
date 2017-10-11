@@ -6,6 +6,7 @@ import os
 from fafoom import *
 import fafoom.run_utilities as run_util
 from fafoom.utilities import sdf2xyz, check_for_clashes
+from fafoom.measure import centroid_measure, MolecularAngleBetween, MolecularDihedralMeasure
 #Need to correctly write the one-line blacklist:
 np.set_printoptions(suppress=True)
 # Decide for restart or a simple run.
@@ -30,9 +31,154 @@ energy_function = run_util.detect_energy_function(params)
 cnt_max = 2500
 population, blacklist, min_energy = [], [], []
 #=======================================================================
+
+def DeleteFileifExists(path_to_file):
+    if os.path.exists(path_to_file):
+        os.remove(path_to_file)
+
+def CreateXYZwithStructures(structures):
+    with open(os.path.join(os.getcwd(), 'structures.xyz'), 'a') as xyz:
+        xyz.write('{}\n'.format(sum([len(sdf2xyz(i.sdf_string)) for i in structures])))
+        xyz.write('{}\n'.format('Comment'))
+        for structure in structures:
+            for i in sdf2xyz(structure.sdf_string):
+                xyz.write('{}\n'.format('  '.join([str(k) for k in i])))
+
+def CheckClashesBetweenTwoMolecules(structure_1, structure_2):
+    check = True
+    molecule_1 = sdf2xyz_list(structure_1.sdf_string)
+    molecule_2 = sdf2xyz_list(structure_2.sdf_string)
+    for x in molecule_1:
+        for y in molecule_2:
+            if np.linalg.norm(x[1:]-y[1:]) < x[0] or np.linalg.norm(x[1:]-y[1:]) < y[0]:
+                check = False
+    return check
+
+def CheckforClashesBetweenMolecules(structures):
+    check = False
+    k = 0
+    for structure in structures:
+        k+=1
+        for m in range(k, len(structures)):
+            if not CheckClashesBetweenTwoMolecules(structure, structures[m]):
+                check = True
+                print('Clash between structure {} and structure {}'.format(structures.index(structure)+1, m+1))
+    return check
+
+
+def ConnectivityMatrix(structures):
+    def CheckConnectivity(structure_1, structure_2):
+        connectivity = 0
+        molecule_1 = sdf2xyz_list(structure_1.sdf_string)
+        molecule_2 = sdf2xyz_list(structure_2.sdf_string)
+        for x in molecule_1:
+            for y in molecule_2:
+                if np.linalg.norm(x[1:]-y[1:]) < x[0]*1.5 or np.linalg.norm(x[1:]-y[1:]) < y[0]*1.5:
+                    connectivity = 1
+        return connectivity
+    Connections = np.array([CheckConnectivity(structures[i], structures[j]) if i!=j
+                                                                            else 0 for i in range(len(structures))
+                                                                            for j in range(len(structures))])
+    return Connections.reshape(len(structures), len(structures))
+
+def GenerateConnectivityMatrix(structures):
+    def CheckSumminRaw(Connections):
+        check = False
+        for i in Connections:
+            if sum(i) < 1:
+                check = True
+        return check
+    def GenerateConnectivity(structures):
+        conn = np.array([np.random.randint(0,2) if i!=j and j>i
+                                                else 0 for i in range(len(structures))
+                                                for j in range(len(structures))])
+        conn = conn.reshape(len(structures), len(structures))
+        for i in range(len(conn)):
+            for j in range(len(conn)):
+                conn[j][i] = conn[i][j]
+        return conn
+    Connections = GenerateConnectivity(structures)
+    while CheckSumminRaw(Connections):
+        Connections = GenerateConnectivity(structures)
+    return Connections
+
+def CreateMolecularZMatrix(structures):
+    Distances = np.array([np.linalg.norm(centroid_measure(structures[i].sdf_string) -
+                                centroid_measure(structures[j].sdf_string))
+                                for i in range(len(structures))
+                                for j in range(len(structures))])
+    Distances.reshape(len(structures), len(structures))
+    return Distances
+
+def GenerateStructures(structures):
+    for structure in structures:
+        structure.generate_structure()
+        while not structure.is_geometry_valid():
+            structure.generate_structure()
+
+def GenerateSupramoleculeFromConnectivityMatrix(structures, Connectivity):
+    for i in range(len(structures)):
+        for dof in structures[0].dof:
+            if dof.name == 'Centroid':
+                dof.get_random_values()
+                new_string = structures[0].sdf_string
+                new_string = dof.apply_on_string(new_string, values_to_set=np.array([0,0,0]))
+                structures[0].sdf_string = new_string
+            for dof in structures[0].dof:
+                dof.update_values(structures[0].sdf_string)
+
+    print Connectivity[0]
+    # popsize = 100
+    # Connectivities = []
+    # population = []
+    # while len(population) != popsize:
+    #     for structure in structures:
+    #         for dof in structure.dof:
+    #             if dof.name == 'Centroid':
+    #                 dof.get_random_values()
+    #                 new_string = structure.sdf_string
+    #                 new_string = dof.apply_on_string(new_string)
+    #                 structure.sdf_string = new_string
+    #             for dof in structure.dof:
+    #                 dof.update_values(structure.sdf_string)
+    #     while CheckforClashesBetweenMolecules(structures):
+    #         for structure in structures:
+    #             for dof in structure.dof:
+    #                 if dof.name == 'Centroid':
+    #                     dof.get_random_values()
+    #                     new_string = structure.sdf_string
+    #                     new_string = dof.apply_on_string(new_string)
+    #                     structure.sdf_string = new_string
+    #                 for dof in structure.dof:
+    #                     dof.update_values(structure.sdf_string)
+    #     if sum([sum(i) for i in ConnectivityMatrix(structures)])> 0:
+    #         population.append(structures)
+    #     print len(population)
+    #     Connectivities.append(ConnectivityMatrix(structures))
+    #     # for structure in structures:
+    #     #     print centroid_measure(structure.sdf_string)
+    # for matrix in Connectivities:
+    #     if matrix.all() == Connectivity.all():
+    #         print Connectivity
+    #         print matrix
+    #         print 'Good News'
+    #     else:
+    #         print 'Not'
+    #     CreateXYZwithStructures(structures)
+
+    # print Connectivity
+    # for i in range(len(structures)):
+    #     for j in range(len(structures)):
+    #         if Connectivity[i][j] == 1 and j>i:
+    #             print('{} and {} should be connected'.format(i, j))
+
+        # print centroid_measure(structure.sdf_string)
+
+
+''' First implementation will be random search '''
 if opt == "simple":
+    # Assign the permanent attributes to the molecule:
     mol = MoleculeDescription(p_file)
-    # Assign the permanent attributes to the molecule.
     mol.get_parameters()
     mol.create_template_sdf()
     # Check for potential degree of freedom related parameters.
@@ -41,6 +187,32 @@ if opt == "simple":
     print_output('Atoms: {}, Bonds: {}'.format(mol.atoms, mol.bonds))
     print_output('\n___Initialization___\n')
     cnt = 0
+    '''Start of moleclar structures creation'''
+    molecules = [MoleculeDescription(p_file) for i in range(mol.number_of_molecules)]
+    for molecule in molecules:
+        molecule.get_parameters()
+        molecule.create_template_sdf()
+
+    structures = [Structure(molecule) for molecule in molecules]
+    GenerateStructures(structures)
+    # while CheckforClashesBetweenMolecules(structures):
+    #     GenerateStructures(structures)
+    #     print('It is not ok')
+    # else:
+    #     print('IT is ok')
+    Connectivity = GenerateConnectivityMatrix(structures)
+    print Connectivity
+    GenerateSupramoleculeFromConnectivityMatrix(structures, Connectivity)
+    # CheckforClashesBetweenMolecules(structures)
+    DeleteFileifExists(os.path.join(os.getcwd(), 'structures.xyz'))
+    CreateXYZwithStructures(structures)
+
+
+
+
+
+
+    sys.exit(0)
     # Generate sensible and unique 3d structures.
     while len(population) < params['popsize'] and cnt < cnt_max:
         # print_output("New trial")
@@ -129,8 +301,12 @@ if opt == "restart":
         # print('index in blacklist : {}'.format(blacklist[i].energy))
         # population.append(blacklist[i])
     # population.sort()
-    for i in range(params['popsize']):
-        population.append(blacklist[temp_sorted[i][0]-1])
+    if len(blacklist) > params['popsize']:
+        for i in range(params['popsize']):
+            population.append(blacklist[temp_sorted[i][0]-1])
+    else:
+        for i in range(len(blacklist)):
+            population.append(blacklist[temp_sorted[i][0]-1])
     for i in range(len(population)):
         print_output(str(population[i])+" "+str(float(population[i])))
     print_output("Blacklist: " + ', '.join([str(v) for v in blacklist]))

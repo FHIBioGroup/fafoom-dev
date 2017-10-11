@@ -26,39 +26,14 @@ from get_parameters import (
 )
 from genetic_operations import crossover_single_point, crossover_random_points
 from pyaims import AimsObject
-#from pyff import FFObject
 from pynwchem import NWChemObject
 from pyorca import OrcaObject
 from pyforcefield import FFobject
-
 from deg_of_freedom import Centroid
 from measure import centroid_set, centroid_measure, get_centre_of_mass_from_sdf
-
 import numpy as np
 from random import choice
-
-from utilities import (
-    aims2sdf,
-    check_geo_sdf,
-    check_geo_sdf_after_crossover,
-    file2dict,
-    lowest_cartesian,
-    mirror_sdf,
-    print_output,
-    set_default,
-    xyz2sdf,
-    aims2xyz,
-    aims2xyz_extended,
-    sdf2xyz,
-    VDW_radii,
-    aims2xyz_vdw,
-    sdf2xyz_list
-
-
-)
-import random
-#from random import randint, choice
-
+from utilities import *
 
 class MoleculeDescription:
     """Create the molecule."""
@@ -89,17 +64,17 @@ class MoleculeDescription:
 
         dict_default = {'rmsd_type': "cartesian",
                         'rmsd_cutoff_uniq': 0.2,
-                        'chiral': False,
+                        'chiral': True,
                         'optimize_torsion': True,
                         'optimize_cistrans':True,
                         'optimize_centroid': True,
                         'optimize_orientation': True,
-                        'smarts_torsion':"[*]~[!$(*#*)&!D1]-&!@[!$(*#*)&!D1]~[*]",
                         'sdf_string_template':'adds/mol.sdf',
                         'constrained_geometry_file':'adds/geometry.in.constrained',
                         'right_order_to_assign':['torsion', 'cistrans', 'centroid', 'orientation'],
                         'volume':(-10,11, -10, 11, -10, 11),
-                        'crossover_method':'random_points'}
+                        'crossover_method':'random_points',
+                        'number_of_molecules':1}
 
         params = set_default(params, dict_default)
         for key in params:
