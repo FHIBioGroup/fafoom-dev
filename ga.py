@@ -66,7 +66,7 @@ if opt == "simple":
                     if not str3d.check_position(volume):
                         str3d.adjust_position()
                 else:
-                    if len(aims2xyz(os.path.join(os.getcwd(), mol.constrained_geometry_file))) < 3:
+                    if 0 < len(aims2xyz(os.path.join(os.getcwd(), mol.constrained_geometry_file))) < 3:
                         if check_geo_if_not_too_far(str3d.sdf_string, os.path.join(os.getcwd(), mol.constrained_geometry_file), flag=1.5) == False:
                             str3d.adjust_position_centroid(os.path.join(os.getcwd(), mol.constrained_geometry_file))
                 name = 'structure_{}'.format(str3d.index)
@@ -178,19 +178,22 @@ def mutate_and_relax(candidate, name, iteration, cnt_max, **kwargs):
                         cnt+=1
                         continue
                 else:
-                    if len(aims2xyz(os.path.join(os.getcwd(), mol.constrained_geometry_file))) < 3:
+                    if 0 < len(aims2xyz(os.path.join(os.getcwd(), mol.constrained_geometry_file))) < 3:
                         if check_geo_if_not_too_far(candidate.sdf_string, os.path.join(os.getcwd(), mol.constrained_geometry_file), flag=1.5) == False:
                             candidate.adjust_position_centroid(os.path.join(os.getcwd(), mol.constrained_geometry_file))
 
                 name = 'structure_{}'.format(candidate.index)
                 run_util.optimize(candidate, energy_function, params, name)
-                run_util.check_for_kill()
-                candidate.send_to_blacklist(blacklist) #Blacklist
-                print_output('{}\nEnergy: {}'.format(candidate, float(candidate)))
-                # print_output(str(candidate)+": energy: "+str(float(candidate))+", is temporary added to the population")
-                run_util.relax_info(candidate)
-                found = True
-                population.append(candidate)
+                if run_util.check_for_not_converged(name):
+                    continue
+                # run_util.check_for_kill()
+                else:
+                    candidate.send_to_blacklist(blacklist) #Blacklist
+                    print_output('{}\nEnergy: {}'.format(candidate, float(candidate)))
+                    # print_output(str(candidate)+": energy: "+str(float(candidate))+", is temporary added to the population")
+                    run_util.relax_info(candidate)
+                    found = True
+                    population.append(candidate)
         elif candidate not in blacklist:
             print_output('Candidate not in blacklist')
             candidate.mutate(**kwargs) #Mutatte with some probability
@@ -213,24 +216,26 @@ def mutate_and_relax(candidate, name, iteration, cnt_max, **kwargs):
                             cnt+=1
                             continue
                         else:
-                            if len(aims2xyz(os.path.join(os.getcwd(), mol.constrained_geometry_file))) < 3:
+                            if 0 < len(aims2xyz(os.path.join(os.getcwd(), mol.constrained_geometry_file))) < 3:
                                 if check_geo_if_not_too_far(candidate.sdf_string, os.path.join(os.getcwd(), mol.constrained_geometry_file), flag=1.5) == False:
                                     candidate.adjust_position_centroid(os.path.join(os.getcwd(), mol.constrained_geometry_file))
 
                 else:
-                    if len(aims2xyz(os.path.join(os.getcwd(), mol.constrained_geometry_file))) < 3:
+                    if  0 < len(aims2xyz(os.path.join(os.getcwd(), mol.constrained_geometry_file))) < 3:
                         if check_geo_if_not_too_far(candidate.sdf_string, os.path.join(os.getcwd(), mol.constrained_geometry_file), flag=1.5) == False:
                             candidate.adjust_position_centroid(os.path.join(os.getcwd(), mol.constrained_geometry_file))
-
                 name = 'structure_{}'.format(candidate.index)
                 run_util.optimize(candidate, energy_function, params, name)
-                run_util.check_for_kill()
-                candidate.send_to_blacklist(blacklist) #Blacklist
-                print_output('{}\nEnergy: {}'.format(candidate, float(candidate)))
-                # print_output(str(candidate)+": energy: "+str(float(candidate))+", is temporary added to the population")
-                run_util.relax_info(candidate)
-                found = True
-                population.append(candidate)
+                if run_util.check_for_not_converged(name):
+                    continue
+                else:
+                    run_util.check_for_kill()
+                    candidate.send_to_blacklist(blacklist) #Blacklist
+                    print_output('{}\nEnergy: {}'.format(candidate, float(candidate)))
+                    # print_output(str(candidate)+": energy: "+str(float(candidate))+", is temporary added to the population")
+                    run_util.relax_info(candidate)
+                    found = True
+                    population.append(candidate)
         if cnt == cnt_max:
             raise Exception("The allowed number of trials for generating a unique child has been exceeded.")
 
@@ -305,8 +310,9 @@ while iteration < params['max_iter']:
         sys.exit(0)
     population.sort()
     print_output("Sorted population: " + ', '.join([str(v) for v in population]))
-    del population[-1]
-    del population[-1]
+    if len(population) >= params['popsize'] + 2:
+        del population[-1]
+        del population[-1]
     print_output("Sorted population after removing two structures with highest"
                  " energy: " + ', '.join([str(v) for v in population]))
     min_energy.append(population[0].energy)

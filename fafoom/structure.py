@@ -564,7 +564,7 @@ class Structure:
             setattr(dof, "initial_values", dof.values)
             dof.update_values(self.sdf_string)
 
-    def crossover(self, other, method='srandom_points'):
+    def crossover(self, other, method='random_points'):
         """Perform the crossover."""
 
         child1 = Structure(self.mol_info)
@@ -616,7 +616,7 @@ class Structure:
 
         for dof in self.dof:
             if 'prob_for_mut_'+str(dof.type) in kwargs:
-                if random.random() < kwargs['prob_for_mut_'+str(dof.type)]:
+                if np.random.rand() < kwargs['prob_for_mut_'+str(dof.type)]:
                     if 'max_mutations_'+str(dof.type) in kwargs:
                         call_mut(dof, kwargs['max_mutations_'+str(dof.type)])
                     else:
