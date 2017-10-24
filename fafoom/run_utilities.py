@@ -94,6 +94,7 @@ def relax_info(struct):
     # print_output(struct)
     for dof in struct.dof:
         print_output('{}: {}'.format(dof.name, [float('{:.2f}'.format(x)) for x in dof.values]))
+        print_output('\n')
         # print_output('Values of {}\nInitial: {}\nResult : {}\n'.format(dof.type, dof.initial_values, dof.values))
 
 def check_for_not_converged(dirname):

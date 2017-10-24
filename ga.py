@@ -10,28 +10,39 @@ from fafoom.utilities import sdf2xyz, check_for_clashes
 np.set_printoptions(suppress=True)
 # Decide for restart or a simple run.
 opt = run_util.simple_or_restart()
-p_file = sys.argv[1]
-if sys.argv is None:
+# If genetic algorithm was invoked without additional inputs
+# fafoom will try to find parameters.txt file as default.
+if len(sys.argv) < 2:
     if os.path.exists(os.path.join(os.getcwd(), 'parameters.txt')):
         p_file = os.path.join(os.getcwd(), 'parameters.txt')
     else:
-        pass
-        #Assign default parameters for calculation
+        raise Exception('Please produce parameters.txt file.')
+else:
+    p_file = sys.argv[1]
+# Assign default parameters for calculation
 # Build a dictionary from two section of the parameter file.
 params = file2dict(p_file, ['GA settings', 'Run settings'])
-
+# Default parameters:
 dict_default = {'energy_var': 0.001, 'selection': "roulette_wheel",
                 'fitness_sum_limit': 1.2, 'popsize': 10,
                 'prob_for_crossing': 1.0, 'max_iter': 30,
                 'iter_limit_conv': 20, 'energy_diff_conv': 0.001}
 # Set defaults for parameters not defined in the parameter file.
 params = set_default(params, dict_default)
+# Detect the desired application for energy evaluation.
 energy_function = run_util.detect_energy_function(params)
+# Maximum number of trials to produce the apropriate geometry.
 cnt_max = 2500
+# Create lists to store Population, minimal energy in the run and
+# structures that are already calculated.
 population, blacklist, min_energy = [], [], []
 #=======================================================================
 if opt == "simple":
+    # cnt is the number of trials and when it reaches cnt_max algorithm stops.
+    cnt = 0
+    # Iteration is the maximum number of successful calculations.
     iteration = 0
+    # Create mol object.
     mol = MoleculeDescription(p_file)
     # Assign the permanent attributes to the molecule.
     mol.get_parameters()
@@ -41,10 +52,9 @@ if opt == "simple":
     volume = mol.volume
     print_output('Atoms: {}, Bonds: {}'.format(mol.atoms, mol.bonds))
     print_output('\n___Initialization___\n')
-    cnt = 0
     # Generate sensible and unique 3d structures.
+    surrounding_file = os.path.join(os.getcwd(),mol.constrained_geometry_file)
     while len(population) < params['popsize'] and cnt < cnt_max:
-        # print_output("New trial")
         Structure.index = len(population)
         str3d = Structure(mol)
         str3d.generate_structure()
@@ -53,7 +63,7 @@ if opt == "simple":
             continue
         else:
             if str3d not in blacklist:
-                if not check_for_clashes(str3d.sdf_string, os.path.join(os.getcwd(), mol.constrained_geometry_file)):
+                if not check_for_clashes(str3d.sdf_string, surrounding_file):
                     if 'centroid' not in mol.dof_names:
                         str3d.adjust_position()
                     else:
@@ -66,26 +76,21 @@ if opt == "simple":
                     if not str3d.check_position(volume):
                         str3d.adjust_position()
                 else:
-                    if 0 < len(aims2xyz(os.path.join(os.getcwd(), mol.constrained_geometry_file))) < 3:
-                        if check_geo_if_not_too_far(str3d.sdf_string, os.path.join(os.getcwd(), mol.constrained_geometry_file), flag=1.5) == False:
-                            str3d.adjust_position_centroid(os.path.join(os.getcwd(), mol.constrained_geometry_file))
+                    if 0 < len(aims2xyz(surrounding_file)) < 3:
+                        if check_geo_if_not_too_far(str3d.sdf_string, surrounding_file, flag=1.5) == False:
+                            str3d.adjust_position_centroid(surrounding_file)
                 name = 'structure_{}'.format(str3d.index)
                 # Perform the local optimization
                 run_util.optimize(str3d, energy_function, params, name)
-                print 'Optimization started'
                 if run_util.check_for_not_converged(name):
-                    # str3d.send_to_blacklist(blacklist)
                     continue
                 else:
-                # run_util.check_for_kill()
                     str3d.send_to_blacklist(blacklist) #Blacklist
                     population.append(str3d)
                     print_output('{}\nEnergy: {}'.format(str3d, float(str3d)))
                     run_util.relax_info(str3d)
-                # cnt += 1
             else:
-                #print_output(blacklist) #Blacklist
-                print_output("Geomerty of "+str(str3d)+" is fine, but already known.")
+                # print_output("Geomerty of "+str(str3d)+" is fine, but already known.")
                 cnt += 1
         run_util.perform_backup(mol, population, blacklist, iteration, min_energy)
     if cnt == cnt_max:
@@ -98,8 +103,10 @@ if opt == "simple":
     for i in range(len(population)):
         print_output('{:<}   {:>}'.format(population[i], float(population[i])))
     min_energy.append(population[0].energy)
-    #print_output("Blacklist: " + ', '.join([str(v) for v in blacklist])) #Blacklist
 
+""" End of initialization process. Now the population is full.
+Starting genetic algorithm: performing of selection, crossing over and mutation
+operations for structures in population pool. """
 
 
 if opt == "restart":
@@ -109,9 +116,7 @@ if opt == "restart":
     # Assign the permanent attributes to the molecule.
     mol.get_parameters()
     mol.create_template_sdf()
-    # with open("backup_mol.dat", 'r') as inf:
-    #     mol = eval(inf.readline())
-
+    surrounding_file = os.path.join(os.getcwd(),mol.constrained_geometry_file)
     with open("backup_blacklist.dat", 'r') as inf:
         for line in inf:
             blacklist.append(eval(line))
@@ -120,24 +125,17 @@ if opt == "restart":
             min_energy.append(eval(line))
     with open("backup_iteration.dat", 'r') as inf:
         iteration_tmp = eval(inf.readline())
-    # with open("backup_population.dat", 'r') as inf:
-    #     for line in inf:
-    #         population.append(eval(line))
     linked_params = run_util.find_linked_params(mol, params)
     temp_dic = {}
     for i in range(len(blacklist)):
         temp_dic[blacklist[i].index] = blacklist[i].energy
     temp_sorted = sorted(temp_dic.items(), key=lambda t: t[1])
-        # print('index in blacklist : {}'.format(blacklist[i].energy))
-        # population.append(blacklist[i])
-    # population.sort()
     if len(blacklist) > params['popsize']:
         for i in range(params['popsize']):
             population.append(blacklist[temp_sorted[i][0]-1])
     else:
         for i in range(len(blacklist)):
             population.append(blacklist[temp_sorted[i][0]-1])
-
     for i in range(len(population)):
         print_output(str(population[i])+" "+str(float(population[i])))
     print_output("Blacklist: " + ', '.join([str(v) for v in blacklist]))
@@ -147,9 +145,6 @@ if opt == "restart":
     print_output(" \n ___Reinitialization completed___")
     remover_dir('structure_{}'.format(len(blacklist) + 1))
     remover_dir('structure_{}'.format(len(blacklist) + 2))
-    # remover_dir('generation_'+str(iteration)+'_child1')
-    # remover_dir('generation_'+str(iteration)+'_child2')
-
 
 def mutate_and_relax(candidate, name, iteration, cnt_max, **kwargs):
     print_output('__{}__'.format(name))
@@ -159,11 +154,11 @@ def mutate_and_relax(candidate, name, iteration, cnt_max, **kwargs):
         Structure.index = len(blacklist)
         candidate_backup = Structure(candidate)
         if candidate in blacklist:
-            print_output('Candidate in blacklist')
-            print_output('Perform hard_mutate')
+            # print_output('Candidate in blacklist')
+            # print_output('Perform hard_mutate')
             candidate.hard_mutate(**kwargs) #Mutate, since already in blacklist
             if not candidate.is_geometry_valid(): #Check geometry after mutation
-                print_output('Geometry is not valid')
+                # print_output('Geometry is not valid')
                 candidate = candidate_backup #Reset structure
                 cnt+=1
                 continue
@@ -178,9 +173,9 @@ def mutate_and_relax(candidate, name, iteration, cnt_max, **kwargs):
                         cnt+=1
                         continue
                 else:
-                    if 0 < len(aims2xyz(os.path.join(os.getcwd(), mol.constrained_geometry_file))) < 3:
-                        if check_geo_if_not_too_far(candidate.sdf_string, os.path.join(os.getcwd(), mol.constrained_geometry_file), flag=1.5) == False:
-                            candidate.adjust_position_centroid(os.path.join(os.getcwd(), mol.constrained_geometry_file))
+                    if 0 < len(aims2xyz(surrounding_file)) < 3:
+                        if check_geo_if_not_too_far(candidate.sdf_string, surrounding_file, flag=1.5) == False:
+                            candidate.adjust_position_centroid(surrounding_file)
 
                 name = 'structure_{}'.format(candidate.index)
                 run_util.optimize(candidate, energy_function, params, name)
@@ -195,10 +190,10 @@ def mutate_and_relax(candidate, name, iteration, cnt_max, **kwargs):
                     found = True
                     population.append(candidate)
         elif candidate not in blacklist:
-            print_output('Candidate not in blacklist')
+            # print_output('Candidate not in blacklist')
             candidate.mutate(**kwargs) #Mutatte with some probability
             if not candidate.is_geometry_valid():
-                print_output('Geometry is not fine')
+                # print_output('Geometry is not fine')
                 candidate = candidate_backup # Rebuild the structure
                 cnt += 1
                 continue
@@ -206,24 +201,24 @@ def mutate_and_relax(candidate, name, iteration, cnt_max, **kwargs):
                 if not check_for_clashes(candidate.sdf_string, os.path.join(mol.constrained_geometry_file)):
                     #print_output('Clash found')
                     if 'centroid' not in mol.dof_names:
-                        print_output('Perform adjust')
+                        # print_output('Perform adjust')
                         candidate.adjust_position()
                     else:
-                        print_output('Perform hard_mutate')
+                        # print_output('Perform hard_mutate')
                         candidate.hard_mutate(**kwargs)
                         if not check_for_clashes(candidate.sdf_string, os.path.join(mol.constrained_geometry_file)):
                             candidate = candidate_backup
                             cnt+=1
                             continue
                         else:
-                            if 0 < len(aims2xyz(os.path.join(os.getcwd(), mol.constrained_geometry_file))) < 3:
-                                if check_geo_if_not_too_far(candidate.sdf_string, os.path.join(os.getcwd(), mol.constrained_geometry_file), flag=1.5) == False:
-                                    candidate.adjust_position_centroid(os.path.join(os.getcwd(), mol.constrained_geometry_file))
+                            if 0 < len(aims2xyz(surrounding_file)) < 3:
+                                if check_geo_if_not_too_far(candidate.sdf_string, surrounding_file, flag=1.5) == False:
+                                    candidate.adjust_position_centroid(surrounding_file)
 
                 else:
-                    if  0 < len(aims2xyz(os.path.join(os.getcwd(), mol.constrained_geometry_file))) < 3:
-                        if check_geo_if_not_too_far(candidate.sdf_string, os.path.join(os.getcwd(), mol.constrained_geometry_file), flag=1.5) == False:
-                            candidate.adjust_position_centroid(os.path.join(os.getcwd(), mol.constrained_geometry_file))
+                    if  0 < len(aims2xyz(surrounding_file)) < 3:
+                        if check_geo_if_not_too_far(candidate.sdf_string, surrounding_file, flag=1.5) == False:
+                            candidate.adjust_position_centroid(surrounding_file)
                 name = 'structure_{}'.format(candidate.index)
                 run_util.optimize(candidate, energy_function, params, name)
                 if run_util.check_for_not_converged(name):
@@ -245,29 +240,22 @@ while iteration < params['max_iter']:
                                             params['energy_var'],
                                             params['fitness_sum_limit'])
     param = np.random.rand()
-    print_output('Try to crossover.')
+    # print_output('Try to crossover.')
     cnt = 0
     while param < params['prob_for_crossing'] and cnt < cnt_max:
-        # print_output('Values for {} parent_1'.format(parent1))
-        # run_util.str_info(parent1)
-        # print_output('Values for {} parent_2'.format(parent2))
-        # run_util.str_info(parent2)
-        # print_output('\n')
         child1, child2 = Structure.crossover(parent1, parent2, method=mol.crossover_method)
         if child1.is_geometry_valid_after_crossover() and child2.is_geometry_valid_after_crossover():
             if not check_for_clashes(child1.sdf_string, os.path.join(mol.constrained_geometry_file)):
-                #print_output('Clash found')
                 if 'centroid' not in mol.dof_names:
-                    print_output('Perform adjust')
+                    # print_output('Perform adjust')
                     child1.adjust_position()
                 else:
                     Structure.index = len(blacklist)
                     cnt += 1
                     continue
             if not check_for_clashes(child2.sdf_string, os.path.join(mol.constrained_geometry_file)):
-                #print_output('Clash found')
                 if 'centroid' not in mol.dof_names:
-                    print_output('Perform adjust')
+                    # print_output('Perform adjust')
                     child2.adjust_position()
                 else:
                     Structure.index = len(blacklist)
@@ -285,7 +273,7 @@ while iteration < params['max_iter']:
             continue
     else:
         child1, child2 = Structure(parent1), Structure(parent2)
-        print_output('No crossover was performed. Children are copies of parents.')
+        # print_output('No crossover was performed. Children are copies of parents.')
         # Delete inherited attributes.
         for child in child1, child2:
             attr_list = ["initial_sdf_string", "energy"]

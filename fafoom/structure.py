@@ -102,9 +102,8 @@ class MoleculeDescription:
                     att_name, getattr(
                         self, att_name).replace("\n",
                                                 MoleculeDescription.newline,)))
-            else:
-
-                print_output("Unknown type of attribute "+str(att_name))
+            # else:
+                # print_output("Unknown type of attribute "+str(att_name))
         return "%s(%s)" % (self.__class__.__name__, ', '.join(repr_list))
 
     def __eq__(self, other):
@@ -264,9 +263,8 @@ class Structure:
                             pass
                 elif att_name == 'mol_info':
                     pass
-
-                else:
-                    print_output("Unknown type of attribute "+str(att_name))
+                # else:
+                    # print_output("Unknown type of attribute "+str(att_name))
 
         return "%s(mol, %s)" % (self.__class__.__name__, ', '.join(repr_list))
 
@@ -298,7 +296,6 @@ class Structure:
         for dof in self.dof:
             dof.update_values(self.sdf_string)
             # print 'Updated values for {} are {}'.format(dof.name, dof.values)
-
 ############
     def check_position(self, volume):
         pos = centroid_measure(self.sdf_string)
@@ -352,7 +349,6 @@ class Structure:
             if dof.name == 'Centroid':
                 dof.update_values(self.sdf_string)
 ############
-
     def adjust_position_after_crossover(self):
         bohrtoang=0.52917721
         mol = [float(i) for i in np.array(sdf2xyz(self.sdf_string))[:,3]]
@@ -566,13 +562,15 @@ class Structure:
 
     def crossover(self, other, method='random_points'):
         """Perform the crossover."""
-
         child1 = Structure(self.mol_info)
         child2 = Structure(self.mol_info)
-
-        for dof_par1, dof_par2, dof_child1, dof_child2 in zip(self.dof, other.dof, child1.dof, child2.dof):
+        for dof_par1, dof_par2, dof_child1, dof_child2 in zip(self.dof, other.dof,
+                                                                child1.dof, child2.dof):
+            """ Crossing over for Centre of mass and for Orientation of the
+            main axis of inertia is performed as swapping of the whole vectors
+            without dividing them into parts."""
             if dof_par1.type == dof_par2.type:
-                if dof_par1.type == 'orientation':
+                if dof_par1.type == 'orientation' or dof_par1.type == 'centroid':
                     a,b = getattr(dof_par1, "values"), getattr(dof_par2, "values")
                     setattr(dof_child1, "values", b)
                     setattr(dof_child2, "values", a)
@@ -587,7 +585,6 @@ class Structure:
                                          getattr(dof_par2, "values"))
                         setattr(dof_child1, "values", a)
                         setattr(dof_child2, "values", b)
-
         for child in child1, child2:
             new_string = deepcopy(child.mol_info.template_sdf_string)
             for dof in child.dof:
@@ -595,7 +592,6 @@ class Structure:
             child.sdf_string = new_string
             for dof in child.dof:
                 dof.update_values(child.sdf_string)
-
         return child1, child2
 
     def mutate(self, **kwargs):
@@ -650,14 +646,12 @@ class Structure:
                     dof.mutate_values(weights=weights)
                 else:
                     dof.mutate_values()
-            print_output('{} after mutation: {}'.format(dof.name, [float('{:.2f}'.format(x)) for x in dof.values]))
-
+            # print_output('{} after mutation: {}'.format(dof.name, [float('{:.2f}'.format(x)) for x in dof.values]))
         for dof in self.dof:
             if 'max_mutations_'+str(dof.type) in kwargs:
                 call_mut(dof, kwargs['max_mutations_'+str(dof.type)])
             else:
                 call_mut(dof)
-
         new_string = deepcopy(self.sdf_string)
         for dof in self.dof:
             new_string = dof.apply_on_string(new_string, dof.values)

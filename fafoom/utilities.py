@@ -133,13 +133,10 @@ def generate_extended_input(string, constrained_part_file, filename):
     with open(constrained_part_file, 'r') as part:
         constrained_part = part.readlines()
     with open(filename, 'w') as target:
+        target.write(string)
         for line in constrained_part:
             target.write(line)
         target.write('\n')
-        target.write(string)
-    part.close()
-    target.close()
-
 
 def set_default(params, dict_default):
     """Set defaults for missing keys and add the key:value pairs to the
