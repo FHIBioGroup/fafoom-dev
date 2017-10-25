@@ -29,8 +29,6 @@ dict_default = {'energy_var': 0.001, 'selection': "roulette_wheel",
                 'iter_limit_conv': 20, 'energy_diff_conv': 0.001}
 # Set defaults for parameters not defined in the parameter file.
 params = set_default(params, dict_default)
-# Detect the desired application for energy evaluation.
-energy_function = run_util.detect_energy_function(params)
 # Maximum number of trials to produce the apropriate geometry.
 cnt_max = 2500
 # Create lists to store Population, minimal energy in the run and
@@ -38,6 +36,9 @@ cnt_max = 2500
 population, blacklist, min_energy = [], [], []
 #=======================================================================
 if opt == "simple":
+    run_util.HeadFafoom()
+    # Detect the desired application for energy evaluation.
+    energy_function = run_util.detect_energy_function(params)
     # cnt is the number of trials and when it reaches cnt_max algorithm stops.
     cnt = 0
     # Iteration is the maximum number of successful calculations.
@@ -49,7 +50,10 @@ if opt == "simple":
     mol.create_template_sdf()
     # Check for potential degree of freedom related parameters.
     linked_params = run_util.find_linked_params(mol, params)
+    # Initialize prefered volume in which geometries will be inirially produced.
     volume = mol.volume
+    # Print Head in the Fafoom output file.
+
     print_output('Atoms: {}, Bonds: {}'.format(mol.atoms, mol.bonds))
     print_output('\n___Initialization___\n')
     # Generate sensible and unique 3d structures.
@@ -64,7 +68,7 @@ if opt == "simple":
         else:
             if str3d not in blacklist:
                 if not check_for_clashes(str3d.sdf_string, surrounding_file):
-                    if 'centroid' not in mol.dof_names:
+                    if 'centroid' not in mol.dof_names and len(aims2xyz(surrounding_file)) > 1:
                         str3d.adjust_position()
                     else:
                         if cnt==cnt_max-1:
@@ -73,7 +77,7 @@ if opt == "simple":
                         cnt+=1
                         continue
                 if 'centroid' not in mol.dof_names:
-                    if not str3d.check_position(volume):
+                    if not str3d.check_position(volume) and len(aims2xyz(surrounding_file)) > 1:
                         str3d.adjust_position()
                 else:
                     if 0 < len(aims2xyz(surrounding_file)) < 3:
@@ -110,6 +114,8 @@ operations for structures in population pool. """
 
 
 if opt == "restart":
+    # Detect the desired application for energy evaluation.
+    energy_function = run_util.detect_energy_function(params)
     # Reconstruct the molecule, population, blacklist and the state of the run.
     print_output(" \n ___Restart will be performed___")
     mol = MoleculeDescription(p_file)
@@ -130,12 +136,8 @@ if opt == "restart":
     for i in range(len(blacklist)):
         temp_dic[blacklist[i].index] = blacklist[i].energy
     temp_sorted = sorted(temp_dic.items(), key=lambda t: t[1])
-    if len(blacklist) > params['popsize']:
-        for i in range(params['popsize']):
-            population.append(blacklist[temp_sorted[i][0]-1])
-    else:
-        for i in range(len(blacklist)):
-            population.append(blacklist[temp_sorted[i][0]-1])
+    for i in range(min(len(blacklist), params['popsize'])):
+        population.append(blacklist[temp_sorted[i][0]-1])
     for i in range(len(population)):
         print_output(str(population[i])+" "+str(float(population[i])))
     print_output("Blacklist: " + ', '.join([str(v) for v in blacklist]))
@@ -147,7 +149,7 @@ if opt == "restart":
     remover_dir('structure_{}'.format(len(blacklist) + 2))
 
 def mutate_and_relax(candidate, name, iteration, cnt_max, **kwargs):
-    print_output('__{}__'.format(name))
+    # print_output('__{}__'.format(name))
     found = False
     cnt = 0
     while found is False and cnt < cnt_max:
@@ -168,7 +170,7 @@ def mutate_and_relax(candidate, name, iteration, cnt_max, **kwargs):
                     if 'centroid' not in mol.dof_names: #If optimization for the COM is turned off
                         candidate.adjust_position() #Adjust position in z direction
                     else:
-                        print_output('Centroid found -- skipp')
+                        # print_output('Centroid found -- skipp')
                         candidate = candidate_backup #Clash found so structure will be resetted
                         cnt+=1
                         continue
@@ -261,11 +263,7 @@ while iteration < params['max_iter']:
                     Structure.index = len(blacklist)
                     cnt += 1
                     continue
-            print_output('Values for {} parent_1'.format(parent1))
-            run_util.str_info(parent1)
-            print_output('Values for {} parent_2'.format(parent2))
-            run_util.str_info(parent2)
-            print_output('\n')
+
             break
         else:
             Structure.index = len(blacklist)
@@ -281,11 +279,19 @@ while iteration < params['max_iter']:
                 delattr(child, attr)
             for dof in child.dof:
                 delattr(dof, "initial_values")
+    print_output('------------------------------------------------------------')
+    print_output('Values for {} parent_1'.format(parent1))
+    run_util.str_info(parent1)
+    print_output('\n')
+    print_output('Values for {} parent_2'.format(parent2))
+    run_util.str_info(parent2)
+    print_output('\n')
     print_output('Values for {} child_1'.format(child1))
     run_util.str_info(child1)
+    print_output('\n')
     print_output('Values for {} child_2'.format(child2))
     run_util.str_info(child2)
-    print_output('\n')
+    print_output('------------------------------------------------------------\n')
     try:
         mutate_and_relax(child1, "child1", iteration, cnt_max, **linked_params)
     except Exception as exc:
@@ -297,12 +303,12 @@ while iteration < params['max_iter']:
         print_output(exc)
         sys.exit(0)
     population.sort()
-    print_output("Sorted population: " + ', '.join([str(v) for v in population]))
+    # print_output("Sorted population: " + ', '.join([str(v) for v in population]))
     if len(population) >= params['popsize'] + 2:
         del population[-1]
         del population[-1]
-    print_output("Sorted population after removing two structures with highest"
-                 " energy: " + ', '.join([str(v) for v in population]))
+    # print_output("Sorted population after removing two structures with highest"
+                #  " energy: " + ', '.join([str(v) for v in population]))
     min_energy.append(population[0].energy)
     print_output("Current population after sorting: ")
     for i in range(len(population)):

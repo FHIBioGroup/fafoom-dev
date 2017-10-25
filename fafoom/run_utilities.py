@@ -87,15 +87,13 @@ def str_info(struct):
     for dof in struct.dof:
         print_output('{}: {}'.format(dof.name, [float('{:.2f}'.format(x)) for x in dof.values]))
 
-
 def relax_info(struct):
     """ Prints the information about the structure to the output file after
     the local optimization."""
     # print_output(struct)
     for dof in struct.dof:
         print_output('{}: {}'.format(dof.name, [float('{:.2f}'.format(x)) for x in dof.values]))
-        print_output('\n')
-        # print_output('Values of {}\nInitial: {}\nResult : {}\n'.format(dof.type, dof.initial_values, dof.values))
+    print_output('\n')
 
 def check_for_not_converged(dirname):
     """ Check if the not_converged.dat file is present in the directory or in the
@@ -239,24 +237,53 @@ def check_for_convergence(iteration, params, min_energy):
         if 'energy_wanted' in params:
             if min_energy[-1] < params['energy_wanted'] or \
                d < params['energy_diff_conv']:
-                print_output("Converged")
-                killfile = open("kill.dat", "w")
-                killfile.close()
-                sys.exit(0)
-            else:
-                print_output("Not converged yet")
+                    ResultFafoom()
+                # print_output("Converged")
+                # killfile = open("kill.dat", "w")
+                # killfile.close()
+                # sys.exit(0)
+            # else:
+            #     print_output("Not converged yet")
         else:
             if d < params['energy_diff_conv']:
-                print_output("Converged")
-                killfile = open("kill.dat", "w")
-                killfile.close()
-                sys.exit(0)
-            else:
-                print_output("Not converged yet")
+                    ResultFafoom()
+                # print_output("Converged")
+                # killfile = open("kill.dat", "w")
+                # killfile.close()
+                # sys.exit(0)
+            # else:
+            #     print_output("Not converged yet")
     if iteration == params['max_iter']-1:
         print_output("Max. number of iterations reached. The code terminates")
-        killfile = open("kill.dat", "w")
-        killfile.close()
+        # killfile = open("kill.dat", "w")
+        # killfile.close()
         sys.exit(0)
         # else:
         #     print_output("Next iteration will be perfomed")
+def HeadFafoom():
+    print_output('          ------------------------------------------------------------')
+    print_output('          Fafoom is free software: you can redistribute it and/or modify')
+    print_output('          it under the terms of the GNU Lesser General Public License as published by')
+    print_output('          the Free Software Foundation, either version 3 of the License, or')
+    print_output('          (at your option) any later version.')
+    print_output('\n')
+    print_output('          Fafoom is distributed in the hope that it will be useful,')
+    print_output('          but WITHOUT ANY WARRANTY; without even the implied warranty of')
+    print_output('          MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the')
+    print_output('          GNU Lesser General Public License for more details.')
+    print_output('\n')
+    print_output('          You should have received a copy of the GNU Lesser General Public License')
+    print_output('          along with fafoom.  If not, see <http://www.gnu.org/licenses/>.')
+    print_output('\n')
+    print_output('          When using Fafoom, please cite the following reference:')
+    print_output('          "First-Principles Molecular Structure Search with a Genetic Algorithm"')
+    print_output('          Adriana Supady, Volker Blum, and Carsten Baldauf')
+    print_output('          J. Chem. Inf. Model., 2015, 55 (11), pp 2338-2348')
+    print_output('          DOI: 10.1021/acs.jcim.5b00243')
+    print_output('          ------------------------------------------------------------\n')
+
+def ResultFafoom():
+    print_output('          ------------------------------------------------------------')
+    print_output('          Converged!')
+    print_output('          Have a nice day!')
+    print_output('          ------------------------------------------------------------')

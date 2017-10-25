@@ -608,7 +608,7 @@ class Structure:
                     dof.mutate_values(weights=weights)
                 else:
                     dof.mutate_values()
-            print_output('{} after mutation: {}'.format(dof.name, [float('{:.2f}'.format(x)) for x in dof.values]))
+            # print_output('{} after mutation: {}'.format(dof.name, [float('{:.2f}'.format(x)) for x in dof.values]))
 
         for dof in self.dof:
             if 'prob_for_mut_'+str(dof.type) in kwargs:
@@ -617,8 +617,8 @@ class Structure:
                         call_mut(dof, kwargs['max_mutations_'+str(dof.type)])
                     else:
                         call_mut(dof)
-                else:
-                    print_output('Mutation for {} was not performed.'.format(dof.type))
+                # else:
+                    # print_output('Mutation for {} was not performed.'.format(dof.type))
             else:
                 if 'max_mutations_'+str(dof.type) in kwargs:
                     call_mut(dof, kwargs['max_mutations_'+str(dof.type)])
