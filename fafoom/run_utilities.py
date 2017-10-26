@@ -197,13 +197,17 @@ def single_point(structure, energy_function, params, name=None):
         structure.perform_FF(params['sourcedir'], params['ff_call'], name)
 
 
-def perform_backup(mol, population, blacklist, iteration, min_energy):
+def perform_backup(mol, population, blacklist, iteration, min_energy, new_blacklist):
     """Write object representation to files for a future restart."""
     backup("backup_mol.dat", mol)
     backup("backup_population.dat", population)
     backup("backup_blacklist.dat", blacklist)
     backup("backup_iteration.dat", iteration)
     backup("backup_min_energy.dat", min_energy)
+    with open(os.path.join(os.getcwd(), "backup_new_blacklist.dat"), 'w') as NB:
+        for structure in new_blacklist:
+            NB.write(structure)
+    # backup("new_blacklist.dat", new_blacklist)
 
 def perform_backup_for_random(mol, blacklist):
     """Write object representation to files for a future restart."""

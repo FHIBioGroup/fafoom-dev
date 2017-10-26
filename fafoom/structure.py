@@ -458,6 +458,24 @@ class Structure:
 
         array.append(self)
 
+    def send_to_new_blacklist(self, array):
+        """Append the structure to dedicated array.
+
+        Args:
+           array: the array to append to
+        Raise:
+            NameError: if the array not defined
+        """
+        def produce_header(sdf_string):
+            all_lines = sdf_string.splitlines()
+            all_lines[0] = ' FAFOOM powered'
+            all_lines[1] = ' Index = {}'.format(self.index)
+            all_lines[2] = ' Energy = {}'.format(float(self))
+            return '\n'.join(all_lines)
+        updated_string = produce_header(self.sdf_string)
+        structure_for_blacklist = '{}\n$$$$\n'.format(updated_string)
+        array.append(structure_for_blacklist)
+
     def perform_aims(self, sourcedir, execution_string, dirname):
         """Generate the FHI-aims input, run FHI-aims, store the output, assign
         new attributes and update attribute values."""

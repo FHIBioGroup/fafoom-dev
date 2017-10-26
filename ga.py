@@ -30,10 +30,11 @@ dict_default = {'energy_var': 0.001, 'selection': "roulette_wheel",
 # Set defaults for parameters not defined in the parameter file.
 params = set_default(params, dict_default)
 # Maximum number of trials to produce the apropriate geometry.
-cnt_max = 2500
+cnt_max = 250
 # Create lists to store Population, minimal energy in the run and
 # structures that are already calculated.
 population, blacklist, min_energy = [], [], []
+new_blacklist = []
 #=======================================================================
 if opt == "simple":
     run_util.HeadFafoom()
@@ -90,13 +91,14 @@ if opt == "simple":
                     continue
                 else:
                     str3d.send_to_blacklist(blacklist) #Blacklist
+                    str3d.send_to_new_blacklist(new_blacklist)
                     population.append(str3d)
                     print_output('{}\nEnergy: {}'.format(str3d, float(str3d)))
                     run_util.relax_info(str3d)
             else:
                 # print_output("Geomerty of "+str(str3d)+" is fine, but already known.")
                 cnt += 1
-        run_util.perform_backup(mol, population, blacklist, iteration, min_energy)
+        run_util.perform_backup(mol, population, blacklist, iteration, min_energy, new_blacklist)
     if cnt == cnt_max:
         print_output("The allowed number of trials for building the "
                      "population has been exceeded. The code terminates.")
@@ -123,9 +125,34 @@ if opt == "restart":
     mol.get_parameters()
     mol.create_template_sdf()
     surrounding_file = os.path.join(os.getcwd(),mol.constrained_geometry_file)
-    with open("backup_blacklist.dat", 'r') as inf:
-        for line in inf:
-            blacklist.append(eval(line))
+    with open("backup_new_blacklist.dat", 'r') as new:
+        #Split everything into structures:
+        everything = new.read()
+        structures = everything.split('$$$$')[:-1] #correct number of structures
+        for structure in structures:
+            for lines in structure.splitlines():
+                if 'Index = ' in lines:
+                    ind = re.search('(Index = (\d+))', lines)
+                    header = structure.splitlines().index(lines) -1
+                if 'Energy = ' in lines:
+                    en = re.search('(Energy = (.*?\d+\.\d+))', lines)
+                    break
+            Structure.index = int(ind.group(2)) - 1
+            str3d = Structure(mol)
+            str3d.energy = float(en.group(2))
+            str3d.sdf_string = '\n'.join(structure.splitlines()[header:])
+            str3d.initial_sdf_string = str3d.sdf_string
+            for dof in str3d.dof:
+                dof.update_values(str3d.sdf_string)
+                setattr(dof, "initial_values", dof.values)
+            str3d.send_to_new_blacklist(new_blacklist)
+            str3d.send_to_blacklist(blacklist)
+        # print blacklist
+        # sys.exit(0)
+
+    # with open("backup_blacklist.dat", 'r') as inf:
+        # for line in inf:
+            # blacklist.append(eval(line))
     with open("backup_min_energy.dat", 'r') as inf:
         for line in inf:
             min_energy.append(eval(line))
@@ -140,7 +167,7 @@ if opt == "restart":
         population.append(blacklist[temp_sorted[i][0]-1])
     for i in range(len(population)):
         print_output(str(population[i])+" "+str(float(population[i])))
-    print_output("Blacklist: " + ', '.join([str(v) for v in blacklist]))
+    # print_output("Blacklist: " + ', '.join([str(v) for v in blacklist]))
     iteration = iteration_tmp+1
     linked_params = run_util.find_linked_params(mol, params)
     Structure.index = len(blacklist)
@@ -186,6 +213,7 @@ def mutate_and_relax(candidate, name, iteration, cnt_max, **kwargs):
                 # run_util.check_for_kill()
                 else:
                     candidate.send_to_blacklist(blacklist) #Blacklist
+                    candidate.send_to_new_blacklist(new_blacklist) #Blacklist
                     print_output('{}\nEnergy: {}'.format(candidate, float(candidate)))
                     # print_output(str(candidate)+": energy: "+str(float(candidate))+", is temporary added to the population")
                     run_util.relax_info(candidate)
@@ -228,6 +256,7 @@ def mutate_and_relax(candidate, name, iteration, cnt_max, **kwargs):
                 else:
                     run_util.check_for_kill()
                     candidate.send_to_blacklist(blacklist) #Blacklist
+                    candidate.send_to_new_blacklist(new_blacklist) #Blacklist
                     print_output('{}\nEnergy: {}'.format(candidate, float(candidate)))
                     # print_output(str(candidate)+": energy: "+str(float(candidate))+", is temporary added to the population")
                     run_util.relax_info(candidate)
@@ -314,7 +343,7 @@ while iteration < params['max_iter']:
     for i in range(len(population)):
         print_output('{:<}   {:>}'.format(population[i], float(population[i])))
     print_output("Lowest energies in run: {}".format(min_energy))
-    run_util.perform_backup(mol, population, blacklist, iteration, min_energy)
+    run_util.perform_backup(mol, population, blacklist, iteration, min_energy, new_blacklist)
     run_util.check_for_convergence(iteration, params, min_energy)
     run_util.check_for_kill()
     iteration += 1
