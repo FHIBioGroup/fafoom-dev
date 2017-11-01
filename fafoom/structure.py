@@ -376,9 +376,9 @@ class Structure:
             if dof.type == 'centroid':
                 dof.update_values(self.sdf_string)
 
-    def is_geometry_valid(self):
+    def is_geometry_valid(self, flag):
         """Return True if the geometry is valid."""
-        check = check_geo_sdf(self.sdf_string)
+        check = check_geo_sdf(self.sdf_string, flag = flag)
         return check
 
     def is_geometry_valid_after_crossover(self):

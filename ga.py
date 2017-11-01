@@ -59,14 +59,27 @@ if opt == "simple":
     print_output('\n___Initialization___\n')
     # Generate sensible and unique 3d structures.
     surrounding_file = os.path.join(os.getcwd(),mol.constrained_geometry_file)
+    flag = 1.0
+    generation_trials = 0
     while len(population) < params['popsize'] and cnt < cnt_max:
         Structure.index = len(population)
         str3d = Structure(mol)
         str3d.generate_structure()
-        if not str3d.is_geometry_valid():
-            cnt += 1
+        if not str3d.is_geometry_valid(flag = flag):
+            generation_trials += 1
+            # After 100 trials of failure to generate valid Structure
+            # we decrease the criterion of validation (flag):
+            if generation_trials == 100:
+                if flag >= 0.805:
+                    flag -= 0.005
+                    generation_trials = 0
+                # The lowest value of the flag is 0.75, if reached
+                # it is counted as basd trial.
+                else:
+                    cnt += 1
             continue
         else:
+            # If sensible structure is unique:
             if str3d not in blacklist:
                 if not check_for_clashes(str3d.sdf_string, surrounding_file):
                     if 'centroid' not in mol.dof_names and len(aims2xyz(surrounding_file)) > 1:
@@ -96,7 +109,7 @@ if opt == "simple":
                     print_output('{}\nEnergy: {}'.format(str3d, float(str3d)))
                     run_util.relax_info(str3d)
             else:
-                # print_output("Geomerty of "+str(str3d)+" is fine, but already known.")
+                # Geomerty is fine, but already known.
                 cnt += 1
         run_util.perform_backup(mol, population, blacklist, iteration, min_energy, new_blacklist)
     if cnt == cnt_max:
@@ -113,7 +126,13 @@ if opt == "simple":
 """ End of initialization process. Now the population is full.
 Starting genetic algorithm: performing of selection, crossing over and mutation
 operations for structures in population pool. """
+# Flag for checking geometries should be valid for relaxed structures:
+# Flag cannot be less than 0.75
+flag = adjusted_flag(population)
 
+""" At least for now the flag for checking geometries is adjusted in the way
+that all the relaxed geometries are also sensible geometries."""
+print_output('Adjusted flag for checking of sensible structures is: {}'.format(flag))
 
 if opt == "restart":
     # Detect the desired application for energy evaluation.
@@ -186,7 +205,7 @@ def mutate_and_relax(candidate, name, iteration, cnt_max, **kwargs):
             # print_output('Candidate in blacklist')
             # print_output('Perform hard_mutate')
             candidate.hard_mutate(**kwargs) #Mutate, since already in blacklist
-            if not candidate.is_geometry_valid(): #Check geometry after mutation
+            if not candidate.is_geometry_valid(flag = flag): #Check geometry after mutation
                 # print_output('Geometry is not valid')
                 candidate = candidate_backup #Reset structure
                 cnt+=1
@@ -222,7 +241,7 @@ def mutate_and_relax(candidate, name, iteration, cnt_max, **kwargs):
         elif candidate not in blacklist:
             # print_output('Candidate not in blacklist')
             candidate.mutate(**kwargs) #Mutatte with some probability
-            if not candidate.is_geometry_valid():
+            if not candidate.is_geometry_valid(flag = flag):
                 # print_output('Geometry is not fine')
                 candidate = candidate_backup # Rebuild the structure
                 cnt += 1
@@ -275,7 +294,7 @@ while iteration < params['max_iter']:
     cnt = 0
     while param < params['prob_for_crossing'] and cnt < cnt_max:
         child1, child2 = Structure.crossover(parent1, parent2, method=mol.crossover_method)
-        if child1.is_geometry_valid_after_crossover() and child2.is_geometry_valid_after_crossover():
+        if child1.is_geometry_valid(flag = flag) and child2.is_geometry_valid(flag = flag):
             if not check_for_clashes(child1.sdf_string, os.path.join(mol.constrained_geometry_file)):
                 if 'centroid' not in mol.dof_names:
                     # print_output('Perform adjust')

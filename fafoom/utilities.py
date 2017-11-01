@@ -269,6 +269,22 @@ def find_one_in_list(sum_array, list_to_search):
             index += 1
     return index
 
+def adjusted_flag(population):
+    check = True
+    flag = 1.0
+    while check:
+        check = False
+        for structure in population:
+            if not structure.is_geometry_valid(flag = flag):
+                if flag >= 0.805:
+                    flag -= 0.005
+                else:
+                    raise Exception('Something wrong with criteria.')
+                check = True
+                continue
+    return flag
+
+
 
 def find_two_in_list(list_sum, nparray_to_search):
     """A numpy array is mapped to a segment of a line which length is equal to
@@ -319,7 +335,7 @@ def distance(x, y):
     return np.sqrt((x[0]-y[0])**2+(x[1]-y[1])**2+(x[2]-y[2])**2)
 
 
-def check_geo_sdf(sdf_string, flag=0.8):
+def check_geo_sdf(sdf_string, flag):
     """Check geometry from a sdf_string for clashes.
     Returns:
         True for clash-free geometries and False for invalid geometries
