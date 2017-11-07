@@ -270,6 +270,9 @@ def find_one_in_list(sum_array, list_to_search):
     return index
 
 def adjusted_flag(population):
+    """ Checks all the geometris in list of structures.
+    Reduces flag in order all geometry could pass the test for clashes.
+    Especially needed after relaxation of the structures."""
     check = True
     flag = 1.0
     while check:
@@ -479,6 +482,8 @@ def align_to_origin(aims_file):
 
 def check_for_clashes(sdf_string, constrained_geom_file):
     check = True
+    if len(aims2xyz_vdw(constrained_geom_file)) < 1:
+        return check
     molecule = sdf2xyz_list(sdf_string)
     constrained = aims2xyz_vdw(constrained_geom_file)
     for x in molecule:

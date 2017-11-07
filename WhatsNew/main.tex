@@ -1,0 +1,86 @@
+\documentclass[a4paper]{article}
+\usepackage[latin1]{inputenc} 
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{lmodern}          
+\usepackage[colorlinks=true, urlcolor=blue, breaklinks, pagebackref, citebordercolor={0 0 0}, filebordercolor={0 0 0}, linkbordercolor={0 0 0}, runbordercolor={0 0 0}, urlbordercolor={0 0 0}, pdfborder={0 0 0}]{hyperref} 
+%\usepackage[ngerman]{babel}
+\usepackage{listings}             % Include the listings-package
+\usepackage{xcolor}
+\lstset{language=bash, columns=fullflexible, extendedchars=false, backgroundcolor=\color{lightgray}, breaklines=true}
+
+\title{\textbf{Fafoom}\\Flexible algorithm for optimization of molecules \\ \textit{Releases}}
+%\title{Fafoom -Flexible algorithm for optimization of molecules}
+\author{Dmitrii Maksimov}
+\begin{document}
+\maketitle
+
+\tableofcontents
+\newpage
+\section{Fafoom 2.0.0}
+Release date: Dec 1, 2017
+\subsection*{Main updates}
+\subsection{New external file: the surrounding which is not affected by GA} 
+Manually specified surrounding can be manually added in order to perform all the GA operations with respect to single atom, surface or another molecule. \newline
+\textbf{How to use:}\newline
+Put the "geometry.in.constrained" file in "adds" directory: /adds/geometry.in.constrained \newline
+File has to be in FHI-aims format. This geometry with particular coordinates will be inserted in each GA step. Also you can manually fix the atom positions by adding:\newline
+\textit{constrain\_relaxation .true.} after atom you want to fix.\newline
+you can find additional information in FHI-aims manual:\newline
+\href{http://materials-mine.com/tutorials/AIMS/FHI-aims.071914.pdf}{http://materials-mine.com/tutorials/AIMS/FHI-aims.071914.pdf} on page 123.
+\subsection{\textbf{New Degree of Freedom} \textit{Centroid}}
+New DOF "Centroid" is implemented which allows to optimize Center of Mass (COM) of the molecule with respect to manually specified surrounding. How to use:\newline
+add the keyword \textit{optimize\_centroid = True} in [Molecule] section in \textbf{parameters.txt} file. In [GA settings] setting you can specify \textit{prob\_for\_mut\_centroid = 0.2} and \textit{max\_mutations\_centroid = 1} that will control probability and maximum amount of mutations in Centroid DOF. Currently crossing over between two molecules is implemented as swap of the whole exchange of Centers of Masses of the molecules. When use this DOF for optimizing please also specify \textit{rmsd\_type = "internal\_coord"} in order to perform correct checking for similarity of the structures.
+\subsection{\textbf{New Degree of Freedom:} \textit{Orientation}} 
+New DOF "Orientation" is implemented which allows to optimize orientation of the molecule with respect to manually specified surrounding. Major orientation is treated as direction of the largest eigenvalue of the tensor of inertia of the molecule. Minor orientation "self-rotation" is considered as orientation of the lowest eigenvalue of the tensor of inertia of the molecule when Major vector is aligned with z-axis. Rotations implemented with quaternions (read manual for more details) and currently orientation of the molecule looks like:
+Orientation = [90, 0, 1, 0] that should be readed as follows:
+last three numbers is the orientation direction of the Major vector, so shortest axis molecule is collinear with the y-axis. First value is in degrees means that if we align Major axis to z direction we also should rotate molecule around z axis by -90 degrees and Minor axis (longest axis of the molecule) will be aligned to x-axis. \newline
+\textbf{How to use:}\newline
+in the [Molecule] section of the \textbf{parameters.txt} file add \textit{optimize\_orientation = True}, also in [GA settings] the flags \textit{max\_mutations\_orientation = 1} and \textit{prob\_for\_mut\_orientation = 0.2} that will control probability and maximum amount of mutations in Orientation DOF. Crossing over is performed as swap of the orientation between two molecules.
+\subsection{\textbf{New keyword:} \textit{volume}}
+Keyword \textit{volume} specifies the range for initial generation of the COM of the molecule.
+volume = (-5, 6, -7, 8, -9, 10) means that molecule will be produced in the volume with x$\in$[-5,5], y$\in$[-7,7], z$\in$[-9,9] since it is treated as ranges in Fafoom x = range(-5, 6) in python way.
+\subsection{Geometry validation have been changed}
+Previously used keywords \textit{distance\_cutoff\_1} and \textit{distance\_cutoff\_2} is no longer available. Instead of them the vdW radii check is implemented: two atoms are considered as non-bonded if distance between them is greater than each of the atom's vdW radii.\newline
+\textit{\textbf{Experimental!!!}}:\newline
+automatic reducing of the prefactor for vdW-radii check is implemented. In difficult cases when Fafoom cannot randomly produce the valid geometry for 100 times the prefactor called \textit{flag} is reduced by 0.005 and Fafoom will try to produce geometry and check distance with \textit{flag}*vdW-radii. This \textit{flag} cannot be reduced less than 0.8. If \textit{flag} = 0.8 and Fafoom cannot produce unique valid geometries the code terminates.\newline
+\textit{Important}: After relaxation of the geometries this flag is adjusted in order to be sure that all the relaxed geometries are valid in the sense of the vdW-radii clash between non-bonded atoms.
+\subsection{Explicit specifying of \textit{list\_of\_torsion} is mandatory}
+In new version we don't use any RDKit routines inside the Fafoom code, so keywords like:
+\textit{smiles, smarts\_torsion, smarts\_cistrans, filter\_smarts\_torsion} are no longer supported. Instead of this one have to manually specify the atom positions for torsion angles in \textbf{parameters.txt} file in [Molecule] section. Example:\newline
+list\_of\_torsion = [(1, 2, 3, 4), (2, 1, 9, 11), (2, 3, 4, 5), (3, 2, 1, 9)]\newline
+You can do it manually or use external script "prepare.py" which uses RDKit in order to prepare such list of atoms automatically. Please read manual for more details.
+\subsection{Fafoom iterfaced with NAMD for geometry relaxations with "INTERFACE" Force Field}
+Should be used carefully! The main idea to use it for faster development of the Fafoom. How to use: Add to the [Run settings] in the \textbf{parameters.txt} file
+\textit{sourcedir= "adds/FF"}\newline
+\textit{energy\_function = "INTERFACE"}\newline
+\textit{ff\_call= "\textbf{NAMD\_FOLDER}/namd2 Configure.conf > result.out"}\newline
+All the necessary files for FF evaluations should be placed in /adds/FF directory. Additional information can be found in Fafoom HandsOn or Fafoom Manual.
+\subsection{Blacklist representation is remastered}
+Now it is number of the molecules in SDF format that are separated with "\$\$\$\$" and can be visualized with any molecular viewer (for example JMOL) that can read SDF files. For Fafoom is crucial that in heading of the SDF files we have:
+\begin{itemize}
+	\item First line is comment or title of you job
+    \item Second line have to be index of the molecule: "Index = 1"
+    \item Third line have to be energy line: "Energy = -123.456"
+\end{itemize}
+\subsection{Minor changes}
+All the calculations are placed in the folders "structure\_\textbf{Num}" where \textbf{Num} is Natural numbers and equal length of the population if it is not finished or size of the population + iteration. 
+\newpage
+\section{Original Fafoom 1.0.0}
+Release date: Dec 8, 2015\\
+Please cite the paper:\\
+\newline 
+"First-principles molecular structure search with a genetic algorithm" is now published in Journal of Chemical Information and Modeling; \href{https://doi.org/10.1021/acs.jcim.5b00243}{DOI: 10.1021/acs.jcim.5b00243}
+\newline
+
+\subsection{Capabilities}
+\begin{itemize}
+	\item Optimization of the Torsion angles of isolated molecule
+    \item Optimization of the \textit{Cis/Trans} angles of isolated molecule
+    \item Optimization of the Pyranose rings
+\end{itemize}
+
+%\newpage
+%\bibliographystyle{unsrt}
+%\bibliography{bibliography.bib}
+\end{document}

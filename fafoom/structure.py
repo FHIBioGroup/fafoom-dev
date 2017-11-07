@@ -606,11 +606,14 @@ class Structure:
         for child in child1, child2:
             new_string = deepcopy(child.mol_info.template_sdf_string)
             for dof in child.dof:
-                new_string = dof.apply_on_string(new_string, dof.values)
+                new_string = dof.apply_on_string(new_string, values_to_set = dof.values)
+                print new_string
+                print 'Aplpying {}'.format(dof.values)
             child.sdf_string = new_string
             for dof in child.dof:
                 dof.update_values(child.sdf_string)
-        return child1, child2
+        # return child1, child2
+        return child1
 
     def mutate(self, **kwargs):
         def call_mut(dof, max_mutations=None, weights=None):

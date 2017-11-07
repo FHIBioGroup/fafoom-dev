@@ -284,8 +284,11 @@ class Torsion(DOF):
         """
         if values_to_set is not None:
             self.values = values_to_set
+        print '1 {}'.format(self.positions)
+        print '2 {}'.format(values_to_set)
+        print '3 {}'.format(self.values)
         for i in range(len(self.positions)):
-            string = dihedral_set(string, self.positions[i],self.values[i])
+            string = dihedral_set(string, self.positions[i], self.values[i])
         return string
 
     def mutate_values(self, max_mutations=None, weights=None):

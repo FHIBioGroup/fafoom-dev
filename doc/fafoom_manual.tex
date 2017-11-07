@@ -3,13 +3,13 @@
 \usepackage[T1]{fontenc}
 \usepackage{graphicx}
 \usepackage{lmodern}          
-\usepackage{hyperref}
+\usepackage[colorlinks=true, urlcolor=blue, breaklinks, pagebackref, citebordercolor={0 0 0}, filebordercolor={0 0 0}, linkbordercolor={0 0 0}, pagebordercolor={0 0 0}, runbordercolor={0 0 0}, urlbordercolor={0 0 0}, pdfborder={0 0 0}]{hyperref} 
 %\usepackage[ngerman]{babel}
 \usepackage{listings}             % Include the listings-package
 \usepackage{xcolor}
 \lstset{language=bash, columns=fullflexible, extendedchars=false, backgroundcolor=\color{lightgray}, breaklines=true}
 
-\title{Fafoom -Flexible algorithm for optimization of molecules \\ 1.0.0}
+\title{\textbf{Fafoom}\\Flexible algorithm for optimization of molecules \\ 2.0.0}
 %\title{Fafoom -Flexible algorithm for optimization of molecules}
 
 \begin{document}
@@ -20,7 +20,7 @@
 
 \section{An overview of Fafoom}
 
-Fafoom is a Python module for optimization of organic molecules primarily intended to work with FHI-aims (Fritz Haber Institute ab initio molecular simulations package). 
+Fafoom is a Python module for optimization of organic molecules primarily intended to work with \href{https://doi.org/10.1021/acs.jcim.5b00243}{FHI-aims} (Fritz Haber Institute ab initio molecular simulations package). 
 Fafoom can be utilized for, e.g., performing  a genetic algorithm (GA) search for molecules. The genetic operations (crossover and mutation) explore the fitness function (energy) by changing the degrees of freedom of the molecule. Three sorts of degrees of freedom are currently implemented: torsions, \textit{cis/trans} bonds and pyranose ring configurations. Further, user-defined degrees of freedom can be implemented. Fafoom:
 \begin{itemize}
 \item initializes the molecule from a SMILES code
@@ -216,11 +216,8 @@ Backup text files for the restart are created after each completed iteration.
 Before running the algorithm, a a directory containing the \texttt{control.in} file that will be used for the FHI-aims calculations needs to be created. During the run, one new directory will be created for each FHI-aims calculation. If needed, take a look at pyaims.py and adjust it for your needs.
 \subsection{GA with NWChem}
 If you want to modify the geometry optimization settings, adjust the pynwchem.py file. 
-\subsection{GA with RDKit} 
-RDKit allows for performing local optimization with following force fields: UFF and MMFF94. The convergence settings for the geometry minimization with the force field can be set in the parameter file. The optimized structures will be written to a file: \textit{optimized\_structures.sdf}. 
-
 \subsection{GA with ORCA} 
-Details concerning the geometry optimization with ORCA can be found in following chapters of the ORCA manual: \textbf{Running Typical Calculations: Geometry Optimizations, Surface Scans, Transition States, MECPs} (5.2) and \textbf{Detailed Documentation: Geometry Optimization} (6.13). 
+Details concerning the geometry optimization with ORCA can be found in following chapters of the ORCA manual: \textbf{Running Typical Calculations: Geometry Optimizations, Surface Scans, Transition States, MECPs} (5.2) and \textbf{Detailed Documentation: Geometry Optimization} (6.13).
 
 \subsection{Restart}
 The algorithm can be restarted if at least one generation has been successfully completed. The information transfer happens via the backup files that are generated after a completed generation. During the restart, the population and the blacklist are rebuild. If all necessary backup files are present, the restart can be started directly with:

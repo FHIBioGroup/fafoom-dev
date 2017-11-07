@@ -43,7 +43,9 @@ if opt == "simple":
     # cnt is the number of trials and when it reaches cnt_max algorithm stops.
     cnt = 0
     # Iteration is the maximum number of successful calculations.
-    iteration = 0
+    # Example: iteration = 10 means that you have 'population size' + iteration
+    # calculated structures.
+    iteration = 1
     # Create mol object.
     mol = MoleculeDescription(p_file)
     # Assign the permanent attributes to the molecule.
@@ -132,7 +134,7 @@ flag = adjusted_flag(population)
 
 """ At least for now the flag for checking geometries is adjusted in the way
 that all the relaxed geometries are also sensible geometries."""
-print_output('Adjusted flag for checking of sensible structures is: {}'.format(flag))
+print_output('Adjusted flag for checking for clashes inside the structures is: {}'.format(flag))
 
 if opt == "restart":
     # Detect the desired application for energy evaluation.
@@ -166,9 +168,6 @@ if opt == "restart":
                 setattr(dof, "initial_values", dof.values)
             str3d.send_to_new_blacklist(new_blacklist)
             str3d.send_to_blacklist(blacklist)
-        # print blacklist
-        # sys.exit(0)
-
     # with open("backup_blacklist.dat", 'r') as inf:
         # for line in inf:
             # blacklist.append(eval(line))
@@ -190,9 +189,12 @@ if opt == "restart":
     iteration = iteration_tmp+1
     linked_params = run_util.find_linked_params(mol, params)
     Structure.index = len(blacklist)
+    flag = adjusted_flag(blacklist)
+    print_output('Adjusted flag for checking for clashes inside the structures is: {}'.format(flag))
+    # Need to be adjusted, because, we want to calculate at least one structure.
     print_output(" \n ___Reinitialization completed___")
     remover_dir('structure_{}'.format(len(blacklist) + 1))
-    remover_dir('structure_{}'.format(len(blacklist) + 2))
+    # remover_dir('structure_{}'.format(len(blacklist) + 2))
 
 def mutate_and_relax(candidate, name, iteration, cnt_max, **kwargs):
     # print_output('__{}__'.format(name))
@@ -293,40 +295,32 @@ while iteration < params['max_iter']:
     # print_output('Try to crossover.')
     cnt = 0
     while param < params['prob_for_crossing'] and cnt < cnt_max:
-        child1, child2 = Structure.crossover(parent1, parent2, method=mol.crossover_method)
-        if child1.is_geometry_valid(flag = flag) and child2.is_geometry_valid(flag = flag):
-            if not check_for_clashes(child1.sdf_string, os.path.join(mol.constrained_geometry_file)):
-                if 'centroid' not in mol.dof_names:
-                    # print_output('Perform adjust')
-                    child1.adjust_position()
-                else:
-                    Structure.index = len(blacklist)
-                    cnt += 1
-                    continue
-            if not check_for_clashes(child2.sdf_string, os.path.join(mol.constrained_geometry_file)):
-                if 'centroid' not in mol.dof_names:
-                    # print_output('Perform adjust')
-                    child2.adjust_position()
-                else:
-                    Structure.index = len(blacklist)
-                    cnt += 1
-                    continue
-
+        generation_trials = 0
+        child1 = Structure.crossover(parent1, parent2, method = 'single_point')
+        if child1.is_geometry_valid(flag = flag):
+            if not check_for_clashes(child1.sdf_string, surrounding_file):
+                child1.adjust_position_centroid(surrounding_file)
             break
         else:
+            generation_trials += 1
+            if generation_trials == 10:
+                if flag >= 0.805:
+                    flag -= 0.005
+                    generation_trials = 0
             Structure.index = len(blacklist)
             cnt += 1
+            print flag
             continue
     else:
-        child1, child2 = Structure(parent1), Structure(parent2)
+        child1 = Structure(parent1)
         # print_output('No crossover was performed. Children are copies of parents.')
         # Delete inherited attributes.
-        for child in child1, child2:
-            attr_list = ["initial_sdf_string", "energy"]
-            for attr in attr_list:
-                delattr(child, attr)
-            for dof in child.dof:
-                delattr(dof, "initial_values")
+        attr_list = ["initial_sdf_string", "energy"]
+        for attr in attr_list:
+            delattr(child1, attr)
+        for dof in child1.dof:
+            delattr(dof, "initial_values")
+
     print_output('------------------------------------------------------------')
     print_output('Values for {} parent_1'.format(parent1))
     run_util.str_info(parent1)
@@ -336,25 +330,17 @@ while iteration < params['max_iter']:
     print_output('\n')
     print_output('Values for {} child_1'.format(child1))
     run_util.str_info(child1)
-    print_output('\n')
-    print_output('Values for {} child_2'.format(child2))
-    run_util.str_info(child2)
     print_output('------------------------------------------------------------\n')
     try:
         mutate_and_relax(child1, "child1", iteration, cnt_max, **linked_params)
     except Exception as exc:
         print_output(exc)
         sys.exit(0)
-    try:
-        mutate_and_relax(child2, "child2", iteration, cnt_max, **linked_params)
-    except Exception as exc:
-        print_output(exc)
-        sys.exit(0)
     population.sort()
     # print_output("Sorted population: " + ', '.join([str(v) for v in population]))
-    if len(population) >= params['popsize'] + 2:
-        del population[-1]
-        del population[-1]
+    if len(population) > params['popsize']:
+        for i in range(len(population) - params['popsize']):
+            del population[-1]
     # print_output("Sorted population after removing two structures with highest"
                 #  " energy: " + ', '.join([str(v) for v in population]))
     min_energy.append(population[0].energy)
