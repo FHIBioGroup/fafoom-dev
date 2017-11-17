@@ -19,9 +19,8 @@ from __future__ import division
 import glob
 import sys
 import os, shutil
-
+import numpy as np
 from utilities import print_output, remover_file, remover_dir, backup
-
 
 def simple_or_restart():
     """ Select the type of run. If the all backup files are present the run
@@ -235,13 +234,13 @@ def find_linked_params(mol, params):
 def check_for_convergence(iteration, params, min_energy):
     """Check the run for convergence"""
     if iteration >= params['iter_limit_conv']-1:
-        print_output("Checking for convergence")
-        d = abs(min_energy[iteration+1]-min_energy[iteration + 1 -
-                                                   params['iter_limit_conv']])
+        # print_output("Checking for convergence")
+        d = abs(min_energy[-1] - min_energy[-params['iter_limit_conv']+1])
         if 'energy_wanted' in params:
             if min_energy[-1] < params['energy_wanted'] or \
                d < params['energy_diff_conv']:
                     ResultFafoom()
+                    sys.exit(0)
                 # print_output("Converged")
                 # killfile = open("kill.dat", "w")
                 # killfile.close()
@@ -251,13 +250,14 @@ def check_for_convergence(iteration, params, min_energy):
         else:
             if d < params['energy_diff_conv']:
                     ResultFafoom()
+                    sys.exit(0)
                 # print_output("Converged")
                 # killfile = open("kill.dat", "w")
                 # killfile.close()
                 # sys.exit(0)
             # else:
             #     print_output("Not converged yet")
-    if iteration == params['max_iter']-1:
+    if iteration == params['max_iter']:
         print_output("Max. number of iterations reached. The code terminates")
         # killfile = open("kill.dat", "w")
         # killfile.close()

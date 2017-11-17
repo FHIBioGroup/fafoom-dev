@@ -6,6 +6,14 @@ import os
 from fafoom import *
 import fafoom.run_utilities as run_util
 from fafoom.utilities import sdf2xyz, check_for_clashes
+from optparse import OptionParser
+parser = OptionParser()
+parser.add_option("-t", "--test", dest="test", default = None, help="Testing mode will turn on np.random.seed(0) and random number will be predictable and the same. For testing purposes.")
+(options, args) = parser.parse_args()
+
+if options.test is not None:
+    np.random.seed(0)
+
 #Need to correctly write the one-line blacklist:
 np.set_printoptions(suppress=True)
 # Decide for restart or a simple run.
@@ -83,6 +91,10 @@ if opt == "simple":
         else:
             # If sensible structure is unique:
             if str3d not in blacklist:
+                for dof in str3d.dof:
+                    if dof.name == 'Torsion':
+                        print('{}: {}'.format(dof.name, [float('{:.2f}'.format(x)) for x in dof.values]))
+
                 if not check_for_clashes(str3d.sdf_string, surrounding_file):
                     if 'centroid' not in mol.dof_names and len(aims2xyz(surrounding_file)) > 1:
                         str3d.adjust_position()
@@ -110,10 +122,13 @@ if opt == "simple":
                     population.append(str3d)
                     print_output('{}\nEnergy: {}'.format(str3d, float(str3d)))
                     run_util.relax_info(str3d)
+                    population.sort()
+                    min_energy.append(population[0].energy)
+                    run_util.perform_backup(mol, population, blacklist, iteration, min_energy, new_blacklist)
             else:
                 # Geomerty is fine, but already known.
                 cnt += 1
-        run_util.perform_backup(mol, population, blacklist, iteration, min_energy, new_blacklist)
+        # run_util.perform_backup(mol, population, blacklist, iteration, min_energy, new_blacklist)
     if cnt == cnt_max:
         print_output("The allowed number of trials for building the "
                      "population has been exceeded. The code terminates.")
@@ -122,7 +137,7 @@ if opt == "simple":
     population.sort()
     print_output("Initial population after sorting: ")
     for i in range(len(population)):
-        print_output('{:<}   {:>}'.format(population[i], float(population[i])))
+        print_output('{:<15}{:>10.4f}'.format(population[i], float(population[i])))
     min_energy.append(population[0].energy)
 
 """ End of initialization process. Now the population is full.
@@ -137,6 +152,7 @@ that all the relaxed geometries are also sensible geometries."""
 print_output('Adjusted flag for checking for clashes inside the structures is: {}'.format(flag))
 
 if opt == "restart":
+    flag = 1.0
     # Detect the desired application for energy evaluation.
     energy_function = run_util.detect_energy_function(params)
     # Reconstruct the molecule, population, blacklist and the state of the run.
@@ -168,6 +184,7 @@ if opt == "restart":
                 setattr(dof, "initial_values", dof.values)
             str3d.send_to_new_blacklist(new_blacklist)
             str3d.send_to_blacklist(blacklist)
+
     # with open("backup_blacklist.dat", 'r') as inf:
         # for line in inf:
             # blacklist.append(eval(line))
@@ -184,9 +201,12 @@ if opt == "restart":
     for i in range(min(len(blacklist), params['popsize'])):
         population.append(blacklist[temp_sorted[i][0]-1])
     for i in range(len(population)):
-        print_output(str(population[i])+" "+str(float(population[i])))
+        print_output('{:<15}{:>10.4f}'.format(population[i], float(population[i])))
     # print_output("Blacklist: " + ', '.join([str(v) for v in blacklist]))
-    iteration = iteration_tmp+1
+    if len(new_blacklist) > params['popsize']:
+        iteration = len(new_blacklist) + 1
+    elif len(population) <= params['popsize']:
+        iteration = len(population) + 1
     linked_params = run_util.find_linked_params(mol, params)
     Structure.index = len(blacklist)
     flag = adjusted_flag(blacklist)
@@ -195,6 +215,79 @@ if opt == "restart":
     print_output(" \n ___Reinitialization completed___")
     remover_dir('structure_{}'.format(len(blacklist) + 1))
     # remover_dir('structure_{}'.format(len(blacklist) + 2))
+
+    """ If initialization is not finished it should be finished"""
+
+    if len(new_blacklist) < params['popsize']:
+        cnt = 0
+        generation_trials = 0
+        volume = mol.volume
+        while len(population) < params['popsize'] and cnt < cnt_max:
+            Structure.index = len(population)
+            str3d = Structure(mol)
+            str3d.generate_structure()
+            if not str3d.is_geometry_valid(flag = flag):
+                generation_trials += 1
+                # After 100 trials of failure to generate valid Structure
+                # we decrease the criterion of validation (flag):
+                if generation_trials == 100:
+                    if flag >= 0.805:
+                        flag -= 0.005
+                        generation_trials = 0
+                    # The lowest value of the flag is 0.75, if reached
+                    # it is counted as basd trial.
+                    else:
+                        cnt += 1
+                continue
+            else:
+                # If sensible structure is unique:
+                if str3d not in blacklist:
+                    for dof in str3d.dof:
+                        if dof.name == 'Torsion':
+                            print('{}: {}'.format(dof.name, [float('{:.2f}'.format(x)) for x in dof.values]))
+
+                    if not check_for_clashes(str3d.sdf_string, surrounding_file):
+                        if 'centroid' not in mol.dof_names and len(aims2xyz(surrounding_file)) > 1:
+                            str3d.adjust_position()
+                        else:
+                            if cnt==cnt_max-1:
+                                print('Increase the volume!')
+                                print_output('Probably, you should increase the volume.')
+                            cnt+=1
+                            continue
+                    if 'centroid' not in mol.dof_names:
+                        if not str3d.check_position(volume) and len(aims2xyz(surrounding_file)) > 1:
+                            str3d.adjust_position()
+                    else:
+                        if 0 < len(aims2xyz(surrounding_file)) < 3:
+                            if check_geo_if_not_too_far(str3d.sdf_string, surrounding_file, flag=1.5) == False:
+                                str3d.adjust_position_centroid(surrounding_file)
+                    name = 'structure_{}'.format(str3d.index)
+                    # Perform the local optimization
+                    run_util.optimize(str3d, energy_function, params, name)
+                    if run_util.check_for_not_converged(name):
+                        continue
+                    else:
+                        str3d.send_to_blacklist(blacklist) #Blacklist
+                        str3d.send_to_new_blacklist(new_blacklist)
+                        population.append(str3d)
+                        print_output('{}\nEnergy: {}'.format(str3d, float(str3d)))
+                        run_util.relax_info(str3d)
+                else:
+                    # Geomerty is fine, but already known.
+                    cnt += 1
+            run_util.perform_backup(mol, population, blacklist, iteration, min_energy, new_blacklist)
+        if cnt == cnt_max:
+            print_output("The allowed number of trials for building the "
+                         "population has been exceeded. The code terminates.")
+            sys.exit(0)
+        print_output("___Initialization completed___")
+        population.sort()
+        print_output("Initial population after sorting: ")
+        for i in range(len(population)):
+            print_output('{:<15}{:>10.4f}'.format(population[i], float(population[i])))
+        min_energy.append(population[0].energy)
+
 
 def mutate_and_relax(candidate, name, iteration, cnt_max, **kwargs):
     # print_output('__{}__'.format(name))
@@ -226,7 +319,11 @@ def mutate_and_relax(candidate, name, iteration, cnt_max, **kwargs):
                     if 0 < len(aims2xyz(surrounding_file)) < 3:
                         if check_geo_if_not_too_far(candidate.sdf_string, surrounding_file, flag=1.5) == False:
                             candidate.adjust_position_centroid(surrounding_file)
-
+                candidate.index = len(blacklist) + 1
+                name = 'structure_{}'.format(candidate.index)
+                print_output('Values for {} child after mutation'.format(candidate))
+                run_util.str_info(candidate)
+                print_output('------------------------------------------------------------\n')
                 name = 'structure_{}'.format(candidate.index)
                 run_util.optimize(candidate, energy_function, params, name)
                 if run_util.check_for_not_converged(name):
@@ -270,7 +367,11 @@ def mutate_and_relax(candidate, name, iteration, cnt_max, **kwargs):
                     if  0 < len(aims2xyz(surrounding_file)) < 3:
                         if check_geo_if_not_too_far(candidate.sdf_string, surrounding_file, flag=1.5) == False:
                             candidate.adjust_position_centroid(surrounding_file)
+                candidate.index = len(blacklist) + 1
                 name = 'structure_{}'.format(candidate.index)
+                print_output('Values for {} child after mutation'.format(candidate))
+                run_util.str_info(candidate)
+                print_output('------------------------------------------------------------\n')
                 run_util.optimize(candidate, energy_function, params, name)
                 if run_util.check_for_not_converged(name):
                     continue
@@ -283,9 +384,10 @@ def mutate_and_relax(candidate, name, iteration, cnt_max, **kwargs):
                     run_util.relax_info(candidate)
                     found = True
                     population.append(candidate)
+
         if cnt == cnt_max:
             raise Exception("The allowed number of trials for generating a unique child has been exceeded.")
-
+iteration = len(new_blacklist) + 1
 while iteration < params['max_iter']:
     print_output(' \n ___Start of iteration {}___'.format(iteration))
     (parent1, parent2, fitness) = selection(population, params['selection'],
@@ -296,29 +398,37 @@ while iteration < params['max_iter']:
     cnt = 0
     while param < params['prob_for_crossing'] and cnt < cnt_max:
         generation_trials = 0
-        child1 = Structure.crossover(parent1, parent2, method = 'single_point')
-        if child1.is_geometry_valid(flag = flag):
-            if not check_for_clashes(child1.sdf_string, surrounding_file):
-                child1.adjust_position_centroid(surrounding_file)
-            break
-        else:
-            generation_trials += 1
-            if generation_trials == 10:
-                if flag >= 0.805:
-                    flag -= 0.005
-                    generation_trials = 0
-            Structure.index = len(blacklist)
-            cnt += 1
-            print flag
-            continue
+        child1, child2 = Structure.crossover(parent1, parent2, method = 'random_points')
+        for child in child1, child2:
+            if child.is_geometry_valid(flag = flag):
+                for dof in child.dof:
+                    if dof.name == 'Torsion':
+                        print('{}: {}'.format(dof.name, [float('{:.2f}'.format(x)) for x in dof.values]))
+                # run_util.str_info(child)
+                if not check_for_clashes(child.sdf_string, surrounding_file):
+                    print('Clask found')
+                    child.adjust_position_centroid(surrounding_file)
+                break
+
+            else:
+                generation_trials += 1
+                if generation_trials == 10:
+                    if flag >= 0.805:
+                        flag -= 0.005
+                        generation_trials = 0
+                Structure.index = len(blacklist)
+                cnt += 1
+                continue
+        break
     else:
-        child1 = Structure(parent1)
+        print('Cannot find good crossover')
+        child = Structure(parent1)
         # print_output('No crossover was performed. Children are copies of parents.')
         # Delete inherited attributes.
         attr_list = ["initial_sdf_string", "energy"]
         for attr in attr_list:
-            delattr(child1, attr)
-        for dof in child1.dof:
+            delattr(child, attr)
+        for dof in child.dof:
             delattr(dof, "initial_values")
 
     print_output('------------------------------------------------------------')
@@ -328,11 +438,10 @@ while iteration < params['max_iter']:
     print_output('Values for {} parent_2'.format(parent2))
     run_util.str_info(parent2)
     print_output('\n')
-    print_output('Values for {} child_1'.format(child1))
-    run_util.str_info(child1)
-    print_output('------------------------------------------------------------\n')
+    print_output('Values for {} child after crossover'.format(child))
+    run_util.str_info(child)
     try:
-        mutate_and_relax(child1, "child1", iteration, cnt_max, **linked_params)
+        mutate_and_relax(child, "child", iteration, cnt_max, **linked_params)
     except Exception as exc:
         print_output(exc)
         sys.exit(0)
@@ -346,7 +455,7 @@ while iteration < params['max_iter']:
     min_energy.append(population[0].energy)
     print_output("Current population after sorting: ")
     for i in range(len(population)):
-        print_output('{:<}   {:>}'.format(population[i], float(population[i])))
+        print_output('{:<15}{:>10.4f}'.format(population[i], float(population[i])))
     print_output("Lowest energies in run: {}".format(min_energy))
     run_util.perform_backup(mol, population, blacklist, iteration, min_energy, new_blacklist)
     run_util.check_for_convergence(iteration, params, min_energy)

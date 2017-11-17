@@ -71,6 +71,10 @@ if filter_smarts_torsion: #Filter particular torsions from all obtained previous
     torsion = custom_torsion
 positions = cleaner(torsion) #Return list consist of tuples which contain 4-atoms define torsion angle
 
+#def add_one_to_positions(positions):
+#  positions = [(i[0]+1, i[1]+1, i[2]+1, i[3]+1) for i in positions]
+#  return positions
+#positions_vmd = add_one_to_positions(positions)
 #Produce mol.sdf file of the molecule
 mol = Chem.AddHs(mol)
 AllChem.EmbedMolecule(mol)
@@ -92,6 +96,8 @@ with open(os.path.join(os.getcwd(), 'parameters.txt'), 'w')  as params:
     params.write('volume=(-10, 10, -10, 10, -10, 10)\n')
     if len(positions) > 0:
         params.write('list_of_torsion  = {}\n'.format(positions))
+#    if len(positions) > 0:
+#        params.write('#list_of_torsion_for_vmd  = {}\n'.format(positions_vmd))
     if len(cistrans) > 0:
         params.write('list_of_cistrans = {}\n'.format(cistrans))
     params.write('\n')

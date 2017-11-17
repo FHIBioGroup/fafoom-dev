@@ -113,7 +113,7 @@ def CreateMolecularZMatrix(structures):
 def GenerateStructures(structures):
     for structure in structures:
         structure.generate_structure()
-        while not structure.is_geometry_valid():
+        while not structure.is_geometry_valid(flag = 1.0):
             structure.generate_structure()
 
 def GenerateSupramoleculeFromConnectivityMatrix(structures, Connectivity):

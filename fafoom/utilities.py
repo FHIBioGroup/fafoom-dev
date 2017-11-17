@@ -22,6 +22,7 @@ import math
 import shutil
 import ConfigParser
 from operator import itemgetter
+np.set_printoptions(suppress=True)
 
 #~ from rdkit import Chem
 #~ from rdkit.Chem import AllChem
@@ -362,12 +363,17 @@ def check_geo_sdf(sdf_string, flag):
                                   np.array(coordinates[y]))
             dist[y][x] = dist[x][y]
     check = True
+    # k = 0
     for x in range(atoms):
         for y in range(x+1, atoms):
             if [x+1, y+1] not in bonds_list and [y+1, x+1] not in bonds_list:
+                # if dist[x][y] < 0.6*(VDW_radii[atoms_names[x]]) or dist[x][y] < 0.7*(VDW_radii[atoms_names[y]]):
+                #     k += 1
+                    # print 'Bond between {} and {}'.format(x+1, y+1)
                 if dist[x][y] < VDW_radii[atoms_names[x]]*bohrtoang*flag or dist[x][y] < VDW_radii[atoms_names[y]]*bohrtoang*flag:
                     check = False
                     return check
+    # print 'Number of bonds is {}'.format(k)
     return check
 
 def check_geo_if_not_too_far(sdf_string, constrained_geom_file, flag=1.5):

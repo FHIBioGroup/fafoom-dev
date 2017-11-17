@@ -18,9 +18,9 @@
 from __future__ import division
 import math
 from copy import copy
-from random import choice
+from random import choice, randrange
 # from rdkit import Chem
-
+import sys
 from measure import *
 
 from genetic_operations import mutation
@@ -35,7 +35,6 @@ import numpy as np
 np.set_printoptions(suppress=True)
 
 class DOF:
-
     def __init__(self, name):
         self.name = name
 
@@ -44,9 +43,7 @@ class DOF:
 
 class Orientation(DOF):
     '''Find and handle orientation of the molecule. '''
-
     values_options = [range(0, 361, 90), np.arange(-3, 4, 1)] #values_options[0] - Defines angle, values_options[1] - defines orientaion.
-
     @staticmethod
     def find(sdf_string, positions=None):
         if positions is None:
@@ -253,7 +250,7 @@ class Torsion(DOF):
     def get_random_values(self):
         """Generate a random value for each of the positions of the Torsion
         object"""
-        self.values = [choice(Torsion.values_options)
+        self.values = [np.random.randint(-179, 181, 1)
                        for i in range(len(self.positions))]
 
     def get_weighted_values(self, weights):
@@ -284,9 +281,6 @@ class Torsion(DOF):
         """
         if values_to_set is not None:
             self.values = values_to_set
-        print '1 {}'.format(self.positions)
-        print '2 {}'.format(values_to_set)
-        print '3 {}'.format(self.values)
         for i in range(len(self.positions)):
             string = dihedral_set(string, self.positions[i], self.values[i])
         return string

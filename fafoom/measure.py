@@ -433,8 +433,6 @@ def dihedral_set(sdf_string, position, value):
     """
     if len(position) != 4:
         raise ValueError("The position needs to be defined by 4 integers")
-    print position
-    print value
     coords = coords_and_masses_from_sdf(sdf_string)[:,:3]
     atoms_to_carry = carried_atoms(sdf_string, position)
     angle_old = dihedral_measure(sdf_string, position)
@@ -443,11 +441,10 @@ def dihedral_set(sdf_string, position, value):
     quat = produce_quaternion(ang_to_rotate, vector)
     new_coords = []
     for i in range(len(coords)):
-        if i+1 in atoms_to_carry:
+        if i+1 in atoms_to_carry: # Since name of the atoms starts with 1
             new_coords.append(Rotation(coords[i], coords[position[1]], quat))
         else:
             new_coords.append(coords[i])
-    print update_coords_sdf(sdf_string, new_coords)
     return update_coords_sdf(sdf_string, new_coords)
 
 def pyranosering_set(sdf_string, position, new_dih, new_ang):

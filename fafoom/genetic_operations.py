@@ -27,7 +27,6 @@ from utilities import (
     print_output
 )
 
-
 def selection(pop_list, selection_type, energy_range, fitness_sum_limit):
     """Select two objects from a list.
 
@@ -132,27 +131,30 @@ def crossover_random_points(list1, list2):
     Raises:
         ValueError: if the length of the lists differ
     """
-    def all_same(items):
-        return all(x == items[0] for x in items)
+    # def all_same(items):
+    #     return all(x == items[0] for x in items)
     if len(list1) != len(list2):
         raise ValueError("No length match between the lists")
     if len(list1) > 0:
 
         parents = [list1, list2]    # parents
         child_1, child_2 = [], []
-        flips = []
-        for i in range(len(parents[0])):
-            flips.append(random.randint(0, 1))
-        while all_same(flips):
-            flips = []
-            for i in range(len(parents[0])):
-                flips.append(random.randint(0, 1))
+        flips = np.random.randint(2, size=len(parents[0]))
+        inverted_flips = np.logical_not(flips).astype(int)
+        # for i in range(len(parents[0])):
+        #     flips.append(random.randint(0, 1))
+        # print_output('Crossover code {}'.format(flips))
+        # while all_same(flips):
+        #     flips = []
+        #     for i in range(len(parents[0])):
+        #         flips.append(random.randint(0, 1))
         for i in range(len(parents[0])):
             child_1.append(parents[flips[i]][i])
-            if flips[i] == 0:
-                child_2.append(parents[1][i])
-            else:
-                child_2.append(parents[0][i])
+            child_2.append(parents[inverted_flips[i]][i])
+            # if flips[i] == 0:
+            #     child_2.append(parents[1][i])
+            # else:
+            #     child_2.append(parents[0][i])
         return child_1, child_2
     else:
         return list1, list2
