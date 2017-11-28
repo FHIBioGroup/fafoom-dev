@@ -30,9 +30,29 @@ np.set_printoptions(suppress=True)
 # Flow-handling
 # In Bohr
 atom_masses = {'H':  1.00794, 'He':  4.002602, 'Li':  6.941, 'Be':  9.012182, 'B':  10.811, 'C':  12.011, 'N':  14.00674, 'O':  15.9994, 'F':  18.9984, 'Ne':  20.1797, 'Na':  22.98977, 'Mg':  24.305, 'Al':  26.98154, 'Si':  28.0855, 'P':  30.97376, 'S':  32.066, 'Cl':  35.4527, 'K':  39.0983, 'Ar':  39.948, 'Ca':  40.078, 'Sc':  44.95591, 'Ti':  47.88, 'V':  50.9415, 'Cr':  51.9961, 'Mn':  54.93805, 'Fe':  55.847, 'Ni':  58.6934, 'Co':  58.9332, 'Cu':  63.546, 'Zn':  65.39, 'Ga':  69.723, 'Ge':  72.61, 'As':  74.92159, 'Se':  78.96, 'Br':  79.904, 'Kr':  83.8, 'Rb':  85.4678, 'Sr':  87.62, 'Y':  88.90585, 'Zr':  91.224, 'Nb':  92.90638, 'Mo':  95.94, 'Ru':  101.07, 'Rh':  102.9055, 'Pd':  106.42, 'Ag':  107.8682, 'Cd':  112.411, 'In':  114.818, 'Sn':  118.71, 'Sb':  121.757, 'I':  126.9045, 'Te':  127.6, 'Xe':  131.29, 'Cs':  132.9054, 'Ba':  137.327, 'La':  138.9055, 'Ce':  140.115, 'Pr':  140.9077, 'Nd':  144.24, 'Sm':  150.36, 'Eu':  151.965, 'Gd':  157.25, 'Tb':  158.9253, 'Dy':  162.5, 'Ho':  164.9303, 'Er':  167.26, 'Tm':  168.9342, 'Yb':  173.04, 'Lu':  174.967, 'Hf':  178.49, 'Ta':  180.9479, 'W':  183.85, 'Re':  186.207, 'Os':  190.2, 'Ir':  192.22, 'Pt':  195.08, 'Au':  196.9665, 'Hg':  200.59, 'Tl':  204.3833, 'Pb':  207.2, 'Bi':  208.9804, 'Po':  208.9824, 'At':  209.9871, 'Pa':  213.0359, 'Ra':  226.0254, 'Ac':  227.0728, 'Th':  232.0381, 'Np':  237.0482, 'U':  238.0289, 'Am':  243.0614, 'Pu':  244.0642}
-VDW_radii = {'H': 3.1000,'He': 2.6500,'Li': 4.1600,'Be': 4.1700,'B':  3.8900,'C':  3.5900,'N':  3.3400,'O':  3.1900,'F':  3.0400,'Ne': 2.9100,'Na': 3.7300,'Mg': 4.2700,'Al': 4.3300, 'Si': 4.2000, 'P':  4.0100,'S':  3.8600,'Cl': 3.7100,'Ar': 3.5500,'K':  3.7100,'Ca': 4.6500,'Sc': 4.5900,'Ti': 4.5100,'V':  4.4400,'Cr': 3.9900,'Mn': 3.9700,'Fe': 4.2300,'Co': 4.1800,'Ni': 3.8200,'Cu': 3.7600,'Zn': 4.0200,'Ga': 4.1900,'Ge': 4.2000,'As': 4.1100,'Se': 4.0400,'Br': 3.9300,'Kr': 3.8200,'Rb': 3.7200,'Sr': 4.5400,'Y':  4.8151,'Zr': 4.53,'Nb': 4.2365,'Mo': 4.099,'Tc': 4.076,'Ru': 3.9953,'Rh': 3.95,'Pd': 3.6600,'Ag': 3.8200,'Cd': 3.9900,'In': 4.2319,'Sn': 4.3030,'Sb': 4.2760,'Te': 4.2200,'I':  4.1700,'Xe': 4.0800,'Cs': 3.78,'Ba': 4.77,'La': 3.14,'Ce': 3.26,'Pr': 3.28,'Nd': 3.3,'Pm': 3.27,'Sm': 3.32,'Eu': 3.40,'Gd': 3.62,'Tb': 3.42,'Dy': 3.26,'Ho': 3.24,'Er': 3.30,'Tm': 3.26,'Yb': 3.22,'Lu': 3.20,'Hf': 4.21,'Ta': 4.15,'W':  4.08,'Re': 4.02,'Os': 3.84,'Ir': 4.00,'Pt': 3.92,'Au': 3.86,'Hg': 3.98,'Tl': 3.91,'Pb': 4.31,'Bi': 4.32,'Po': 4.097,'At': 4.07,'Rn': 4.23,'Fr': 3.90,'Ra': 4.98,'Ac': 2.75,'Th': 2.85,'Pa': 2.71,'U':  3.00,'Np': 3.28,'Pu': 3.45,'Am': 3.51,'Cm': 3.47,'Bk': 3.56,'Cf': 3.55,'Es': 3.76,'Fm': 3.89,'Md': 3.93,'No': 3.78}
-bohrtoang=0.52917721
+# VDW_radii = {'H': 3.1000,'He': 2.6500,'Li': 4.1600,'Be': 4.1700,'B':  3.8900,'C':  3.5900,'N':  3.3400,'O':  3.1900,'F':  3.0400,'Ne': 2.9100,'Na': 3.7300,'Mg': 4.2700,'Al': 4.3300, 'Si': 4.2000, 'P':  4.0100,'S':  3.8600,'Cl': 3.7100,'Ar': 3.5500,'K':  3.7100,'Ca': 4.6500,'Sc': 4.5900,'Ti': 4.5100,'V':  4.4400,'Cr': 3.9900,'Mn': 3.9700,'Fe': 4.2300,'Co': 4.1800,'Ni': 3.8200,'Cu': 3.7600,'Zn': 4.0200,'Ga': 4.1900,'Ge': 4.2000,'As': 4.1100,'Se': 4.0400,'Br': 3.9300,'Kr': 3.8200,'Rb': 3.7200,'Sr': 4.5400,'Y':  4.8151,'Zr': 4.53,'Nb': 4.2365,'Mo': 4.099,'Tc': 4.076,'Ru': 3.9953,'Rh': 3.95,'Pd': 3.6600,'Ag': 3.8200,'Cd': 3.9900,'In': 4.2319,'Sn': 4.3030,'Sb': 4.2760,'Te': 4.2200,'I':  4.1700,'Xe': 4.0800,'Cs': 3.78,'Ba': 4.77,'La': 3.14,'Ce': 3.26,'Pr': 3.28,'Nd': 3.3,'Pm': 3.27,'Sm': 3.32,'Eu': 3.40,'Gd': 3.62,'Tb': 3.42,'Dy': 3.26,'Ho': 3.24,'Er': 3.30,'Tm': 3.26,'Yb': 3.22,'Lu': 3.20,'Hf': 4.21,'Ta': 4.15,'W':  4.08,'Re': 4.02,'Os': 3.84,'Ir': 4.00,'Pt': 3.92,'Au': 3.86,'Hg': 3.98,'Tl': 3.91,'Pb': 4.31,'Bi': 4.32,'Po': 4.097,'At': 4.07,'Rn': 4.23,'Fr': 3.90,'Ra': 4.98,'Ac': 2.75,'Th': 2.85,'Pa': 2.71,'U':  3.00,'Np': 3.28,'Pu': 3.45,'Am': 3.51,'Cm': 3.47,'Bk': 3.56,'Cf': 3.55,'Es': 3.76,'Fm': 3.89,'Md': 3.93,'No': 3.78}
+# bohrtoang=0.52917721
 
+VDW_radii = {"X": 1.5,  "H": 1.2,  "He": 1.4, "Li": 1.82, "Be": 2.0, "B": 2.0,
+                "C": 1.7,  "N": 1.55,  "O": 1.52,  "F": 1.47,  "Ne": 1.54,
+                "Na": 1.36, "Mg": 1.18, "Al": 2.0, "Si": 2.1, "P": 1.8,
+                "S": 1.8,  "Cl": 2.27, "Ar": 1.88, "K": 1.76,  "Ca": 1.37, "Sc": 2.0,
+                "Ti": 2.0, "V": 2.0,  "Cr": 2.0, "Mn": 2.0, "Fe": 2.0, "Co": 2.0,
+                "Ni": 1.63, "Cu": 1.4, "Zn": 1.39, "Ga": 1.07, "Ge": 2.0, "As": 1.85,
+                "Se": 1.9, "Br": 1.85, "Kr": 2.02, "Rb": 2.0, "Sr": 2.0, "Y": 2.0,
+                "Zr": 2.0, "Nb": 2.0, "Mo": 2.0, "Tc": 2.0, "Ru": 2.0, "Rh": 2.0,
+                "Pd": 1.63, "Ag": 1.72, "Cd": 1.58, "In": 1.93, "Sn": 2.17, "Sb": 2.0,
+                "Te": 2.06, "I": 1.98,  "Xe": 2.16, "Cs": 2.1, "Ba": 2.0,
+                "La": 2.0, "Ce": 2.0, "Pr": 2.0, "Nd": 2.0, "Pm": 2.0, "Sm": 2.0,
+                "Eu": 2.0, "Gd": 2.0, "Tb": 2.0, "Dy": 2.0, "Ho": 2.0,
+                "Er": 2.0, "Tm": 2.0, "Yb": 2.0, "Lu": 2.0, "Hf": 2.0, "Ta": 2.0,
+                "W": 2.0,  "Re": 2.0, "Os": 2.0, "Ir": 2.0, "Pt": 1.72, "Au": 1.66,
+                "Hg": 1.55, "Tl": 1.96, "Pb": 2.02, "Bi": 2.0, "Po": 2.0, "At": 2.0, "Rn": 2.0,
+                "Fr": 2.0, "Ra": 2.0, "Ac": 2.0, "Th": 2.0, "Pa": 2.0, "U": 1.86,
+                "Np": 2.0, "Pu": 2.0, "Am": 2.0, "Cm": 2.0, "Bk": 2.0, "Cf": 2.0, "Es": 2.0, "Fm": 2.0,
+                "Md": 2.0, "No": 2.0, "Lr": 2.0, "Rf": 2.0, "Db": 2.0, "Sg": 2.0, "Bh": 2.0, "Hs": 2.0,
+                "Mt": 2.0, "Ds": 2.0, "Rg": 2.0}
+bohrtoang = 1.0
 def backup(filename, obj):
     """ Write the representation of an object (or objects) to a file."""
     with open(filename, 'w') as outf:
@@ -280,11 +300,14 @@ def adjusted_flag(population):
         check = False
         for structure in population:
             if not structure.is_geometry_valid(flag = flag):
-                if flag >= 0.805:
+                if flag >= 0.755:
                     flag -= 0.005
+                    check = True
                 else:
-                    raise Exception('Something wrong with criteria.')
-                check = True
+                    flag = 0.750
+                    check = False
+                    continue
+
                 continue
     return flag
 
@@ -453,7 +476,7 @@ def update_coords_sdf(sdf_string, new_coords):
             k+=1
         else:
             updated_sdf_string = updated_sdf_string + i + '\n'
-    return updated_sdf_strings
+    return updated_sdf_string
 
 def update_coords_aims(aims_file, new_coords):
     i = 0
@@ -586,6 +609,18 @@ def sdf2xyz(sdf_string):
                             float(coords_found.group(4))])
     return xyz_list
 
+def sdf2coords_and_atomtypes(sdf_string):
+    """Convert a sdf_string to a xyz_list."""
+    xyz_list = []
+    atomtypes = []
+    for line in sdf_string.split('\n'):
+        coords_found = re.match(r'(\s*(.?\d+\.\d+)\s*(.?\d+\.\d+)\s*(.?\d+\.\d+)\s*(\w+)\s*?)', line)
+        if coords_found:
+            atomtypes.append(coords_found.group(5))
+            xyz_list.append([float(coords_found.group(2)),
+                            float(coords_found.group(3)),
+                            float(coords_found.group(4))])
+    return np.array(xyz_list), atomtypes
 
 def aims2sdf(aims_string, sdf_template_string):
     """Convert a aims string to a sdf string. Template for the sdf string is

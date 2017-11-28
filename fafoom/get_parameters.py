@@ -18,7 +18,7 @@
 from __future__ import division
 # from rdkit import Chem
 # from rdkit.Chem import AllChem
-from deg_of_freedom import Torsion, CisTrans, PyranoseRing, Centroid, Orientation
+from deg_of_freedom import Torsion, CisTrans, PyranoseRing, Centroid, Orientation, Protomeric
 from utilities import *
 from measure import *
 
@@ -115,6 +115,11 @@ def get_positions(type_of_deg, sdf_string, **kwargs):
         else:
             return Orientation.find(sdf_string)
 
+    if type_of_deg == "protomeric":
+        if 'list_of_protomeric' in kwargs:
+            return Protomeric.find(sdf_string, positions=kwargs['list_of_protomeric'])
+
+
 def create_dof_object(type_of_deg, positions):
     """Initialize the degree of freedom from the positions
 
@@ -134,6 +139,8 @@ def create_dof_object(type_of_deg, positions):
         return Centroid(positions)
     if type_of_deg == "orientation":
         return Orientation(positions)
+    if type_of_deg == "protomeric":
+        return Protomeric(positions)
 
 def template_sdf(sdf_string):
     """Create a template sdf string and writes it to file.

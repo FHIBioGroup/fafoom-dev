@@ -29,11 +29,11 @@ from pyaims import AimsObject
 from pynwchem import NWChemObject
 from pyorca import OrcaObject
 from pyforcefield import FFobject
-from deg_of_freedom import Centroid
-from measure import centroid_set, centroid_measure, get_centre_of_mass_from_sdf
+from deg_of_freedom import Centroid, Protomeric
 import numpy as np
 from random import choice
 from utilities import *
+from measure import *
 
 class MoleculeDescription:
     """Create the molecule."""
@@ -64,17 +64,19 @@ class MoleculeDescription:
 
         dict_default = {'rmsd_type': "cartesian",
                         'rmsd_cutoff_uniq': 0.2,
-                        'chiral': True,
+                        'chiral': False,
                         'optimize_torsion': True,
-                        'optimize_cistrans':True,
-                        'optimize_centroid': True,
-                        'optimize_orientation': True,
+                        'optimize_cistrans':False,
+                        'optimize_centroid': False,
+                        'optimize_orientation': False,
+                        'optimize_protomeric:': False,
                         'sdf_string_template':'adds/mol.sdf',
                         'constrained_geometry_file':'adds/geometry.in.constrained',
-                        'right_order_to_assign':['torsion', 'cistrans', 'centroid', 'orientation'],
+                        'right_order_to_assign':['torsion', 'cistrans', 'centroid', 'orientation', 'protomeric'],
                         'volume':(-10,11, -10, 11, -10, 11),
+                        'number_of_protons': 0,
                         'crossover_method':'random_points',
-                        'number_of_molecules':1}
+                        'number_of_molecules': 1}
 
         params = set_default(params, dict_default)
         for key in params:
@@ -175,6 +177,19 @@ class MoleculeDescription:
         Centroid.range_z = range(self.volume[4], self.volume[5], 1) #Limitation for Centroid
         Centroid.values_options = [Centroid.range_x, Centroid.range_y, Centroid.range_z]
 
+# Routines for Protomeric values:
+        if 'protomeric' in dof_names:
+            for i in self.list_of_protomeric:
+                Protomeric.maximum_of_protons.append(i[1])
+            max_num_of_protons = sum(Protomeric.maximum_of_protons)
+            Protomeric.number_of_protons = self.number_of_protons
+            if max_num_of_protons - self.number_of_protons > len(self.list_of_protomeric):
+                num_of_zeros = len(self.list_of_protomeric)
+            else:
+                num_of_zeros = max_num_of_protons - self.number_of_protons
+            Protomeric.values_options = np.lib.pad(np.ones(len(self.list_of_protomeric) - (max_num_of_protons - self.number_of_protons)),
+                                        (0, num_of_zeros),
+                                        'constant', constant_values=(0))
 
 class Structure:
     """Create 3D structures."""
@@ -292,6 +307,7 @@ class Structure:
                     dof.get_random_values()
                     # print 'Initial random values for {} are {}'.format(dof.name ,dof.values)
                 new_string = dof.apply_on_string(new_string)
+                # print new_string
         self.sdf_string = new_string
         for dof in self.dof:
             dof.update_values(self.sdf_string)
@@ -319,6 +335,15 @@ class Structure:
         self.sdf_string = new_string
         for dof in self.dof:
             dof.update_values(self.sdf_string)
+
+    def put_to_origin(self):
+        sdf_string = self.sdf_string
+        coords_and_masses = coords_and_masses_from_sdf(sdf_string)
+        new_coords = align_to_axes(coords_and_masses, 0, 1)
+        COM = get_centre_of_mass_from_sdf(sdf_string)
+        coordinates_at_origin = new_coords[:,:3] - COM
+        updated_sdf = update_coords_sdf(sdf_string, coordinates_at_origin)
+        self.sdf_string = updated_sdf
 
     def adjust_position_centroid(self, constrained_geom_file):
         def cart2sph(x, y, z):
@@ -476,6 +501,14 @@ class Structure:
         structure_for_blacklist = '{}\n$$$$\n'.format(updated_string)
         array.append(structure_for_blacklist)
 
+    def perform_random(self, sourcedir, dirname):
+        """Stores random structures without futher calculations"""
+        aims_object = AimsObject(sourcedir)
+        aims_object.generate_input(self.sdf_string)
+        aims_object.build_storage(dirname)
+        self.energy = 0.0
+        self.initial_sdf_string = self.sdf_string
+
     def perform_aims(self, sourcedir, execution_string, dirname):
         """Generate the FHI-aims input, run FHI-aims, store the output, assign
         new attributes and update attribute values."""
@@ -588,7 +621,7 @@ class Structure:
             main axis of inertia is performed as swapping of the whole vectors
             without dividing them into parts."""
             if dof_par1.type == dof_par2.type:
-                if dof_par1.type == 'orientation' or dof_par1.type == 'centroid':
+                if dof_par1.type == 'orientation' or dof_par1.type == 'centroid' or 'protomeric':
                     a,b = getattr(dof_par1, "values"), getattr(dof_par2, "values")
                     setattr(dof_child1, "values", b)
                     setattr(dof_child2, "values", a)

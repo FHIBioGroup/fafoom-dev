@@ -5,10 +5,12 @@ import sys
 import os
 from fafoom import *
 import fafoom.run_utilities as run_util
-from fafoom.utilities import sdf2xyz, check_for_clashes
+from fafoom.utilities import sdf2xyz, check_for_clashes, sdf2coords_and_atomtypes
 from optparse import OptionParser
+from fafoom.connectivity import *
 parser = OptionParser()
 parser.add_option("-t", "--test", dest="test", default = None, help="Testing mode will turn on np.random.seed(0) and random number will be predictable and the same. For testing purposes.")
+parser.add_option("-r", "--random", dest="random", default = None, help="Generating of random and unique structures")
 (options, args) = parser.parse_args()
 
 if options.test is not None:
@@ -84,17 +86,20 @@ if opt == "simple":
                     flag -= 0.005
                     generation_trials = 0
                 # The lowest value of the flag is 0.75, if reached
-                # it is counted as basd trial.
+                # it is counted as bad trial.
                 else:
                     cnt += 1
             continue
         else:
             # If sensible structure is unique:
             if str3d not in blacklist:
-                for dof in str3d.dof:
-                    if dof.name == 'Torsion':
-                        print('{}: {}'.format(dof.name, [float('{:.2f}'.format(x)) for x in dof.values]))
-
+                if len(aims2xyz(surrounding_file)) < 1:
+                    str3d.put_to_origin()
+                # for dof in str3d.dof:
+                    # if dof.name == 'Protomeric':
+                    #     print('{}: {}'.format(dof.name, [float('{}'.format(x)) for x in dof.values]))
+                    # if dof.name == 'Torsion':
+                    #     print('{}: {}'.format(dof.name, [float('{:.2f}'.format(x)) for x in dof.values]))
                 if not check_for_clashes(str3d.sdf_string, surrounding_file):
                     if 'centroid' not in mol.dof_names and len(aims2xyz(surrounding_file)) > 1:
                         str3d.adjust_position()
@@ -113,6 +118,7 @@ if opt == "simple":
                             str3d.adjust_position_centroid(surrounding_file)
                 name = 'structure_{}'.format(str3d.index)
                 # Perform the local optimization
+                # print str3d.sdf_string
                 run_util.optimize(str3d, energy_function, params, name)
                 if run_util.check_for_not_converged(name):
                     continue
@@ -242,6 +248,8 @@ if opt == "restart":
             else:
                 # If sensible structure is unique:
                 if str3d not in blacklist:
+                    if len(aims2xyz(surrounding_file)) < 1:
+                        str3d.put_to_origin()
                     for dof in str3d.dof:
                         if dof.name == 'Torsion':
                             print('{}: {}'.format(dof.name, [float('{:.2f}'.format(x)) for x in dof.values]))
@@ -297,6 +305,8 @@ def mutate_and_relax(candidate, name, iteration, cnt_max, **kwargs):
         Structure.index = len(blacklist)
         candidate_backup = Structure(candidate)
         if candidate in blacklist:
+            # if len(aims2xyz(surrounding_file)) < 1:
+            #     candidate.put_to_origin()
             # print_output('Candidate in blacklist')
             # print_output('Perform hard_mutate')
             candidate.hard_mutate(**kwargs) #Mutate, since already in blacklist
@@ -306,6 +316,8 @@ def mutate_and_relax(candidate, name, iteration, cnt_max, **kwargs):
                 cnt+=1
                 continue
             else:
+                if len(aims2xyz(surrounding_file)) < 1:
+                    candidate.put_to_origin()
                 if not check_for_clashes(candidate.sdf_string, os.path.join(mol.constrained_geometry_file)):
                     #print_output('Clash found')
                     if 'centroid' not in mol.dof_names: #If optimization for the COM is turned off
@@ -346,6 +358,8 @@ def mutate_and_relax(candidate, name, iteration, cnt_max, **kwargs):
                 cnt += 1
                 continue
             else:
+                if len(aims2xyz(surrounding_file)) < 1:
+                    candidate.put_to_origin()
                 if not check_for_clashes(candidate.sdf_string, os.path.join(mol.constrained_geometry_file)):
                     #print_output('Clash found')
                     if 'centroid' not in mol.dof_names:
@@ -401,6 +415,8 @@ while iteration < params['max_iter']:
         child1, child2 = Structure.crossover(parent1, parent2, method = 'random_points')
         for child in child1, child2:
             if child.is_geometry_valid(flag = flag):
+                if len(aims2xyz(surrounding_file)) < 1:
+                    child.put_to_origin()
                 for dof in child.dof:
                     if dof.name == 'Torsion':
                         print('{}: {}'.format(dof.name, [float('{:.2f}'.format(x)) for x in dof.values]))

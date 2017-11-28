@@ -118,11 +118,14 @@ def check_for_kill():
 def detect_energy_function(params):
     """ Detect the energy function that will be used for local optimization."""
     if 'energy_function' not in params:
+        energy_function = "no"
         print_output("The energy function hasn't been defined."
-                     " The code terminates")
-        sys.exit(0)
+                     " Random structures will be produced")
     else:
-        if params['energy_function'] in ['aims', 'FHI-aims', 'FHIaims']:
+        if params['energy_function'] in ['No', 'no', 'Random', 'random']:
+            print_output("Local optimization will not be performed. Random structures will be produced")
+            energy_function = "no"
+        elif params['energy_function'] in ['aims', 'FHI-aims', 'FHIaims']:
             print_output("Local optimization will be performed with FHI-aims.")
             energy_function = "aims"
         elif params['energy_function'] in ['nwchem', 'NWChem']:
@@ -147,6 +150,8 @@ def detect_energy_function(params):
 
 def optimize(structure, energy_function, params, name=None):
     """Perform local optimization."""
+    if energy_function == "no":
+        structure.perform_random(params['sourcedir'], name)
     if energy_function == "aims":
         structure.perform_aims(params['sourcedir'], params['aims_call'], name)
     elif energy_function == "nwchem":

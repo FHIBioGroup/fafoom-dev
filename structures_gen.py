@@ -11,7 +11,13 @@ from fafoom import MoleculeDescription, Structure, selection, print_output,\
 import fafoom.run_utilities as run_util
 from fafoom.measure import centroid_measure
 from fafoom.utilities import sdf2xyz, check_for_clashes
+from fafoom.connectivity import *
+parser = OptionParser()
+parser.add_option("-t", "--test", dest="test", default = None, help="Testing mode will turn on np.random.seed(0) and random number will be predictable and the same. For testing purposes.")
+(options, args) = parser.parse_args()
 
+if options.test is not None:
+    np.random.seed(0)
 """Find species_defaults folder"""
 path = '/'.join(['{}'.format(str(x)) for x in sys.argv[0].split('/')[:-1]])
 species_default_folder = os.path.join(path, 'species_defaults')
@@ -85,42 +91,37 @@ def produce_aims_control_light(geometry_file):
                 control.write(basis_for_atom.read())
                 control.write('\n')
 
-if len(sys.argv) == 1:
-    p_file = os.path.join(os.getcwd(), 'parameters.txt')
-else:
-    p_file = sys.argv[1] #Read parameters file
 
+
+#Need to correctly write the one-line blacklist:
+np.set_printoptions(suppress=True)
+# Decide for restart or a simple run.
+opt = run_util.simple_or_restart()
+# If genetic algorithm was invoked without additional inputs
+# fafoom will try to find parameters.txt file as default.
+if len(sys.argv) < 2:
+    if os.path.exists(os.path.join(os.getcwd(), 'parameters.txt')):
+        p_file = os.path.join(os.getcwd(), 'parameters.txt')
+    else:
+        raise Exception('Please produce parameters.txt file.')
+else:
+    p_file = sys.argv[1]
+# Assign default parameters for calculation
 # Build a dictionary from two section of the parameter file.
 params = file2dict(p_file, ['GA settings', 'Run settings'])
-
+# Default parameters:
 dict_default = {'energy_var': 0.001, 'selection': "roulette_wheel",
                 'fitness_sum_limit': 1.2, 'popsize': 10,
                 'prob_for_crossing': 1.0, 'max_iter': 30,
                 'iter_limit_conv': 20, 'energy_diff_conv': 0.001}
 # Set defaults for parameters not defined in the parameter file.
 params = set_default(params, dict_default)
-energy_function = run_util.detect_energy_function(params)
-cnt_max = 10000
-population, blacklist = [], []
-min_energy = []
-
-#***********************************************************************
-"""
-Creation of the folders for valid and invalid structures.
-It helps to visually inspect produced structures.
-"""
-
-if not os.path.exists(os.path.join(os.getcwd(),'adds')):
-    os.mkdir(os.path.join(os.getcwd(),'adds'))
-    shutil.copyfile(os.path.join(os.getcwd(), 'mol.sdf'), os.path.join(os.getcwd(), 'adds', 'mol.sdf'))
-    produce_aims_control_light(os.path.join(os.getcwd(), 'adds', 'mol.sdf'))
-else:
-    if not os.path.exists(os.path.join(os.getcwd(), 'adds', 'mol.sdf')):
-        shutil.copyfile(os.path.join(os.getcwd(), 'mol.sdf'), os.path.join(os.getcwd(), 'adds', 'mol.sdf'))
-    if not os.path.exists(os.path.join(os.getcwd(), 'adds', 'control_single_point.in')) or not os.path.exists(os.path.join(os.getcwd(), 'adds', 'control.in')) :
-        produce_aims_control_light(os.path.join(os.getcwd(), 'adds', 'mol.sdf'))
-
-
+# Maximum number of trials to produce the apropriate geometry.
+cnt_max = 250
+# Create lists to store Population, minimal energy in the run and
+# structures that are already calculated.
+population, blacklist, min_energy = [], [], []
+new_blacklist = []
 #=======================================================================
 aims_object = AimsObject(os.path.join(os.getcwd(),'adds'))
 #ff_object = FFobject(os.path.join(os.getcwd(),'adds', 'FF'))

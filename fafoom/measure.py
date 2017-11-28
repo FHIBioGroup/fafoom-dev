@@ -24,7 +24,7 @@ import os, sys, re
 # from rdkit.Chem import AllChem
 # from rdkit.Chem import rdMolTransforms
 from numpy.linalg import inv
-from utilities import get_vec, tor_rmsd, xyz2sdf, sdf2xyz, coords_and_masses_from_sdf, update_coords_sdf
+from utilities import *
 
 def ig(x):
     return itemgetter(x)
@@ -417,8 +417,6 @@ def carried_atoms(sdf_string, positions):
     else:
         return getRoots(graph_with_break).values()[1]
 
-
-
 def dihedral_set(sdf_string, position, value):
     """ Set the dihedral angle.
 
@@ -661,7 +659,6 @@ def pyranosering_set(sdf_string, position, new_dih, new_ang):
 
         n_at = len(coords_and_masses_from_sdf(sdf_string))
         n_bonds = len(conn_list_from_sdf(sdf_string))
-        m_
         ###was before:
         # n_at = molecule.GetNumAtoms()
         # n_bonds = molecule.GetNumBonds()
@@ -771,3 +768,118 @@ def pyranosering_measure(sdf_string, position, dict_of_options):
         rmsd_dict[key] = (tor_rmsd(2, get_vec(all_ang, dict_of_options[key])))
 
     return int(min(rmsd_dict.iteritems(), key=ig(1))[0])
+
+
+
+
+
+
+
+""" Routines for Protomeric degree of freedom"""
+# #corresponding table of VDW radii.
+# #van der Waals radii are taken from A. Bondi,
+# #J. Phys. Chem., 68, 441 - 452, 1964,
+# #except the value for H, which is taken from R.S. Rowland & R. Taylor,
+# #J.Phys.Chem., 100, 7384 - 7391, 1996. Radii that are not available in
+# #either of these publications have RvdW = 2.00 angstr
+# #The radii for Ions (Na, K, Cl, Ca, Mg, and Cs are based on the CHARMM27
+AtomvdWradii = {"X": 1.5,  "H": 1.2,  "He": 1.4, "Li": 1.82, "Be": 2.0, "B": 2.0,
+                "C": 1.7,  "N": 1.55,  "O": 1.52,  "F": 1.47,  "Ne": 1.54,
+                "Na": 1.36, "Mg": 1.18, "Al": 2.0, "Si": 2.1, "P": 1.8,
+                "S": 1.8,  "Cl": 2.27, "Ar": 1.88, "K": 1.76,  "Ca": 1.37, "Sc": 2.0,
+                "Ti": 2.0, "V": 2.0,  "Cr": 2.0, "Mn": 2.0, "Fe": 2.0, "Co": 2.0,
+                "Ni": 1.63, "Cu": 1.4, "Zn": 1.39, "Ga": 1.07, "Ge": 2.0, "As": 1.85,
+                "Se": 1.9, "Br": 1.85, "Kr": 2.02, "Rb": 2.0, "Sr": 2.0, "Y": 2.0,
+                "Zr": 2.0, "Nb": 2.0, "Mo": 2.0, "Tc": 2.0, "Ru": 2.0, "Rh": 2.0,
+                "Pd": 1.63, "Ag": 1.72, "Cd": 1.58, "In": 1.93, "Sn": 2.17, "Sb": 2.0,
+                "Te": 2.06, "I": 1.98,  "Xe": 2.16, "Cs": 2.1, "Ba": 2.0,
+                "La": 2.0, "Ce": 2.0, "Pr": 2.0, "Nd": 2.0, "Pm": 2.0, "Sm": 2.0,
+                "Eu": 2.0, "Gd": 2.0, "Tb": 2.0, "Dy": 2.0, "Ho": 2.0,
+                "Er": 2.0, "Tm": 2.0, "Yb": 2.0, "Lu": 2.0, "Hf": 2.0, "Ta": 2.0,
+                "W": 2.0,  "Re": 2.0, "Os": 2.0, "Ir": 2.0, "Pt": 1.72, "Au": 1.66,
+                "Hg": 1.55, "Tl": 1.96, "Pb": 2.02, "Bi": 2.0, "Po": 2.0, "At": 2.0, "Rn": 2.0,
+                "Fr": 2.0, "Ra": 2.0, "Ac": 2.0, "Th": 2.0, "Pa": 2.0, "U": 1.86,
+                "Np": 2.0, "Pu": 2.0, "Am": 2.0, "Cm": 2.0, "Bk": 2.0, "Cf": 2.0, "Es": 2.0, "Fm": 2.0,
+                "Md": 2.0, "No": 2.0, "Lr": 2.0, "Rf": 2.0, "Db": 2.0, "Sg": 2.0, "Bh": 2.0, "Hs": 2.0,
+                "Mt": 2.0, "Ds": 2.0, "Rg": 2.0}
+
+
+def measure_protomeric(sdf_string, positions, number_of_protons, maximum_of_protons):
+    """coords, atomtypes = sdf2coords_and_atomtypes(string)
+    for index in positions:
+        if coords[index]
+    BuildConnectivityFromCoordsAndMasses(coords, atomtypes)
+    protomeric_state = []
+    return protomeric_state"""
+
+    def distance(x, y):
+        """"Calculate distance between two points in 3D."""
+        return np.sqrt((x[0]-y[0])**2+(x[1]-y[1])**2+(x[2]-y[2])**2)
+
+    def connected_atoms(atom, coordinates, atomtypes, maximum_of_protons):
+        proton = 0
+        for another_atom in range(len(coordinates)):
+            if atomtypes[another_atom] == 'H':
+
+                if distance(coordinates[atom], coordinates[another_atom]) <= 0.5 * (AtomvdWradii[atomtypes[atom]] + AtomvdWradii[atomtypes[another_atom]]):
+                    proton += 1
+        if proton < maximum_of_protons:
+            # print 'Protomeric State is 0'
+            return 0
+        elif proton == maximum_of_protons:
+            # print 'Protomeric State is 1'
+            return 1
+        else:
+            pass
+            # print 'Something wrong with protomeric state!!!'
+    coords, atomtypes = sdf2coords_and_atomtypes(sdf_string)
+    graph = construct_graph(sdf_string)
+    protomeric_state = []
+    for atom in positions:
+        protomeric_state.append(connected_atoms(atom - 1, coords, atomtypes, maximum_of_protons[positions.index(atom)]))
+    return protomeric_state
+
+def delete_atom_from_sdf_string(sdf_string, atomnumber):
+    coords, atomtypes = sdf2coords_and_atomtypes(sdf_string)
+    conn_list = conn_list_from_sdf(sdf_string)
+    Splitted_string = sdf_string.split('\n')
+    HEADER = Splitted_string[:4]
+    HEADER[-1] = '{:>3}{:>3} {}'.format((len(atomtypes) - 1), (len(conn_list) - 1), HEADER[-1][7:])
+    coords_part = []
+    bonds_part = []
+    for line in sdf_string.split('\n'):
+        coords_found = re.match(r'(\s*.?\d+\.\d+\s*.?\d+\.\d+\s*.?\d+\.\d+\s*\w+\s.*?)', line)
+        if coords_found:
+            coords_part.append(line)
+        bond_found = re.match(r'(\s*(\d+)\s+(\d+)(\s+\d+\s+\d+\s*?\d*?\s*?\d*?\s*?\d*?\s*?$))', line)
+        if bond_found:
+            if int(bond_found.group(2)) > atomnumber:
+                if int(bond_found.group(3)) > atomnumber:
+                    bonds_part.append('{:>3}{:>3}{}'.format( int(bond_found.group(2)) - 1, int(bond_found.group(3)) - 1, bond_found.group(4)))
+                elif int(bond_found.group(3)) < atomnumber:
+                    bonds_part.append('{:>3}{:>3}{}'.format(int(bond_found.group(2)) - 1, int(bond_found.group(3)), bond_found.group(4)))
+            elif int(bond_found.group(3)) > atomnumber and int(bond_found.group(2)) < atomnumber:
+                bonds_part.append('{:>3}{:>3}{}'.format(int(bond_found.group(2)), int(bond_found.group(3)) - 1, bond_found.group(4)))
+            elif int(bond_found.group(3)) == atomnumber or int(bond_found.group(2)) == atomnumber:
+                pass
+            else:
+                bonds_part.append(line)
+    coords_part.pop(atomnumber - 1)
+    sdf_string_after_removal = '\n'.join(HEADER)+ '\n' + '\n'.join(coords_part) + '\n' + '\n'.join(bonds_part)
+    return sdf_string_after_removal
+
+def delete_extra_protons(sdf_string, positions, values):
+    """for atom in positions:"""
+    """delete atoms that are connected"""
+    updated_sdf_string = sdf_string
+    for i in range(len(values)):
+        if values[i] == 0:
+            coords, atomtypes = sdf2coords_and_atomtypes(updated_sdf_string)
+            graph = construct_graph(updated_sdf_string)
+            for connected in graph[positions[i]]:
+                if atomtypes[connected - 1] == 'H':
+                    updated_sdf_string = delete_atom_from_sdf_string(updated_sdf_string, connected)
+                    break
+    return updated_sdf_string
+
+#End of the Protomeric Routines
