@@ -29,7 +29,7 @@ from pyaims import AimsObject
 from pynwchem import NWChemObject
 from pyorca import OrcaObject
 from pyforcefield import FFobject
-from deg_of_freedom import Centroid, Protomeric
+from deg_of_freedom import Centroid, Protomeric, NumberOfMolecules
 import numpy as np
 from random import choice
 from utilities import *
@@ -75,8 +75,10 @@ class MoleculeDescription:
                         'right_order_to_assign':['torsion', 'cistrans', 'centroid', 'orientation', 'protomeric'],
                         'volume':(-10,11, -10, 11, -10, 11),
                         'number_of_protons': 0,
-                        'crossover_method':'random_points',
-                        'number_of_molecules': 1}
+                        'number_of_molecules': 1,
+                        'molecules': 'same',
+                        'crossover_method':'random_points'}
+
 
         params = set_default(params, dict_default)
         for key in params:
@@ -190,6 +192,8 @@ class MoleculeDescription:
             Protomeric.values_options = np.lib.pad(np.ones(len(self.list_of_protomeric) - (max_num_of_protons - self.number_of_protons)),
                                         (0, num_of_zeros),
                                         'constant', constant_values=(0))
+#Routines for number of molecules:
+        NumberOfMolecules.numofmol = self.number_of_molecules
 
 class Structure:
     """Create 3D structures."""
@@ -506,7 +510,7 @@ class Structure:
         aims_object = AimsObject(sourcedir)
         aims_object.generate_input(self.sdf_string)
         aims_object.build_storage(dirname)
-        self.energy = 0.0
+        self.energy = 0.00
         self.initial_sdf_string = self.sdf_string
 
     def perform_aims(self, sourcedir, execution_string, dirname):
@@ -621,7 +625,7 @@ class Structure:
             main axis of inertia is performed as swapping of the whole vectors
             without dividing them into parts."""
             if dof_par1.type == dof_par2.type:
-                if dof_par1.type == 'orientation' or dof_par1.type == 'centroid' or 'protomeric':
+                if dof_par1.type == 'orientation' or dof_par1.type == 'centroid' or dof_par1.type == 'protomeric':
                     a,b = getattr(dof_par1, "values"), getattr(dof_par2, "values")
                     setattr(dof_child1, "values", b)
                     setattr(dof_child2, "values", a)
@@ -676,8 +680,10 @@ class Structure:
                     call_mut(dof, kwargs['max_mutations_'+str(dof.type)])
                 else:
                     call_mut(dof)
-
-        new_string = deepcopy(self.sdf_string)
+        template = Structure(self.mol_info)
+        # new_string = deepcopy(self.sdf_string)
+        # print new_string
+        new_string = template.mol_info.template_sdf_string
         for dof in self.dof:
             new_string = dof.apply_on_string(new_string, dof.values)
         self.sdf_string = new_string
@@ -704,7 +710,10 @@ class Structure:
                 call_mut(dof, kwargs['max_mutations_'+str(dof.type)])
             else:
                 call_mut(dof)
-        new_string = deepcopy(self.sdf_string)
+        template = Structure(self.mol_info)
+        # new_string = deepcopy(self.sdf_string)
+        # print new_string
+        new_string = template.mol_info.template_sdf_string
         for dof in self.dof:
             new_string = dof.apply_on_string(new_string, dof.values)
         self.sdf_string = new_string

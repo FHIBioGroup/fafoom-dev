@@ -402,7 +402,7 @@ def mutate_and_relax(candidate, name, iteration, cnt_max, **kwargs):
         if cnt == cnt_max:
             raise Exception("The allowed number of trials for generating a unique child has been exceeded.")
 iteration = len(new_blacklist) + 1
-while iteration < params['max_iter']:
+while iteration <= params['max_iter']:
     print_output(' \n ___Start of iteration {}___'.format(iteration))
     (parent1, parent2, fitness) = selection(population, params['selection'],
                                             params['energy_var'],
@@ -417,12 +417,14 @@ while iteration < params['max_iter']:
             if child.is_geometry_valid(flag = flag):
                 if len(aims2xyz(surrounding_file)) < 1:
                     child.put_to_origin()
-                for dof in child.dof:
-                    if dof.name == 'Torsion':
-                        print('{}: {}'.format(dof.name, [float('{:.2f}'.format(x)) for x in dof.values]))
+                # for dof in child.dof:
+                #     if dof.name == 'Torsion':
+                #         print('{}: {}'.format(dof.name, [float('{:.2f}'.format(x)) for x in dof.values]))
+                #     if dof.name == 'Protomeric':
+                #         print('{}: {}'.format(dof.name, [float('{:.2f}'.format(x)) for x in dof.values]))
                 # run_util.str_info(child)
                 if not check_for_clashes(child.sdf_string, surrounding_file):
-                    print('Clask found')
+                    print('Clash found')
                     child.adjust_position_centroid(surrounding_file)
                 break
 
@@ -445,8 +447,9 @@ while iteration < params['max_iter']:
         for attr in attr_list:
             delattr(child, attr)
         for dof in child.dof:
-            delattr(dof, "initial_values")
-
+            if hasattr(dof, "initial_values"):
+                delattr(dof, "initial_values")
+    Structure.index = len(blacklist) + 1
     print_output('------------------------------------------------------------')
     print_output('Values for {} parent_1'.format(parent1))
     run_util.str_info(parent1)

@@ -84,7 +84,7 @@ def str_info(struct):
     """ Prints the information about the structure to the output file"""
     # print_output(struct)
     for dof in struct.dof:
-        print_output('{}: {}'.format(dof.name, [float('{:.2f}'.format(x)) for x in dof.values]))
+        print_output('{}: {}'.format(dof.name, [float('{:.2f}'.format(float(x))) for x in dof.values]))
 
 def relax_info(struct):
     """ Prints the information about the structure to the output file after

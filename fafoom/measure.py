@@ -821,7 +821,7 @@ def measure_protomeric(sdf_string, positions, number_of_protons, maximum_of_prot
         for another_atom in range(len(coordinates)):
             if atomtypes[another_atom] == 'H':
 
-                if distance(coordinates[atom], coordinates[another_atom]) <= 0.5 * (AtomvdWradii[atomtypes[atom]] + AtomvdWradii[atomtypes[another_atom]]):
+                if distance(coordinates[atom], coordinates[another_atom]) <= 0.4 * (AtomvdWradii[atomtypes[atom]] + AtomvdWradii[atomtypes[another_atom]]):
                     proton += 1
         if proton < maximum_of_protons:
             # print 'Protomeric State is 0'
@@ -830,7 +830,7 @@ def measure_protomeric(sdf_string, positions, number_of_protons, maximum_of_prot
             # print 'Protomeric State is 1'
             return 1
         else:
-            pass
+            return -1
             # print 'Something wrong with protomeric state!!!'
     coords, atomtypes = sdf2coords_and_atomtypes(sdf_string)
     graph = construct_graph(sdf_string)

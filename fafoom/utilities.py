@@ -185,7 +185,6 @@ def file2dict(filename, sections):
 def ig(x):
     return itemgetter(x)
 
-
 def cleaner(list_to_clean):
     """ Remove duplicate torsion definion from a list of atom ind. tuples."""
     for_remove = []

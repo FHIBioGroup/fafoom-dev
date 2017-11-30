@@ -622,3 +622,47 @@ class Protomeric(DOF):
         """ Nothing for now """
         pass
 #End of Protomeric state Degree of Freedom
+
+class NumberOfMolecules(DOF):
+    numofmol = 1
+    @staticmethod
+    def find(sdf_string, positions=None):
+        heavy_atoms = []
+        for i in positions:
+            heavy_atoms.append(i[0])
+        return heavy_atoms
+
+    def __init__(self, positions):
+        self.name = 'NumberOfMolecules'
+        self.type = "numberofmolecules"
+        self.positions = positions
+
+    def get_random_values(self):
+        """Generate a random value for each of the positions of the Torsion
+        object"""
+        # self.values = [1, 0]
+        self.values = np.random.permutation(Protomeric.values_options)
+
+    def update_values(self, string):
+        self.values = measure_protomeric(string, self.positions, Protomeric.number_of_protons, Protomeric.maximum_of_protons)
+    def apply_on_string(self, string, values_to_set=None):
+        """ Delete protons from sdf_string """
+        string_without_protons = delete_extra_protons(string, self.positions, self.values)
+        return string_without_protons
+
+    def mutate_values(self, max_mutations=None, weights=None):
+        """ No mutation for now """
+        # """ For now just random shuffle of the values"""
+        self.values = self.values
+        # self.values = np.random.permutation(self.values)
+
+    def is_equal(self, other, threshold, chiral=True):
+        """ Just comparing of the lists """
+        if self.values == other.values:
+            return True
+        else:
+            return False
+
+    def get_weighted_values(self, weights):
+        """ Nothing for now """
+        pass
