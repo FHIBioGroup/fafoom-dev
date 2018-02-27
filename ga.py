@@ -232,6 +232,7 @@ if opt == "restart":
                     name = '{:04d}_structure'.format(Calculated + 1)
                     # Perform the local optimization
                     run_util.optimize(str3d, energy_function, params, name)
+                    Calculated += 1
                     if run_util.check_for_not_converged(name):
                         continue
                     else:
