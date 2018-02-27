@@ -20,12 +20,11 @@ import os, re
 import numpy as np
 import math
 import shutil
-import ConfigParser
 from operator import itemgetter
 np.set_printoptions(suppress=True)
-
-#~ from rdkit import Chem
-#~ from rdkit.Chem import AllChem
+import ConfigParser
+# from rdkit import Chem
+# from rdkit.Chem import AllChem
 
 # Flow-handling
 # In Bohr
@@ -222,7 +221,6 @@ def get_vec(vec1, vec2):
         diff_vec[i] = min(abs(tor_diff), abs(360-tor_diff))/180.0
     return diff_vec
 
-
 def tor_rmsd(p, vec):
     """Calculate the modified p norm.The difference from standard norm is the
     fact that the addends are divided by the length of the vector."""
@@ -253,13 +251,14 @@ def get_cartesian_rms(sdf_string1, sdf_string2, removeHs=False):
     rmsd_kabsh = 0.0
     for v, w in zip(coords1, coords2):
         rmsd_kabsh += sum([(v[i] - w[i])**2.0 for i in range(len(coords1[0]))])
-    #~ print 'Kabsh rmsd  {}'.format(np.sqrt(rmsd_kabsh/len(coords1)))
-    #~ #rmsd_type="internal_coord"
+    # print 'Kabsh rmsd  {}'.format(np.sqrt(rmsd_kabsh/len(coords1)))
+    # #~ #rmsd_type="internal_coord"
+    #
+    # ref = Chem.MolFromMolBlock(sdf_string1, removeHs=True)
+    # probe = Chem.MolFromMolBlock(sdf_string2, removeHs=True)
+    # rms = AllChem.GetBestRMS(ref, probe)
+    # print 'OLD ONE RMS {}\n'.format(rms)
 
-    #~ ref = Chem.MolFromMolBlock(sdf_string1, removeHs=True)
-    #~ probe = Chem.MolFromMolBlock(sdf_string2, removeHs=True)
-    #~ rms = AllChem.GetBestRMS(ref, probe)
-    #~ print 'OLD ONE RMS {}\n'.format(rms)
     return np.sqrt(rmsd_kabsh/len(coords1))
 
 def lowest_cartesian(string1, string2, **linked_strings):
@@ -714,3 +713,12 @@ def mirror_sdf(sdf_string):
             c.append(''.join(sdf_form[i])+'\n')
     mirror_sdf_string = ''.join(c)
     return mirror_sdf_string
+
+def NumberOfGoodStructures(*args):
+    # print flag
+    ValidStructures = 0
+    for arg in args:
+        if arg.is_geometry_valid(flag=1.0):
+            ValidStructures+=1
+    return ValidStructures
+

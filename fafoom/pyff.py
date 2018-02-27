@@ -18,17 +18,17 @@
 '''Wrapper for RDKit force-field routines'''
 from __future__ import division
 import os
-#from rdkit import Chem
-#from rdkit.Chem import AllChem
-#from rdkit.Chem import ChemicalForceFields
+from rdkit import Chem
+from rdkit.Chem import AllChem
+from rdkit.Chem import ChemicalForceFields
 
 kcalmol2eV = 0.0433641
 
 
 class FFObject():
     """Create and handle force-field objects."""
-    def __init__(self, force_field, steps=1000, force_tol=1.0e-4,
-                 energy_tol=1.0e-6):
+    def __init__(self, force_field, steps=3000, force_tol=1.0e-5,
+                 energy_tol=1.0e-8):
         """Initialize the FFObject.
 
         Args(required):

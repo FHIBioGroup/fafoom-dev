@@ -17,8 +17,7 @@
 ''' Collection of diverse run controlling utilites '''
 from __future__ import division
 import glob
-import sys
-import os, shutil
+import os, sys, shutil, time
 import numpy as np
 from utilities import print_output, remover_file, remover_dir, backup
 
@@ -29,7 +28,7 @@ def simple_or_restart():
 
     for_restart = ["backup_population.dat", "backup_mol.dat",
                    "backup_min_energy.dat", "backup_iteration.dat",
-                   "backup_blacklist.dat"]
+                   "backup_blacklist.dat", "backup_new_blacklist.dat"]
     opt = "restart"
     for filename in for_restart:
         if glob.glob(filename):
@@ -40,8 +39,6 @@ def simple_or_restart():
         print_output("Cleaning up the directory")
         for d in glob.glob("structure_*"):
             remover_dir(d)
-        # for d in glob.glob("generation_*_child*"):
-        #     remover_dir(d)
         remover_dir("blacklist")
         for f in ["mol.sdf", "control.in", "geometry.in", "output.txt",
                   "result.out", "kill.dat"]:
@@ -89,21 +86,30 @@ def str_info(struct):
 def relax_info(struct):
     """ Prints the information about the structure to the output file after
     the local optimization."""
-    # print_output(struct)
     for dof in struct.dof:
-        print_output('{}: {}'.format(dof.name, [float('{:.2f}'.format(x)) for x in dof.values]))
-    print_output('\n')
+        print_output('{:<9}: {}'.format(dof.name, [float('{:.2f}'.format(x)) for x in dof.values]))
+    print_output(' ')
+
+def inter_info(struct, list_to_add):
+    """ Prints the information about the structure to the output file after
+    the local optimization."""
+    list_to_add  = []
+    for dof in struct.dof:
+        list_to_add.append('{:<9}: {}'.format(dof.name, [float('{:.2f}'.format(x)) for x in dof.values]))
+    return list_to_add
 
 def check_for_not_converged(dirname):
     """ Check if the not_converged.dat file is present in the directory or in the
     subdirectories. Folder will be deleted but calculation will be continued."""
+    check = False
     if len(glob.glob("*/not_converged.dat")) == 0 and len(glob.glob("not_converged.dat")) == 0:
         pass
     else:
         print("Seems that something didn't converged. Don't worry, no problem.")
         shutil.rmtree(os.path.join(os.getcwd(), dirname))
         os.remove(os.path.join(os.getcwd(), 'not_converged.dat'))
-        return True
+        check = True
+    return check
 
 def check_for_kill():
     """ Check if the kill.dat file is present in the directory or in the
@@ -146,7 +152,6 @@ def detect_energy_function(params):
                          " The code terminates.")
             sys.exit(0)
         return energy_function
-
 
 def optimize(structure, energy_function, params, name=None):
     """Perform local optimization."""
@@ -235,40 +240,6 @@ def find_linked_params(mol, params):
                 params['max_mutations_'+str(dof_name)]
     return linked_params
 
-
-def check_for_convergence(iteration, params, min_energy):
-    """Check the run for convergence"""
-    if iteration >= params['iter_limit_conv']-1:
-        # print_output("Checking for convergence")
-        d = abs(min_energy[-1] - min_energy[-params['iter_limit_conv']+1])
-        if 'energy_wanted' in params:
-            if min_energy[-1] < params['energy_wanted'] or \
-               d < params['energy_diff_conv']:
-                    ResultFafoom()
-                    sys.exit(0)
-                # print_output("Converged")
-                # killfile = open("kill.dat", "w")
-                # killfile.close()
-                # sys.exit(0)
-            # else:
-            #     print_output("Not converged yet")
-        else:
-            if d < params['energy_diff_conv']:
-                    ResultFafoom()
-                    sys.exit(0)
-                # print_output("Converged")
-                # killfile = open("kill.dat", "w")
-                # killfile.close()
-                # sys.exit(0)
-            # else:
-            #     print_output("Not converged yet")
-    if iteration == params['max_iter']:
-        print_output("Max. number of iterations reached. The code terminates")
-        # killfile = open("kill.dat", "w")
-        # killfile.close()
-        sys.exit(0)
-        # else:
-        #     print_output("Next iteration will be perfomed")
 def HeadFafoom():
     print_output('          ------------------------------------------------------------')
     print_output('          Fafoom is free software: you can redistribute it and/or modify')
@@ -296,3 +267,137 @@ def ResultFafoom():
     print_output('          Converged!')
     print_output('          Have a nice day!')
     print_output('          ------------------------------------------------------------')
+
+def TimeSpent(StartTime):
+    return time.time() - StartTime
+
+def AnalysisFafoom(Trials, NotValid, Calculated, Known, Unique, TimeSpent):
+    print_output(' ')
+    print_output('{:<30}{:>15}'.format('Total trials', Trials))
+    print_output('{:<30}{:>15}'.format('Invalid geometries', NotValid))
+    print_output('{:<30}{:>15}'.format('Found in Blacklist', Known))
+    print_output('{:<30}{:>15}'.format('Total structures calculated', Calculated))
+    print_output(' ')
+    print_output('{:<30}{:>15}'.format('Unique structures found', Unique))
+    print_output('{:<30}{:>15.2f} s'.format('Time spent:', TimeSpent))
+    print_output(' ')
+
+def CheckForConvergence(Trials, NotValid, Known, Unique, TimeSpent, Calculations, params, min_energy):
+    """Check the run for convergence"""
+    if len(min_energy) >= params['iter_limit_conv'] :
+        # print_output("Checking for convergence")
+        d = abs(min_energy[-1] - min_energy[-params['iter_limit_conv']])
+        if 'energy_wanted' in params:
+            if min_energy[-1] < params['energy_wanted'] or \
+               d < params['energy_diff_conv']:
+                    ResultFafoom()
+                    sys.exit(0)
+                # print_output("Converged")
+                # killfile = open("kill.dat", "w")
+                # killfile.close()
+                # sys.exit(0)
+            # else:
+            #     print_output("Not converged yet")
+        else:
+            if d < params['energy_diff_conv']:
+                    ResultFafoom()
+                    sys.exit(0)
+                # print_output("Converged")
+                # killfile = open("kill.dat", "w")
+                # killfile.close()
+                # sys.exit(0)
+            # else:
+            #     print_output("Not converged yet")
+    if Calculations == params['max_iter']:
+        print_output("Max. number of calculations reached. The code terminates")
+        AnalysisFafoom(Trials, NotValid, Calculations, Known, Unique, TimeSpent)
+        print('Minimal energy is {}'.format(min_energy[-1]))
+        # killfile = open("kill.dat", "w")
+        # killfile.close()
+        sys.exit(0)
+
+def GeneticOperationsOutput(Unique, Calculated, parent1, parent2, after_crossover, after_mutation):
+    print_output('\n------------------------------------------------------------\n')
+    print_output('Already calculated {} structures'.format(Calculated))
+    print_output('Try to find unique structure {}:\n'.format(Unique))
+    print_output('Parent 1: {}'.format(parent1))
+    relax_info(parent1)
+    print_output('Parent 2: {}'.format(parent2))
+    relax_info(parent2)
+    print_output('Child after crossover:')
+    for item in after_crossover:
+        print_output(item)
+    print_output('\nChild after mutation:')
+    for item in after_mutation:
+        print_output(item)
+    print_output('------------------------------------------------------------\n')
+
+
+# def update_shared_blacklist(shared_blacklist, visited_folders, str3d):
+#     other_GAs = []
+#     selfdirectory = os.getcwd().split('/')[-1]
+#     parent_directory = ('/').join(os.getcwd().split('/')[:-1])
+#     for i in os.listdir(parent_directory):
+#         if 'GA' in i and os.path.isdir(os.path.join(parent_directory, i)) and i != selfdirectory:
+#             for calculated_structure in os.listdir(os.path.join(parent_directory, i)):
+#                 if calculated_structure != 'adds' and os.path.isdir(os.path.join(parent_directory, i, calculated_structure)):
+#                     other_GAs.append(os.path.join(parent_directory, i, calculated_structure))
+#     for str_folder in other_GAs:
+#         if str_folder not in visited_folders and selfdirectory not in str_folder:
+#             if os.path.exists(os.path.join(str_folder, 'geometry_out.sdf')):
+#                 with open(os.path.join(str_folder, 'geometry_out.sdf')) as sdf_out:
+#                     str3d = Structure(mol)
+#                     str3d.index = len(shared_blacklist) + 1000
+#                     str3d.generate_structure()
+#                     out_string = sdf_out.read()
+#                     for dof in str3d.dof:
+#                         dof.update_values(out_string)
+#                     str3d.send_to_blacklist(shared_blacklist)
+#                 with open(os.path.join(str_folder, 'geometry_in.sdf')) as sdf_out:
+#                     str3d = Structure(mol)
+#                     str3d.index = len(shared_blacklist) + 10000
+#                     str3d.generate_structure()
+#                     in_string = sdf_out.read()
+#                     for dof in str3d.dof:
+#                         dof.update_values(in_string)
+#                     str3d.send_to_blacklist(shared_blacklist)
+#                 visited_folders.append(str_folder)
+#     return shared_blacklist, visited_folders
+
+
+def Goodbye():
+    print_output('	    :"":   :"":                            ')
+    print_output('	     | \   / |                             ')
+    print_output('             |  \_/  |                       ')
+    print_output('            /,   ,__  :,-.    ')
+    print_output('          .-|\  /  \    ,._')
+    print_output('        .,  0/  | 0 |   \___:.')
+    print_output('     .-,  _,|    --.:    \# ')
+    print_output('      `--,| |      \      \# ')
+    print_output('            |      | :::   \#                ')
+    print_output('            \     ;|\:::   .\#               ')
+    print_output('            |. . //  \::   ::\#              ')
+    print_output('            \   /`    \      :\# ')
+    print_output('             `"`       \..     \#            ')
+    print_output('                        \::.    \#           ')
+    print_output('                         \::     \#          ')
+    print_output('                          \.    .:\#         ')
+    print_output('                           \    :::\#        ')
+    print_output('                            \    .::\# ')
+    print_output('\n		Have a nice day!                   ')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

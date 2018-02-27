@@ -32,7 +32,7 @@ from operator import itemgetter
 # from rdkit.Chem import rdMolTransforms
 
 import numpy as np
-from connectivity import BuildConnectivityFromCoordsAndMasses
+
 np.set_printoptions(suppress=True)
 
 class DOF:
@@ -323,7 +323,6 @@ class Torsion(DOF):
 
         values = []
         values.append(tor_rmsd(2, get_vec(self.values, other.values)))
-
         if hasattr(other, "initial_values"):
             values.append(tor_rmsd(2, get_vec(self.values,
                                               other.initial_values)))
@@ -600,6 +599,7 @@ class Protomeric(DOF):
 
     def update_values(self, string):
         self.values = measure_protomeric(string, self.positions, Protomeric.number_of_protons, Protomeric.maximum_of_protons)
+
     def apply_on_string(self, string, values_to_set=None):
         """ Delete protons from sdf_string """
         string_without_protons = delete_extra_protons(string, self.positions, self.values)

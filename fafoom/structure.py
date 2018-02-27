@@ -17,7 +17,6 @@
 ''' Handle the molecule and its 3D structures.'''
 from __future__ import division
 from copy import deepcopy
-import os
 from get_parameters import (
     create_dof_object,
     get_atoms_and_bonds,
@@ -28,12 +27,11 @@ from genetic_operations import crossover_single_point, crossover_random_points
 from pyaims import AimsObject
 from pynwchem import NWChemObject
 from pyorca import OrcaObject
+from pyff import FFObject
 from pyforcefield import FFobject
 from deg_of_freedom import Centroid, Protomeric, NumberOfMolecules
-import numpy as np
-from random import choice
-from utilities import *
 from measure import *
+
 
 class MoleculeDescription:
     """Create the molecule."""
@@ -66,19 +64,18 @@ class MoleculeDescription:
                         'rmsd_cutoff_uniq': 0.2,
                         'chiral': False,
                         'optimize_torsion': True,
-                        'optimize_cistrans':False,
+                        'optimize_cistrans': False,
                         'optimize_centroid': False,
                         'optimize_orientation': False,
                         'optimize_protomeric:': False,
-                        'sdf_string_template':'adds/mol.sdf',
-                        'constrained_geometry_file':'adds/geometry.in.constrained',
-                        'right_order_to_assign':['torsion', 'cistrans', 'centroid', 'orientation', 'protomeric'],
-                        'volume':(-10,11, -10, 11, -10, 11),
+                        'sdf_string_template': 'adds/mol.sdf',
+                        'constrained_geometry_file': 'adds/geometry.in.constrained',
+                        'right_order_to_assign': ['torsion', 'cistrans', 'centroid', 'orientation', 'protomeric'],
+                        'volume': (-10, 11, -10, 11, -10, 11),
                         'number_of_protons': 0,
                         'number_of_molecules': 1,
                         'molecules': 'same',
-                        'crossover_method':'random_points'}
-
+                        'crossover_method': 'single_point'}
 
         params = set_default(params, dict_default)
         for key in params:
@@ -93,7 +90,7 @@ class MoleculeDescription:
         for att_name in self.__dict__.keys():
 
             if type(self.__dict__[att_name]) in [str] and \
-               att_name != "template_sdf_string":
+                            att_name != "template_sdf_string":
                 repr_list.append('%s="%s"' %
                                  (att_name, getattr(self, att_name)))
 
@@ -105,8 +102,8 @@ class MoleculeDescription:
                 repr_list.append("%s='%s'" % (
                     att_name, getattr(
                         self, att_name).replace("\n",
-                                                MoleculeDescription.newline,)))
-            # else:
+                                                MoleculeDescription.newline, )))
+                # else:
                 # print_output("Unknown type of attribute "+str(att_name))
         return "%s(%s)" % (self.__class__.__name__, ', '.join(repr_list))
 
@@ -125,9 +122,57 @@ class MoleculeDescription:
                 return False
         return True
 
+    def AnalyzeConstrainedGeometry(self):
+        NumOfAtoms = 0
+        Periodic = False
+        Path = os.path.join(os.getcwd(), self.constrained_geometry_file)
+        with open(Path) as constrained:
+            lines = constrained.readlines()
+            for line in lines:
+                if 'lattice_vector' in line:
+                    Periodic = True
+                if 'atom' in line:
+                    NumOfAtoms += 1
+        return NumOfAtoms, Periodic, Path
+
+    def UpdateSharedBlacklist(self, blacklist=[], folders=[]):
+        other_GAs = []
+        shared_blacklist = blacklist
+        visited_folders = folders
+        selfdirectory = os.getcwd().split('/')[-1]
+        parent_directory = ('/').join(os.getcwd().split('/')[:-1])
+        for i in os.listdir(parent_directory):
+            if 'GA' in i and os.path.isdir(os.path.join(parent_directory, i)) and i != selfdirectory:
+                for calculated_structure in os.listdir(os.path.join(parent_directory, i)):
+                    if calculated_structure != 'adds' and os.path.isdir(
+                            os.path.join(parent_directory, i, calculated_structure)):
+                        other_GAs.append(os.path.join(parent_directory, i, calculated_structure))
+        for str_folder in other_GAs:
+            print(str_folder)
+            if str_folder not in visited_folders and selfdirectory not in str_folder:
+                if os.path.exists(os.path.join(str_folder, 'geometry_out.sdf')):
+                    with open(os.path.join(str_folder, 'geometry_out.sdf')) as sdf_out:
+                        str3d = Structure(self)
+                        str3d.index = len(shared_blacklist) + 1000
+                        str3d.generate_structure()
+                        out_string = sdf_out.read()
+                        for dof in str3d.dof:
+                            dof.update_values(out_string)
+                        str3d.send_to_blacklist(shared_blacklist)
+                    with open(os.path.join(str_folder, 'geometry_in.sdf')) as sdf_out:
+                        str3d = Structure(self)
+                        str3d.index = len(shared_blacklist) + 10000
+                        str3d.generate_structure()
+                        in_string = sdf_out.read()
+                        for dof in str3d.dof:
+                            dof.update_values(in_string)
+                        str3d.send_to_blacklist(shared_blacklist)
+                    visited_folders.append(str_folder)
+        return shared_blacklist, visited_folders
+
     def create_template_sdf(self):
         """Assign new attribute (template_sdf_string) to the object."""
-        self.template_sdf_string = template_sdf(self.sdf_string_template)
+        self.template_sdf_string = template_sdf(self.sdf_string_template)  # Need to revise, looks very confusing.
 
     def get_parameters(self):
         with open(os.path.join(os.getcwd(), self.sdf_string_template), 'r') as sdf_file:
@@ -138,7 +183,6 @@ class MoleculeDescription:
         self.atoms, self.bonds = get_atoms_and_bonds(self.sdf_string_template)
         self_copy = deepcopy(self)
         dof_names = []
-        limits_names = []
         for attr, value in self_copy.__dict__.iteritems():
             if str(attr).split('_')[0] == "optimize" and value:
                 type_of_dof = str(attr).split('_')[1]
@@ -151,7 +195,7 @@ class MoleculeDescription:
                     setattr(self, type_of_dof, pos)
                     dof_names.append(type_of_dof)
                 else:
-                    print_output("The degree to optimize: "+str(type_of_dof) +
+                    print_output("The degree to optimize: " + str(type_of_dof) +
                                  " hasn't been found.")
 
         geom_file = os.path.join(os.getcwd(), self.constrained_geometry_file)
@@ -166,7 +210,7 @@ class MoleculeDescription:
                 dof_names.remove('centroid')
             if 'orientation' in dof_names:
                 dof_names.remove('orientation')
-            open(geom_file,'w').close()
+            open(geom_file, 'w').close()
 
         updated_order = []
         for i in self.right_order_to_assign:
@@ -174,26 +218,30 @@ class MoleculeDescription:
                 updated_order.append(i)
         setattr(self, "dof_names", updated_order)
 
-        Centroid.range_x = range(self.volume[0], self.volume[1], 1) #Limitation for Centroid
-        Centroid.range_y = range(self.volume[2], self.volume[3], 1) #Limitation for Centroid
-        Centroid.range_z = range(self.volume[4], self.volume[5], 1) #Limitation for Centroid
+        Centroid.range_x = range(self.volume[0], self.volume[1], 1)  # Limitation for Centroid
+        Centroid.range_y = range(self.volume[2], self.volume[3], 1)  # Limitation for Centroid
+        Centroid.range_z = range(self.volume[4], self.volume[5], 1)  # Limitation for Centroid
         Centroid.values_options = [Centroid.range_x, Centroid.range_y, Centroid.range_z]
 
-# Routines for Protomeric values:
+        # Routines for Protomeric values:
         if 'protomeric' in dof_names:
             for i in self.list_of_protomeric:
-                Protomeric.maximum_of_protons.append(i[1])
+                Protomeric.maximum_of_protons.append(i[-1])
             max_num_of_protons = sum(Protomeric.maximum_of_protons)
             Protomeric.number_of_protons = self.number_of_protons
             if max_num_of_protons - self.number_of_protons > len(self.list_of_protomeric):
                 num_of_zeros = len(self.list_of_protomeric)
             else:
                 num_of_zeros = max_num_of_protons - self.number_of_protons
-            Protomeric.values_options = np.lib.pad(np.ones(len(self.list_of_protomeric) - (max_num_of_protons - self.number_of_protons)),
-                                        (0, num_of_zeros),
-                                        'constant', constant_values=(0))
-#Routines for number of molecules:
+            Protomeric.values_options = np.lib.pad(
+                np.ones(len(self.list_of_protomeric) - (max_num_of_protons - self.number_of_protons)),
+                (0, num_of_zeros),
+                'constant', constant_values=(0))
+        # Routines for number of molecules:
         NumberOfMolecules.numofmol = self.number_of_molecules
+
+
+
 
 class Structure:
     """Create 3D structures."""
@@ -211,7 +259,6 @@ class Structure:
             Structure.index += 1
             self.index = Structure.index
             dof = []
-            limit = []
             for i in self.mol_info.dof_names:
                 new_obj = create_dof_object(str(i), getattr(self.mol_info, i))
                 dof.append(new_obj)
@@ -234,9 +281,9 @@ class Structure:
         for key in kwargs.keys():
             if key != "index":
                 if hasattr(self, str(key)):
-                    print_output("Overwriting the value for keyword "+str(key))
-                    print_output("Old value: "+str(getattr(self, str(key))) +
-                                 ", new value: "+str(kwargs[key]))
+                    print_output("Overwriting the value for keyword " + str(key))
+                    print_output("Old value: " + str(getattr(self, str(key))) +
+                                 ", new value: " + str(kwargs[key]))
                 if key in ["sdf_string", "initial_sdf_string"]:
                     setattr(self, str(key),
                             kwargs[key].replace(Structure.newline, "\n"))
@@ -266,23 +313,23 @@ class Structure:
             else:
                 if type(self.__dict__[att_name]) in [str]:
                     repr_list.append('%s=%s' % (
-                                     att_name, repr(getattr(self, att_name))))
+                        att_name, repr(getattr(self, att_name))))
                 elif type(self.__dict__[att_name]) in [int, float, bool]:
                     repr_list.append('%s=%s' % (
-                                     att_name, repr(getattr(self, att_name))))
+                        att_name, repr(getattr(self, att_name))))
                 elif att_name == 'dof':
                     for dof in self.dof:
                         repr_list.append('%s_%s=%s' % (
-                                         dof.type, "values", repr(dof.values)))
+                            dof.type, "values", repr(dof.values)))
                         try:
                             repr_list.append('%s_%s=%s' % (
-                                             dof.type, "initial_values",
-                                             repr(dof.initial_values)))
+                                dof.type, "initial_values",
+                                repr(dof.initial_values)))
                         except:
                             pass
                 elif att_name == 'mol_info':
                     pass
-                # else:
+                    # else:
                     # print_output("Unknown type of attribute "+str(att_name))
 
         return "%s(mol, %s)" % (self.__class__.__name__, ', '.join(repr_list))
@@ -304,110 +351,19 @@ class Structure:
             if dof.type in values.keys():
                 new_string = dof.apply_on_string(new_string, values[dof.type])
             else:
-                if hasattr(self.mol_info, "weights_"+str(dof.type)):
-                    weights = getattr(self.mol_info, "weights_"+str(dof.type))
+                if hasattr(self.mol_info, "weights_" + str(dof.type)):
+                    weights = getattr(self.mol_info, "weights_" + str(dof.type))
                     dof.get_weighted_values(weights)
                 else:
                     dof.get_random_values()
-                    # print 'Initial random values for {} are {}'.format(dof.name ,dof.values)
-                new_string = dof.apply_on_string(new_string)
-                # print new_string
-        self.sdf_string = new_string
-        for dof in self.dof:
-            dof.update_values(self.sdf_string)
-            # print 'Updated values for {} are {}'.format(dof.name, dof.values)
-############
-    def check_position(self, volume):
-        pos = centroid_measure(self.sdf_string)
-        if (volume[0] <= pos[0] <= volume[1]) and (volume[2] <= pos[1] <= volume[3]) and (volume[4] <= pos[2] <= volume[5]):
-            return True
-        else:
-            return False
-
-    def adjust_position(self):
-        bohrtoang=0.52917721
-        mol = [float(i) for i in np.array(sdf2xyz(self.sdf_string))[:,3]]
-        surr = [float(i) for i in aims2xyz(self.mol_info.constrained_geometry_file)[:,3]]
-        z_min = min(mol)
-        z_max = max(surr)
-        atom_min =  sdf2xyz(self.sdf_string)[mol.index(z_min)][0]
-        atom_max =  aims2xyz(self.mol_info.constrained_geometry_file)[surr.index(z_max)][0]
-        dist = (VDW_radii[atom_min])*bohrtoang #+ VDW_radii[atom_max]
-        values_old = centroid_measure(self.sdf_string)
-        values_new = np.array([(self.mol_info.volume[0] + self.mol_info.volume[1])/2, (self.mol_info.volume[2]+ self.mol_info.volume[3])/2, values_old[2] - (z_min - z_max) + dist])
-        new_string = centroid_set(self.sdf_string, values_new)
-        self.sdf_string = new_string
-        for dof in self.dof:
-            dof.update_values(self.sdf_string)
-
-    def put_to_origin(self):
-        sdf_string = self.sdf_string
-        coords_and_masses = coords_and_masses_from_sdf(sdf_string)
-        new_coords = align_to_axes(coords_and_masses, 0, 1)
-        COM = get_centre_of_mass_from_sdf(sdf_string)
-        coordinates_at_origin = new_coords[:,:3] - COM
-        updated_sdf = update_coords_sdf(sdf_string, coordinates_at_origin)
-        self.sdf_string = updated_sdf
-
-    def adjust_position_centroid(self, constrained_geom_file):
-        def cart2sph(x, y, z):
-            hxy = np.hypot(x, y)
-            r = np.hypot(hxy, z)
-            az = np.arctan2(y, x)
-            el = np.arctan2(hxy, z)
-            return r, az, el
-
-        def sph2cart(r, az, el):
-            x = r * np.sin(el) * np.cos(az)
-            y = r * np.sin(el) * np.sin(az)
-            z = r * np.cos(el)
-            return x, y, z
-        constrained = aims2xyz_vdw(constrained_geom_file)[0][0]*1.5
-        temp = sdf2xyz_list(self.sdf_string)
-        mol = [np.hypot(np.hypot(float(i[0]), float(i[1])), float(i[2])) for i in np.array(sdf2xyz(self.sdf_string))[:,1:]]
-        bohrtoang=0.52917721
-
-        com = get_centre_of_mass_from_sdf(self.sdf_string)
-        adjustment = cart2sph(com[0], com[1], com[2])[0]/min(mol)*(constrained + temp[mol.index(min(mol))][0])
-
-        values_old = centroid_measure(self.sdf_string)
-        values_new = np.array(sph2cart(adjustment, cart2sph(com[0], com[1], com[2])[1], cart2sph(com[0], com[1], com[2])[2]))
-        new_string = centroid_set(self.sdf_string, values_new)
-        self.sdf_string = new_string
-        for dof in self.dof:
-            if dof.name == 'Centroid':
-                dof.update_values(self.sdf_string)
-############
-    def adjust_position_after_crossover(self):
-        bohrtoang=0.52917721
-        mol = [float(i) for i in np.array(sdf2xyz(self.sdf_string))[:,3]]
-        surr = [float(i) for i in aims2xyz(self.mol_info.constrained_geometry_file)[:,3]]
-        z_min = min(mol)
-        z_max = max(surr)
-        atom_min =  sdf2xyz(self.sdf_string)[mol.index(z_min)][0]
-        atom_max =  aims2xyz(self.mol_info.constrained_geometry_file)[surr.index(z_max)][0]
-        dist = (VDW_radii[atom_min])*bohrtoang #+ VDW_radii[atom_max]
-        values_old = centroid_measure(self.sdf_string)
-        values_new = np.array([values_old[0], values_old[1], values_old[2] + (z_max - z_min) + dist])
-        new_string = centroid_set(self.sdf_string, values_new)
-        self.sdf_string = new_string
-        for dof in self.dof:
-            dof.update_values(self.sdf_string)
-
-    def adjust_centroid(self):
-        new_string = deepcopy(self.mol_info.template_sdf_string)
-        for dof in self.dof:
-            if dof.type == 'centroid':
-                dof.get_random_values()
                 new_string = dof.apply_on_string(new_string)
         self.sdf_string = new_string
         for dof in self.dof:
-            if dof.type == 'centroid':
-                dof.update_values(self.sdf_string)
+            dof.update_values(self.sdf_string)
 
     def is_geometry_valid(self, flag):
         """Return True if the geometry is valid."""
-        check = check_geo_sdf(self.sdf_string, flag = flag)
+        check = check_geo_sdf(self.sdf_string, flag=flag)
         return check
 
     def is_geometry_valid_after_crossover(self):
@@ -432,10 +388,10 @@ class Structure:
             raise ValueError("Unknown type of rmsd.")
 
         obj1, obj2 = self, other
-        if hasattr(self, "initial_sdf_string"):
-            obj1, obj2 = obj2, obj1
-        if hasattr(obj1, "initial_sdf_string"):
-            raise Exception("Both structures are already relaxed.")
+        # if hasattr(self, "initial_sdf_string"):
+            # obj1, obj2 = obj2, obj1
+        # if hasattr(obj1, "initial_sdf_string"):
+        #     raise Exception("Both structures are already relaxed.")
 
         if obj1.mol_info.rmsd_type == 'cartesian':
             linked_strings = {}
@@ -462,7 +418,6 @@ class Structure:
         if obj1.mol_info.rmsd_type == 'internal_coord':
             all_bool = []
             for dof1, dof2 in zip(obj1.dof, obj2.dof):
-
                 all_bool.append(dof1.is_equal(dof2,
                                               obj1.mol_info.rmsd_cutoff_uniq,
                                               obj1.mol_info.chiral))
@@ -495,12 +450,34 @@ class Structure:
         Raise:
             NameError: if the array not defined
         """
+
         def produce_header(sdf_string):
             all_lines = sdf_string.splitlines()
             all_lines[0] = ' FAFOOM powered'
             all_lines[1] = ' Index = {}'.format(self.index)
             all_lines[2] = ' Energy = {}'.format(float(self))
             return '\n'.join(all_lines)
+
+        updated_string = produce_header(self.sdf_string)
+        structure_for_blacklist = '{}\n$$$$\n'.format(updated_string)
+        array.append(structure_for_blacklist)
+
+    def send_to_shared_blacklist(self, array):
+        """Append the structure to dedicated array.
+
+        Args:
+           array: the array to append to
+        Raise:
+            NameError: if the array not defined
+        """
+
+        def produce_header(sdf_string):
+            all_lines = sdf_string.splitlines()
+            all_lines[0] = ' FAFOOM powered'
+            all_lines[1] = ' Index = {}'.format(self.index)
+            all_lines[2] = ' Energy = {}'.format(0)
+            return '\n'.join(all_lines)
+
         updated_string = produce_header(self.sdf_string)
         structure_for_blacklist = '{}\n$$$$\n'.format(updated_string)
         array.append(structure_for_blacklist)
@@ -546,14 +523,14 @@ class Structure:
         for dof in self.dof:
             setattr(dof, "initial_values", dof.values)
             dof.update_values(self.sdf_string)
-        #~ if success:
+            # ~ if success:
 
-            #~ self.energy = aims_object.get_energy()
-            #~ self.initial_sdf_string = self.sdf_string
-            #~ self.sdf_string = aims2sdf(aims_object.get_aims_string_opt(),
-                                       #~ self.mol_info.template_sdf_string)
-        #~ else:
-            #~ print_output("The FHI-aims relaxation failed")
+            # ~ self.energy = aims_object.get_energy()
+            # ~ self.initial_sdf_string = self.sdf_string
+            # ~ self.sdf_string = aims2sdf(aims_object.get_aims_string_opt(),
+            # ~ self.mol_info.template_sdf_string)
+            # ~ else:
+            # ~ print_output("The FHI-aims relaxation failed")
 
     def perform_FF(self, sourcedir, execution_string, dirname):
         FF_object = FFobject(sourcedir)
@@ -562,8 +539,11 @@ class Structure:
         FF_object.run_FF(execution_string)
         self.energy = FF_object.get_energy()
         self.initial_sdf_string = self.sdf_string
+        with open(os.path.join(os.getcwd(), dirname, 'geometry_in.sdf'), 'w') as input_sdf:
+            input_sdf.write(self.initial_sdf_string)
         self.sdf_string = xyz2sdf(FF_object.get_FF_string_opt(), self.mol_info.template_sdf_string)
-
+        with open(os.path.join(os.getcwd(), dirname, 'geometry_out.sdf'), 'w') as resulted_sdf:
+            resulted_sdf.write(self.sdf_string)
         for dof in self.dof:
             setattr(dof, "initial_values", dof.values)
             dof.update_values(self.sdf_string)
@@ -620,70 +600,69 @@ class Structure:
         child1 = Structure(self.mol_info)
         child2 = Structure(self.mol_info)
         for dof_par1, dof_par2, dof_child1, dof_child2 in zip(self.dof, other.dof,
-                                                                child1.dof, child2.dof):
+                                                              child1.dof, child2.dof):
             """ Crossing over for Centre of mass and for Orientation of the
             main axis of inertia is performed as swapping of the whole vectors
             without dividing them into parts."""
             if dof_par1.type == dof_par2.type:
                 if dof_par1.type == 'orientation' or dof_par1.type == 'centroid' or dof_par1.type == 'protomeric':
-                    a,b = getattr(dof_par1, "values"), getattr(dof_par2, "values")
+                    a, b = getattr(dof_par1, "values"), getattr(dof_par2, "values")
                     setattr(dof_child1, "values", b)
                     setattr(dof_child2, "values", a)
                 else:
                     if method == 'random_points':
                         a, b = crossover_random_points(getattr(dof_par1, "values"),
-                                         getattr(dof_par2, "values"))
+                                                       getattr(dof_par2, "values"))
                         setattr(dof_child1, "values", a)
                         setattr(dof_child2, "values", b)
                     if method == 'single_point':
                         a, b = crossover_single_point(getattr(dof_par1, "values"),
-                                         getattr(dof_par2, "values"))
+                                                      getattr(dof_par2, "values"))
                         setattr(dof_child1, "values", a)
                         setattr(dof_child2, "values", b)
         for child in child1, child2:
             new_string = deepcopy(child.mol_info.template_sdf_string)
             for dof in child.dof:
-                new_string = dof.apply_on_string(new_string, values_to_set = dof.values)
+                new_string = dof.apply_on_string(new_string, values_to_set=dof.values)
             child.sdf_string = new_string
             for dof in child.dof:
                 dof.update_values(child.sdf_string)
-        return child1, child2
-        # return child
+        return child1
 
     def mutate(self, **kwargs):
         def call_mut(dof, max_mutations=None, weights=None):
             if max_mutations is not None:
-                if hasattr(self.mol_info, "weights_"+str(dof.type)):
-                    weights = getattr(self.mol_info, "weights_"+str(dof.type))
+                if hasattr(self.mol_info, "weights_" + str(dof.type)):
+                    weights = getattr(self.mol_info, "weights_" + str(dof.type))
                     dof.mutate_values(max_mutations, weights)
                 else:
                     dof.mutate_values(max_mutations=max_mutations)
             else:
-                if hasattr(self.mol_info, "weights_"+str(dof.type)):
-                    weights = getattr(self.mol_info, "weights_"+str(dof.type))
+                if hasattr(self.mol_info, "weights_" + str(dof.type)):
+                    weights = getattr(self.mol_info, "weights_" + str(dof.type))
                     dof.mutate_values(weights=weights)
                 else:
                     dof.mutate_values()
-            # print_output('{} after mutation: {}'.format(dof.name, [float('{:.2f}'.format(x)) for x in dof.values]))
+                    # print_output('{} after mutation: {}'.format(dof.name, [float('{:.2f}'.format(x)) for x in dof.values]))
 
         for dof in self.dof:
-            if 'prob_for_mut_'+str(dof.type) in kwargs:
-                if np.random.rand() < kwargs['prob_for_mut_'+str(dof.type)]:
-                    if 'max_mutations_'+str(dof.type) in kwargs:
-                        call_mut(dof, kwargs['max_mutations_'+str(dof.type)])
+            if 'prob_for_mut_' + str(dof.type) in kwargs:
+                if np.random.rand() < kwargs['prob_for_mut_' + str(dof.type)]:
+                    if 'max_mutations_' + str(dof.type) in kwargs:
+                        call_mut(dof, kwargs['max_mutations_' + str(dof.type)])
                     else:
                         call_mut(dof)
-                # else:
-                    # print_output('Mutation for {} was not performed.'.format(dof.type))
+                        # else:
+                        # print_output('Mutation for {} was not performed.'.format(dof.type))
             else:
-                if 'max_mutations_'+str(dof.type) in kwargs:
-                    call_mut(dof, kwargs['max_mutations_'+str(dof.type)])
+                if 'max_mutations_' + str(dof.type) in kwargs:
+                    call_mut(dof, kwargs['max_mutations_' + str(dof.type)])
                 else:
                     call_mut(dof)
         template = Structure(self.mol_info)
         # new_string = deepcopy(self.sdf_string)
         # print new_string
-        new_string = template.mol_info.template_sdf_string
+        new_string = template.mol_info.template_sdf_string      # Maybe not necessary
         for dof in self.dof:
             new_string = dof.apply_on_string(new_string, dof.values)
         self.sdf_string = new_string
@@ -693,21 +672,22 @@ class Structure:
     def hard_mutate(self, **kwargs):
         def call_mut(dof, max_mutations=None, weights=None):
             if max_mutations is not None:
-                if hasattr(self.mol_info, "weights_"+str(dof.type)):
-                    weights = getattr(self.mol_info, "weights_"+str(dof.type))
+                if hasattr(self.mol_info, "weights_" + str(dof.type)):
+                    weights = getattr(self.mol_info, "weights_" + str(dof.type))
                     dof.mutate_values(max_mutations, weights)
                 else:
                     dof.mutate_values(max_mutations=max_mutations)
             else:
-                if hasattr(self.mol_info, "weights_"+str(dof.type)):
-                    weights = getattr(self.mol_info, "weights_"+str(dof.type))
+                if hasattr(self.mol_info, "weights_" + str(dof.type)):
+                    weights = getattr(self.mol_info, "weights_" + str(dof.type))
                     dof.mutate_values(weights=weights)
                 else:
                     dof.mutate_values()
-            # print_output('{} after mutation: {}'.format(dof.name, [float('{:.2f}'.format(x)) for x in dof.values]))
+                    # print_output('{} after mutation: {}'.format(dof.name, [float('{:.2f}'.format(x)) for x in dof.values]))
+
         for dof in self.dof:
-            if 'max_mutations_'+str(dof.type) in kwargs:
-                call_mut(dof, kwargs['max_mutations_'+str(dof.type)])
+            if 'max_mutations_' + str(dof.type) in kwargs:
+                call_mut(dof, kwargs['max_mutations_' + str(dof.type)])
             else:
                 call_mut(dof)
         template = Structure(self.mol_info)
@@ -719,3 +699,101 @@ class Structure:
         self.sdf_string = new_string
         for dof in self.dof:
             dof.update_values(self.sdf_string)
+
+
+    def PutToOrigin(self):
+        sdf_string = self.sdf_string
+        coords_and_masses = coords_and_masses_from_sdf(sdf_string)
+        new_coords = align_to_axes(coords_and_masses, 0, 1)
+        COM = get_centre_of_mass_from_sdf(sdf_string)
+        coordinates_at_origin = new_coords[:, :3] - COM
+        updated_sdf = update_coords_sdf(sdf_string, coordinates_at_origin)
+        self.sdf_string = updated_sdf
+        for dof in self.dof:
+            dof.update_values(self.sdf_string)
+
+    def check_position(self, volume):
+        pos = centroid_measure(self.sdf_string)
+        if (volume[0] <= pos[0] <= volume[1]) and (volume[2] <= pos[1] <= volume[3]) and (
+                volume[4] <= pos[2] <= volume[5]):
+            return True
+        else:
+            return False
+
+    def adjust_position(self):
+        mol = [float(i) for i in np.array(sdf2xyz(self.sdf_string))[:, 3]]
+        surr = [float(i) for i in aims2xyz(self.mol_info.constrained_geometry_file)[:, 3]]
+        z_min = min(mol)
+        z_max = max(surr)
+        atom_min = sdf2xyz(self.sdf_string)[mol.index(z_min)][0]
+        atom_max = aims2xyz(self.mol_info.constrained_geometry_file)[surr.index(z_max)][0]
+        dist = (VDW_radii[atom_min] + VDW_radii[atom_max]) * 0.4  # + VDW_radii[atom_max]
+        values_old = centroid_measure(self.sdf_string)
+        values_new = np.array([(self.mol_info.volume[0] + self.mol_info.volume[1]) / 2,
+                               (self.mol_info.volume[2] + self.mol_info.volume[3]) / 2,
+                               values_old[2] - (z_min - z_max) + dist])
+        new_string = centroid_set(self.sdf_string, values_new)
+        self.sdf_string = new_string
+        for dof in self.dof:
+            dof.update_values(self.sdf_string)
+
+    def AdjustPositionIon(self):
+        def cart2sph(x, y, z):      # Cartesian to Spherical coordinates
+            hxy = np.hypot(x, y)
+            r = np.hypot(hxy, z)
+            az = np.arctan2(y, x)
+            el = np.arctan2(hxy, z)
+            return r, az, el
+
+        def sph2cart(r, az, el):    # Spherical to Cartesian coordinates
+            x = r * np.sin(el) * np.cos(az)
+            y = r * np.sin(el) * np.sin(az)
+            z = r * np.cos(el)
+            return x, y, z
+        constrained_geom_file = self.mol_info.constrained_geometry_file
+        constrained = aims2xyz_vdw(constrained_geom_file)[0][0] * 1.5
+        temp = sdf2xyz_list(self.sdf_string)
+        mol = [np.hypot(np.hypot(float(i[0]), float(i[1])), float(i[2])) for i in
+               np.array(sdf2xyz(self.sdf_string))[:, 1:]]
+        com = get_centre_of_mass_from_sdf(self.sdf_string)
+        adjustment = cart2sph(com[0], com[1], com[2])[0] / min(mol) * (constrained + temp[mol.index(min(mol))][0])
+        values_new = np.array(sph2cart(adjustment,
+                                       cart2sph(com[0], com[1], com[2])[1],
+                                       cart2sph(com[0], com[1], com[2])[2]))
+        new_string = centroid_set(self.sdf_string, values_new)
+        self.sdf_string = new_string
+        for dof in self.dof:
+            if dof.name == 'Centroid':
+                dof.update_values(self.sdf_string)
+
+    def AdjustXY(self, lat_vectors):
+        x = lat_vectors[0][0]*0.5
+        y = lat_vectors[1][1]*0.5
+        com = get_centre_of_mass_from_sdf(self.sdf_string)
+        values_new = np.array([x, y, com[2]])
+        new_string = centroid_set(self.sdf_string, values_new)
+        self.sdf_string = new_string
+        for dof in self.dof:
+            if dof.name == 'Centroid':
+                dof.update_values(self.sdf_string)
+
+    def PrepareForCalculation(self, NumOfAtoms_sur, Periodic_sur, Path_sur):
+        def ExtractLatticeVectors(Path_sur):
+            vectors = []
+            with open(Path_sur) as constrained:
+                lines = constrained.readlines()
+                for line in lines:
+                    if 'lattice_vector' in line:
+                        vectors.append([float(x) for x in line.split()[1:]])
+            return vectors
+        if NumOfAtoms_sur == 0:         # If the geometry.in.constrained file is empty:
+            self.PutToOrigin()          # put the molecule in the origin for convinence.
+        elif NumOfAtoms_sur >= 1 and not Periodic_sur:       # If the geometry.in.constrained has only one atom:
+            if not check_for_clashes(self.sdf_string, Path_sur):
+                self.adjust_position()
+            else:
+                self.AdjustPositionIon()    # put the molecule at the appropriate distance.
+        elif NumOfAtoms_sur >= 1 and Periodic_sur:
+            self.adjust_position()
+            self.AdjustXY(ExtractLatticeVectors(Path_sur))
+

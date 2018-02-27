@@ -8,7 +8,7 @@ import numpy as np
 
 from utilities import sdf2xyz
 #import matplotlib.pyplot as plt
-
+kjtoev = 0.01
 def natural_sort(l):
     convert = lambda text: int(text) if text.isdigit() else text.lower()
     alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
@@ -99,12 +99,19 @@ class FFobject():
         os.mkdir(os.path.join(dirname))
         make_constrains('all.pdb')
         shutil.copy('all.pdb', os.path.join(dirname, 'all.pdb'))
-        shutil.copy('all.psf', os.path.join(dirname, 'all.psf'))
+        shutil.copy(os.path.join(self.sourcedir, 'all.psf'), os.path.join(dirname, 'all.psf'))
         shutil.copy(os.path.join(self.sourcedir, 'Configure.conf'), os.path.join(dirname,'Configure.conf'))
         shutil.copy(os.path.join(self.sourcedir, 'par_all22_prot_metals.inp'),os.path.join(dirname, 'par_all22_prot_metals.inp'))
+        shutil.copy(os.path.join(self.sourcedir, 'par_all36_prot.prm'),
+                    os.path.join(dirname, 'par_all36_prot.prm'))
         # shutil.copy(os.path.join(self.sourcedir, 'par_all22_prot.prm'),os.path.join(dirname, 'par_all22_prot.prm'))
 
     def run_FF(self, execution_sctring):
+        extra_files = ['Configure.conf', 'mol.pdb', 'prepare_psf.run', 'result.xsc', 'top_all22_prot_metals.inp',
+                       'all.psf', 'FFTW_NAMD_2.12_Linux-x86_64-multicore.txt', 'par_all22_prot_metals.inp', 'psfgen',
+                       'result.dcd', 'result.vel', 'surrounding.pdb', 'par_all36_prot.prm', 'result.coor', 'result.out',
+                       'all.pdb','test.xyz']
+
         """ Execute FF local optimization """
         path_to_run = os.path.join(os.getcwd(), self.dirname)
         os.system('cd {} && {}'.format(path_to_run, execution_sctring))
@@ -115,7 +122,10 @@ class FFobject():
                 energy_found = re.match(r'(ENERGY:\s+(\d+)\s+(.?\d+\.\d+)\s+(.?\d+\.\d+)\s+(.?\d+\.\d+)\s+(.?\d+\.\d+)\s+(.?\d+\.\d+)\s+(.?\d+\.\d+)\s+(.?\d+\.\d+)\s+(.?\d+\.\d+)\s+(.?\d+\.\d+)\s+(.?\d+\.\d+)\s+(.?\d+\.\d+)\s+(.?\d+\.\d+)\s+(.?\d+\.\d+)\s+(.?\d+\.\d+)\s+(.?\d+\.\d+)\s+(.?\d+\.\d+)\s+(.?\d+\.\d+)\s+(.?\d+\.\d+)\s+(.?\d+\.\d+))', line)
                 if energy_found:
                     energies.append(energy_found.group(12))
-            self.energy = float(min(energies))
+            self.energy = float(energies[-1])*kjtoev
+            with open(os.path.join(path_to_run, 'energy.txt'), 'w') as final_energy:
+                final_energy.write('{} eV\n'.format(energies[0]))
+                final_energy.write('{} eV'.format(energies[-1]))
         # os.system('cd {} && babel -ipdb {} -oxyz {}'.format(path_to_run, 'result.coor', 'result.xyz'))
         old_dict = {}
         new_dict = {}
@@ -136,6 +146,9 @@ class FFobject():
         produce_xyz(path_to_run, new_dict_sorted)
         with open(os.path.join(path_to_run, 'test.xyz'), 'r') as output:
             self.FF_string_opt = output.read()
+        for z in extra_files:
+            if os.path.exists(os.path.join(path_to_run, z)):
+                os.remove('{}'.format(os.path.join(path_to_run, z)))
 
     def get_energy(self):
         return self.energy
@@ -148,7 +161,7 @@ class FFobject():
 
     def analysis(self):
         analysis = {}
-        path = os.path.join(os.getcwd() ,'valid_for_FF')
+        path = os.path.join(os.getcwd(),'valid_for_FF')
         fig, axs = plt.subplots(facecolor='w', edgecolor='k')
         fig.suptitle('Test', fontsize=16)
         for i in natural_sort(os.listdir(path)):

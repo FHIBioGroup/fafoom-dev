@@ -103,7 +103,8 @@ def produce_coords_and_masses(coords, masses):
 
 def quaternion_measure(sdf_string, atom_1_indx, atom_2_indx):
     coords_and_masses = coords_and_masses_from_sdf(sdf_string)
-    orient_vec = unit_vector(coords_and_masses[atom_2_indx][:3] - coords_and_masses[atom_1_indx][:3])
+    orient_vec = unit_vector(coords_and_masses[atom_2_indx][:3] -
+                                      coords_and_masses[atom_1_indx][:3])
     origin = np.array([0, 0, 0])
     x_axis = np.array([1, 0, 0])
     y_axis = np.array([0, 1, 0])
@@ -830,7 +831,7 @@ def measure_protomeric(sdf_string, positions, number_of_protons, maximum_of_prot
             # print 'Protomeric State is 1'
             return 1
         else:
-            return -1
+            return -1 #Not sure what is going on in this case, but obviuously geometry is not valid.
             # print 'Something wrong with protomeric state!!!'
     coords, atomtypes = sdf2coords_and_atomtypes(sdf_string)
     graph = construct_graph(sdf_string)
