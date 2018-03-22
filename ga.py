@@ -56,7 +56,7 @@ if opt == "simple":
     print_output('Atoms: {}, Bonds: {}'.format(mol.atoms, mol.bonds))
     print_output('\n___Initialization___\n')
     # Generate sensible and unique 3d structures.
-    NumOfAtoms_sur, Periodic_sur, Path_sur = mol.AnalyzeConstrainedGeometry()   # For Surrounding file
+    NumOfAtoms_sur, Periodic_sur, Path_sur = mol.analyze_constrained_geometry()   # For Surrounding file
     flag = 1.0
     generation_Trials = 0
     shared_blacklist = []
@@ -82,7 +82,7 @@ if opt == "simple":
             if str3d not in initial_blacklist:
                 if str3d not in blacklist:
                     str3d.send_to_blacklist(initial_blacklist)
-                    str3d.PrepareForCalculation(NumOfAtoms_sur, Periodic_sur, Path_sur)
+                    str3d.prepare_for_calculationPrepareForCalculation(NumOfAtoms_sur, Periodic_sur, Path_sur)
                     name = '{:04d}_structure'.format(Calculated+1)
                     """ Perform the local optimization """
                     Calculated+=1
@@ -158,7 +158,7 @@ if opt == "restart":
     # Assign the permanent attributes to the molecule.
     mol.get_parameters()
     mol.create_template_sdf()
-    NumOfAtoms_sur, Periodic_sur, Path_sur = mol.AnalyzeConstrainedGeometry()
+    NumOfAtoms_sur, Periodic_sur, Path_sur = mol.analyze_constrained_geometry()
     str3d = Structure(mol)
     linked_params = run_util.find_linked_params(mol, params)
     # shared_blacklist, visited_folders = mol.UpdateSharedBlacklist(blacklist=[], folders=[])
@@ -233,7 +233,7 @@ if opt == "restart":
             else:
                 if str3d not in blacklist:
                 # if str3d not in blacklist and str3d not in shared_blacklist:
-                    str3d.PrepareForCalculation(NumOfAtoms_sur, Periodic_sur, Path_sur)
+                    str3d.prepare_for_calculation(NumOfAtoms_sur, Periodic_sur, Path_sur)
                     name = '{:04d}_structure'.format(Calculated + 1)
                     # Perform the local optimization
                     run_util.optimize(str3d, energy_function, params, name)
@@ -283,7 +283,7 @@ while Calculated < params['max_iter']:
         after_mutation = inter_info(child, after_mutation)
         if child.is_geometry_valid(flag=flag):
             if child not in blacklist:
-                child.PrepareForCalculation(NumOfAtoms_sur, Periodic_sur, Path_sur)
+                child.prepare_for_calculation(NumOfAtoms_sur, Periodic_sur, Path_sur)
                 child.index = Calculated+1
                 name = '{:04d}_structure'.format(Calculated + 1)
                 Structure.index = Calculated

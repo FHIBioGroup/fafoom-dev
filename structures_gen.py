@@ -178,8 +178,7 @@ while population < params['popsize'] and cnt < cnt_max:
                 str3d.adjust_position_centroid(os.path.join(os.getcwd(), mol.constrained_geometry_file))
 
         if 'centroid' not in mol.dof_names and len(aims2xyz(os.path.join(os.getcwd(), 'adds', 'geometry.in.constrained'))) > 0:
-            if not str3d.check_position(volume):
-                str3d.adjust_position()
+            str3d.adjust_position()
         aims_object.generate_input(str3d.sdf_string)
         aims_object.build_storage(os.path.join(os.getcwd(),'RandGen', 'structure_{}'.format(population + 1)))
         # with open(os.path.join(os.getcwd(), 'RandGen', 'structure_{}.sdf'.format(population + 1)), 'w') as rand_structure:

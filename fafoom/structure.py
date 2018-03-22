@@ -60,7 +60,7 @@ class MoleculeDescription:
                     params[str(key)] = kwargs[key].replace(
                         MoleculeDescription.newline, "\n")
 
-        dict_default = {'rmsd_type': "cartesian",
+        dict_default = {'rmsd_type': "internal",
                         'rmsd_cutoff_uniq': 0.2,
                         'chiral': False,
                         'optimize_torsion': True,
@@ -122,7 +122,7 @@ class MoleculeDescription:
                 return False
         return True
 
-    def AnalyzeConstrainedGeometry(self):
+    def analyze_constrained_geometry(self):
         NumOfAtoms = 0
         Periodic = False
         Path = os.path.join(os.getcwd(), self.constrained_geometry_file)
@@ -239,8 +239,6 @@ class MoleculeDescription:
                 'constant', constant_values=(0))
         # Routines for number of molecules:
         NumberOfMolecules.numofmol = self.number_of_molecules
-
-
 
 
 class Structure:
@@ -388,6 +386,8 @@ class Structure:
             raise ValueError("Unknown type of rmsd.")
 
         obj1, obj2 = self, other
+
+        """ To VERIFY """
         # if hasattr(self, "initial_sdf_string"):
             # obj1, obj2 = obj2, obj1
         # if hasattr(obj1, "initial_sdf_string"):
@@ -630,6 +630,7 @@ class Structure:
         return child1
 
     def mutate(self, **kwargs):
+        """ Perform mutation """
         def call_mut(dof, max_mutations=None, weights=None):
             if max_mutations is not None:
                 if hasattr(self.mol_info, "weights_" + str(dof.type)):
@@ -643,8 +644,6 @@ class Structure:
                     dof.mutate_values(weights=weights)
                 else:
                     dof.mutate_values()
-                    # print_output('{} after mutation: {}'.format(dof.name, [float('{:.2f}'.format(x)) for x in dof.values]))
-
         for dof in self.dof:
             if 'prob_for_mut_' + str(dof.type) in kwargs:
                 if np.random.rand() < kwargs['prob_for_mut_' + str(dof.type)]:
@@ -652,16 +651,12 @@ class Structure:
                         call_mut(dof, kwargs['max_mutations_' + str(dof.type)])
                     else:
                         call_mut(dof)
-                        # else:
-                        # print_output('Mutation for {} was not performed.'.format(dof.type))
             else:
                 if 'max_mutations_' + str(dof.type) in kwargs:
                     call_mut(dof, kwargs['max_mutations_' + str(dof.type)])
                 else:
                     call_mut(dof)
         template = Structure(self.mol_info)
-        # new_string = deepcopy(self.sdf_string)
-        # print new_string
         new_string = template.mol_info.template_sdf_string      # Maybe not necessary
         for dof in self.dof:
             new_string = dof.apply_on_string(new_string, dof.values)
@@ -669,56 +664,14 @@ class Structure:
         for dof in self.dof:
             dof.update_values(self.sdf_string)
 
-    def hard_mutate(self, **kwargs):
-        def call_mut(dof, max_mutations=None, weights=None):
-            if max_mutations is not None:
-                if hasattr(self.mol_info, "weights_" + str(dof.type)):
-                    weights = getattr(self.mol_info, "weights_" + str(dof.type))
-                    dof.mutate_values(max_mutations, weights)
-                else:
-                    dof.mutate_values(max_mutations=max_mutations)
-            else:
-                if hasattr(self.mol_info, "weights_" + str(dof.type)):
-                    weights = getattr(self.mol_info, "weights_" + str(dof.type))
-                    dof.mutate_values(weights=weights)
-                else:
-                    dof.mutate_values()
-                    # print_output('{} after mutation: {}'.format(dof.name, [float('{:.2f}'.format(x)) for x in dof.values]))
-
-        for dof in self.dof:
-            if 'max_mutations_' + str(dof.type) in kwargs:
-                call_mut(dof, kwargs['max_mutations_' + str(dof.type)])
-            else:
-                call_mut(dof)
-        template = Structure(self.mol_info)
-        # new_string = deepcopy(self.sdf_string)
-        # print new_string
-        new_string = template.mol_info.template_sdf_string
-        for dof in self.dof:
-            new_string = dof.apply_on_string(new_string, dof.values)
-        self.sdf_string = new_string
-        for dof in self.dof:
-            dof.update_values(self.sdf_string)
-
-
-    def PutToOrigin(self):
-        sdf_string = self.sdf_string
-        coords_and_masses = coords_and_masses_from_sdf(sdf_string)
-        new_coords = align_to_axes(coords_and_masses, 0, 1)
+    def put_to_origin(self):
+        new_coords = align_to_axes(self.sdf_string, 0, 1)
         COM = get_centre_of_mass_from_sdf(sdf_string)
         coordinates_at_origin = new_coords[:, :3] - COM
-        updated_sdf = update_coords_sdf(sdf_string, coordinates_at_origin)
+        updated_sdf = update_coords_sdf(self.sdf_string, coordinates_at_origin)
         self.sdf_string = updated_sdf
         for dof in self.dof:
             dof.update_values(self.sdf_string)
-
-    def check_position(self, volume):
-        pos = centroid_measure(self.sdf_string)
-        if (volume[0] <= pos[0] <= volume[1]) and (volume[2] <= pos[1] <= volume[3]) and (
-                volume[4] <= pos[2] <= volume[5]):
-            return True
-        else:
-            return False
 
     def adjust_position(self):
         mol = [float(i) for i in np.array(sdf2xyz(self.sdf_string))[:, 3]]
@@ -737,8 +690,8 @@ class Structure:
         for dof in self.dof:
             dof.update_values(self.sdf_string)
 
-    def AdjustPositionIon(self):
-        ''' Adjust position of the molecule with respect to the single Atom  placed in the origin '''
+    def adjust_position_ion(self):
+        """ Adjust position of the molecule with respect to the single Atom  placed in the origin """
         def cart2sph(x, y, z):      # Cartesian to Spherical coordinates
             hxy = np.hypot(x, y)
             r = np.hypot(hxy, z)
@@ -768,7 +721,7 @@ class Structure:
         # Coordinates of the atom nearest to the ion:
         coor1 = np.array(temp[mol_distances.index(min(mol_distances))][1:])
         # Coordinates of the atom at distance that had to be set after adjusting
-        #  of its coordinates in spherical coordinates
+        # of its coordinates in spherical coordinates
         coor2 = np.array(sph2cart(D,
                                        cart2sph(coor1[0], coor1[1], coor1[2])[1],
                                        cart2sph(coor1[0], coor1[1], coor1[2])[2]))
@@ -781,7 +734,7 @@ class Structure:
             if dof.name == 'Centroid':
                 dof.update_values(self.sdf_string)
 
-    def AdjustXY(self, lat_vectors):
+    def adjust_xy(self, lat_vectors):
         x = lat_vectors[0][0]*0.5
         y = lat_vectors[1][1]*0.5
         com = get_centre_of_mass_from_sdf(self.sdf_string)
@@ -792,8 +745,8 @@ class Structure:
             if dof.name == 'Centroid':
                 dof.update_values(self.sdf_string)
 
-    def PrepareForCalculation(self, NumOfAtoms_sur, Periodic_sur, Path_sur):
-        def ExtractLatticeVectors(Path_sur):
+    def prepare_for_calculation(self, NumOfAtoms_sur, Periodic_sur, Path_sur):
+        def extract_lattice_vectors(Path_sur):
             vectors = []
             with open(Path_sur) as constrained:
                 lines = constrained.readlines()
@@ -801,14 +754,14 @@ class Structure:
                     if 'lattice_vector' in line:
                         vectors.append([float(x) for x in line.split()[1:]])
             return vectors
-        if NumOfAtoms_sur == 0:         # If the geometry.in.constrained file is empty:
-            self.PutToOrigin()          # put the molecule in the origin for convinence.
+        if NumOfAtoms_sur == 0:           # If the geometry.in.constrained file is empty:
+            self.put_to_origin()          # Put the molecule in the origin for convenience.
         elif NumOfAtoms_sur >= 1 and not Periodic_sur:   # Single Atom in the origin
             # Always perform adjustment of the position with respect ot single Atom
-            self.AdjustPositionIon()
+            self.adjust_position_ion()
         elif NumOfAtoms_sur >= 1 and Periodic_sur:
             # Adjust height of the molecule
             self.adjust_position()
             # FOR NOW put molecule at centre of slab
-            self.AdjustXY(ExtractLatticeVectors(Path_sur))
+            self.adjust_xy(extract_lattice_vectors(Path_sur))
 

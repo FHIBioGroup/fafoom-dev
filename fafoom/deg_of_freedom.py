@@ -114,7 +114,6 @@ class Orientation(DOF):
                                 float(self.values[2]*b[2] + choice(Orientation.values_options[1])*a[2]),
                                 float(self.values[3]*b[3] + choice(Orientation.values_options[1])*a[3])])
 
-
     def is_equal(self, other, threshold, chiral=True):
         threshold = 15
         values = []
@@ -127,8 +126,9 @@ class Orientation(DOF):
         else:
             return True
 
+
 class Centroid(DOF):
-    '''Find and handle centre of the molecule. '''
+    """ Find and handle centre of the molecule """
     range_x = [i for i in range(-10, 11, 1)]
     range_y = [i for i in range(-10, 11, 1)]
     range_z = [i for i in range(-10, 11, 1)]
@@ -183,7 +183,7 @@ class Centroid(DOF):
                                 float(self.values[2]*b[2] + choice(Centroid.range_z)*a[2])])
 
     def is_equal(self, other, threshold, chiral=True):
-        threshold = 0.5 #Distance between two centres of mass should be more that 0.5 Angs. if other values are equal.
+        threshold = 0.5   #  Distance between two centres of mass should be more that 0.5 Angs. if other values are equal.
         values = []
         values.append(np.linalg.norm(np.array(self.values) - np.array(other.values)))
         if hasattr(other, "initial_values"):
