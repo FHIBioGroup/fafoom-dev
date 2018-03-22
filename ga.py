@@ -43,8 +43,7 @@ if opt == "simple":
     run_util.HeadFafoom()
     # Detect the desired application for energy evaluation.
     energy_function = run_util.detect_energy_function(params)
-    # Calculated is the number of Trials and when it reaches params['max_iter'] algorithm stops.
-    # calculated structures.
+    # 'Calculated' is the number of Calculations performed and when it reaches params['max_iter'] algorithm stops.
     # Create mol object.
     mol = MoleculeDescription(p_file)
     # Assign the permanent attributes to the molecule.
@@ -161,6 +160,7 @@ if opt == "restart":
     mol.create_template_sdf()
     NumOfAtoms_sur, Periodic_sur, Path_sur = mol.AnalyzeConstrainedGeometry()
     str3d = Structure(mol)
+    linked_params = run_util.find_linked_params(mol, params)
     # shared_blacklist, visited_folders = mol.UpdateSharedBlacklist(blacklist=[], folders=[])
     with open("backup_new_blacklist.dat") as new:
         everything = new.read()                             # Split everything into separate structures:
@@ -186,15 +186,20 @@ if opt == "restart":
     with open("backup_min_energy.dat") as inf:
         for line in inf:
             min_energy.append(eval(line))
+    with open("backup_population.dat", 'r') as inf:
+        for line in inf:
+            population.append(eval(line))
     # with open("backup_Calculated.dat") as inf:
     #     Calculated_tmp = eval(inf.readline())
-    linked_params = run_util.find_linked_params(mol, params)
-    temp_dic = {}
-    for i in range(len(blacklist)):
-        temp_dic[blacklist[i].index] = blacklist[i].energy
-    temp_sorted = sorted(temp_dic.items(), key=lambda t: t[1])
-    for i in range(min(len(blacklist), params['popsize'])):
-        population.append(blacklist[temp_sorted[i][0]-1])
+    
+    #~ temp_dic = {}
+    #~ print blacklist.sort()
+    #~ for i in range(len(blacklist)):
+        #~ temp_dic[blacklist[i].index] = blacklist[i].energy
+    #~ temp_sorted = sorted(temp_dic.items(), key=lambda t: t[1])
+    #~ for k in blacklist.index:
+    #~ for i in range(min(len(blacklist), params['popsize'])):
+        #~ population.append(blacklist[temp_sorted[i][0]-1])      
     for i in range(len(population)):
         print_output('{:<15}{:>10.4f}'.format(population[i], float(population[i])))
     if len(new_blacklist) > params['popsize']:

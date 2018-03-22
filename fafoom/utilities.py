@@ -397,7 +397,7 @@ def check_geo_sdf(sdf_string, flag):
     # print 'Number of bonds is {}'.format(k)
     return check
 
-def check_geo_if_not_too_far(sdf_string, constrained_geom_file, flag=1.5):
+def check_geo_if_not_too_far(sdf_string, constrained_geom_file, flag=0.8):
     """Check geometry from a sdf_string if it is not too far from surrounding.
     Returns:
         True if it is not too far
@@ -570,6 +570,7 @@ def aims2xyz_extended(aims_file): # returns [coord_1, coord_2, coord_3, Atom_sym
     return xyz_coords_array
 
 def sdf2xyz_list(sdf_string):
+    # Returns 4 column array with vdW radii at first place and coordinates at other places.
     xyz_list = []
     for line in sdf_string.split('\n'):
         coords_found = re.match(r'(\s*(.?\d+\.\d+)\s*(.?\d+\.\d+)\s*(.?\d+\.\d+)\s*(\w+)\s+)', line)

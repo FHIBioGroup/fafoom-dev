@@ -27,7 +27,7 @@ from genetic_operations import crossover_single_point, crossover_random_points
 from pyaims import AimsObject
 from pynwchem import NWChemObject
 from pyorca import OrcaObject
-from pyff import FFObject
+#from pyff import FFObject
 from pyforcefield import FFobject
 from deg_of_freedom import Centroid, Protomeric, NumberOfMolecules
 from measure import *
@@ -727,7 +727,7 @@ class Structure:
         z_max = max(surr)
         atom_min = sdf2xyz(self.sdf_string)[mol.index(z_min)][0]
         atom_max = aims2xyz(self.mol_info.constrained_geometry_file)[surr.index(z_max)][0]
-        dist = (VDW_radii[atom_min] + VDW_radii[atom_max]) * 0.4  # + VDW_radii[atom_max]
+        dist = (VDW_radii[atom_min] + VDW_radii[atom_max]) * 0.5  # + VDW_radii[atom_max]
         values_old = centroid_measure(self.sdf_string)
         values_new = np.array([(self.mol_info.volume[0] + self.mol_info.volume[1]) / 2,
                                (self.mol_info.volume[2] + self.mol_info.volume[3]) / 2,
@@ -738,6 +738,7 @@ class Structure:
             dof.update_values(self.sdf_string)
 
     def AdjustPositionIon(self):
+        ''' Adjust position of the molecule with respect to the single Atom  placed in the origin '''
         def cart2sph(x, y, z):      # Cartesian to Spherical coordinates
             hxy = np.hypot(x, y)
             r = np.hypot(hxy, z)
@@ -750,17 +751,31 @@ class Structure:
             y = r * np.sin(el) * np.sin(az)
             z = r * np.cos(el)
             return x, y, z
+
         constrained_geom_file = self.mol_info.constrained_geometry_file
-        constrained = aims2xyz_vdw(constrained_geom_file)[0][0] * 1.5
+        # Obtain vdW radii from the file
+        constrained = aims2xyz_vdw(constrained_geom_file)[0][0]
+        # Obtain vdW radiis and coordinates of the molecule:
         temp = sdf2xyz_list(self.sdf_string)
-        mol = [np.hypot(np.hypot(float(i[0]), float(i[1])), float(i[2])) for i in
+        # Obtain distances of all atoms to the origin:
+        mol_distances = [np.linalg.norm(np.array([float(i[0]), float(i[1]), float(i[2])])) for i in
                np.array(sdf2xyz(self.sdf_string))[:, 1:]]
+        # Calculate centre of mass of the molecule:
         com = get_centre_of_mass_from_sdf(self.sdf_string)
-        adjustment = cart2sph(com[0], com[1], com[2])[0] / min(mol) * (constrained + temp[mol.index(min(mol))][0])
-        values_new = np.array(sph2cart(adjustment,
-                                       cart2sph(com[0], com[1], com[2])[1],
-                                       cart2sph(com[0], com[1], com[2])[2]))
-        new_string = centroid_set(self.sdf_string, values_new)
+        # Calculate the adjustment that should be done in spherical coordinates:
+        # Half of the sum of molecule and ion vdW distances (distance to be set):
+        D = sum([constrained + temp[mol_distances.index(min(mol_distances))][0]])*0.5
+        # Coordinates of the atom nearest to the ion:
+        coor1 = np.array(temp[mol_distances.index(min(mol_distances))][1:])
+        # Coordinates of the atom at distance that had to be set after adjusting
+        #  of its coordinates in spherical coordinates
+        coor2 = np.array(sph2cart(D,
+                                       cart2sph(coor1[0], coor1[1], coor1[2])[1],
+                                       cart2sph(coor1[0], coor1[1], coor1[2])[2]))
+        # Vector of displacement that will be applied to the COM of the molecule:
+        displacement = coor1 - coor2
+        # Apply changes to the molecule:
+        new_string = centroid_set(self.sdf_string, com - displacement)
         self.sdf_string = new_string
         for dof in self.dof:
             if dof.name == 'Centroid':
@@ -788,12 +803,12 @@ class Structure:
             return vectors
         if NumOfAtoms_sur == 0:         # If the geometry.in.constrained file is empty:
             self.PutToOrigin()          # put the molecule in the origin for convinence.
-        elif NumOfAtoms_sur >= 1 and not Periodic_sur:       # If the geometry.in.constrained has only one atom:
-            if not check_for_clashes(self.sdf_string, Path_sur):
-                self.adjust_position()
-            else:
-                self.AdjustPositionIon()    # put the molecule at the appropriate distance.
+        elif NumOfAtoms_sur >= 1 and not Periodic_sur:   # Single Atom in the origin
+            # Always perform adjustment of the position with respect ot single Atom
+            self.AdjustPositionIon()
         elif NumOfAtoms_sur >= 1 and Periodic_sur:
+            # Adjust height of the molecule
             self.adjust_position()
+            # FOR NOW put molecule at centre of slab
             self.AdjustXY(ExtractLatticeVectors(Path_sur))
 
