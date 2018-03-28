@@ -82,7 +82,7 @@ if opt == "simple":
             if str3d not in initial_blacklist:
                 if str3d not in blacklist:
                     str3d.send_to_blacklist(initial_blacklist)
-                    str3d.prepare_for_calculationPrepareForCalculation(NumOfAtoms_sur, Periodic_sur, Path_sur)
+                    str3d.prepare_for_calculation(NumOfAtoms_sur, Periodic_sur, Path_sur)
                     name = '{:04d}_structure'.format(Calculated+1)
                     """ Perform the local optimization """
                     Calculated+=1

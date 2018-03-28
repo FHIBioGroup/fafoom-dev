@@ -666,7 +666,7 @@ class Structure:
 
     def put_to_origin(self):
         new_coords = align_to_axes(self.sdf_string, 0, 1)
-        COM = get_centre_of_mass_from_sdf(sdf_string)
+        COM = get_centre_of_mass_from_sdf(self.sdf_string)
         coordinates_at_origin = new_coords[:, :3] - COM
         updated_sdf = update_coords_sdf(self.sdf_string, coordinates_at_origin)
         self.sdf_string = updated_sdf
