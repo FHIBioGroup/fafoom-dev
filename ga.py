@@ -17,7 +17,7 @@ parser.add_option("-p", "--prerun", dest="prerun", default=None, help="Updating 
 if options.test is not None:
     print('TESTMODE is ACTIVATED!!!')
     np.random.seed(0)
-np.set_printoptions(suppress=True)      # Need to correctly write the one-line blacklist
+np.set_printoptions(suppress=True)      # Correctly writes one-line blacklist
 opt = run_util.simple_or_restart()      # Decide for restart or a simple run.
 """ If genetic algorithm was invoked without additional inputs
 fafoom will try to find parameters.txt file as default. """
@@ -36,7 +36,8 @@ dict_default = {'energy_var': 0.001, 'selection': "roulette_wheel",     # Defaul
 params = set_default(params, dict_default)      # Set defaults for parameters not defined in the parameter file.
 """Create lists to store Population, minimal energies and structures that are already calculated."""
 population, blacklist, min_energy, new_blacklist = [], [], [], []
-Trials, NotValid, Known, Calculated = 0, 0, 0, 0
+Trials, NotValid, Known, Calculated, found_in_blacklist = 0, 0, 0, 0, 0
+BLACKLIST, visited_folders = [], []
 # =======================================================================
 
 if opt == "simple":
@@ -56,17 +57,16 @@ if opt == "simple":
     print_output('Atoms: {}, Bonds: {}'.format(mol.atoms, mol.bonds))
     print_output('\n___Initialization___\n')
     # Generate sensible and unique 3d structures.
-    NumOfAtoms_sur, Periodic_sur, Path_sur = mol.analyze_constrained_geometry()   # For Surrounding file
+    NumOfAtoms_sur, Periodic_sur, Path_sur = mol.analyze_constrained_geometry()
     flag = 1.0
     generation_Trials = 0
-    shared_blacklist = []
-    initial_blacklist = []
-    # shared_blacklist, visited_folders = mol.UpdateSharedBlacklist(blacklist=[], folders=[])
+    BLACKLIST, visited_folders = mol.UpdateBlacklist(blacklist=BLACKLIST, folders=visited_folders)
+
     while len(population) < params['popsize'] and Calculated < params['max_iter']:
         Structure.index = Calculated
         str3d = Structure(mol)
         str3d.generate_structure()
-        Trials+=1
+        Trials += 1
         """ In case if created structure is not sensible: """
         if not str3d.is_geometry_valid(flag=flag):
             NotValid+=1
@@ -79,44 +79,32 @@ if opt == "simple":
                     sys.exit(0)   # Terminates the code
             continue
         else:
-            if str3d not in initial_blacklist:
-                if str3d not in blacklist:
-                    str3d.send_to_blacklist(initial_blacklist)
-                    str3d.prepare_for_calculation(NumOfAtoms_sur, Periodic_sur, Path_sur)
-                    name = '{:04d}_structure'.format(Calculated+1)
-                    """ Perform the local optimization """
-                    Calculated+=1
-                    run_util.optimize(str3d, energy_function, params, name)
-                else:
-                    Known+=1      # Found in blacklist
-                    continue
-                # if run_util.check_for_not_converged(name):
-                # if 1==0:
-                #     continue
-                # else:
-                    # shared_blacklist, visited_folders = mol.UpdateSharedBlacklist(blacklist=shared_blacklist, folders=visited_folders)
-                # if str3d in shared_blacklist:
-                #     Calculated += 1
-                #     print_output('Found structure in shared blacklist')
-                #     run_util.relax_info(str3d)
-                #     # print('Structure: {}'.format(shared_blacklist[shared_blacklist.index(str3d)]))
-                #     # print('\n\n\n\n\nONE MORE CASE AFTER CALCULATION!!!!!\n\n\n\n\n')
-                #     # print_output('Structure: {}'.format(shared_blacklist[shared_blacklist.index(str3d)]))
-                #     shutil.rmtree(os.path.join(os.getcwd(), name))
-                #     continue
-                if str3d not in blacklist:
-                    str3d.send_to_blacklist(blacklist)      # Blacklist
-                    str3d.send_to_new_blacklist(new_blacklist)
+            BLACKLIST, visited_folders = mol.UpdateBlacklist(
+                blacklist=BLACKLIST, folders=visited_folders)
+            if str3d not in BLACKLIST:
+                str3d.prepare_for_calculation(NumOfAtoms_sur, Periodic_sur, Path_sur)
+                name = '{:04d}_structure'.format(Calculated+1)
+                """ Perform the local optimization """
+                run_util.optimize(str3d, energy_function, params, name)
+                Calculated += 1
+                if str3d not in BLACKLIST:
+                    str3d.send_to_blacklist(BLACKLIST)
+                    str3d.send_to_new_blacklist(new_blacklist) #  Locally
+                    # calculated structures
                     population.append(str3d)
                     print_output('Structure {}{:>15.4f}'.format(Calculated, float(str3d)))
                     run_util.relax_info(str3d)
                     population.sort()
                     min_energy.append(float('{:.3f}'.format(population[0].energy)))
-                    run_util.perform_backup(mol, population, blacklist, Calculated, min_energy, new_blacklist)
+                    run_util.perform_backup(mol, population, BLACKLIST, Calculated, min_energy, new_blacklist)
                 else:
+                    found_in_blacklist+=1
+                    print '{} found in blacklist'.format(found_in_blacklist)
                     pass   # The already known structure was obtained after optimization
             else:
-                Known+=1  # Geomerty is fine, but already known.
+                found_in_blacklist += 1
+                print '{} found in blacklist'.format(found_in_blacklist)
+                Known += 1  # Geometry is fine, but already known.
                 continue
     if Calculated == params['max_iter']:
         print_output("The allowed number of Trials for building the "
@@ -126,7 +114,8 @@ if opt == "simple":
             print_output('{:<15}{:>10.4f}'.format(population[i], float(population[i])))
         print_output('Structures found: {}'.format(len(population)))
         run_util.AnalysisFafoom(Trials, NotValid, Calculated, Known, len(blacklist), run_util.TimeSpent(StartTime))
-        run_util.perform_backup(mol, population, blacklist, Calculated, min_energy, new_blacklist)
+        run_util.perform_backup(mol, population, BLACKLIST, Calculated,
+                                min_energy, new_blacklist)
         sys.exit(0)
     print_output("___Initialization completed___")
     population.sort()
@@ -148,7 +137,9 @@ if Trials > 0:
     run_util.AnalysisFafoom(Trials, NotValid, Calculated, Known, len(blacklist), run_util.TimeSpent(StartTime))
 Random_Trials, Random_NotValid, Random_Calculated, Random_Known, Random_Blacklist, Random_Time = Trials, NotValid, Calculated, Known, len(blacklist), run_util.TimeSpent(StartTime)
 
+
 if opt == "restart":
+
     flag = 1.0
     # Detect the desired application for energy evaluation.
     energy_function = run_util.detect_energy_function(params)
@@ -161,7 +152,14 @@ if opt == "restart":
     NumOfAtoms_sur, Periodic_sur, Path_sur = mol.analyze_constrained_geometry()
     str3d = Structure(mol)
     linked_params = run_util.find_linked_params(mol, params)
-    # shared_blacklist, visited_folders = mol.UpdateSharedBlacklist(blacklist=[], folders=[])
+    BLACKLIST, visited_folders = mol.UpdateBlacklist(
+        blacklist=BLACKLIST, folders=visited_folders)
+
+    """Check all the folders"""
+    calculated = []
+    for i in os.listdir(os.getcwd()):
+        if '_structure' in i:
+            calculated.append(int(i.split('_')[0]))
     with open("backup_new_blacklist.dat") as new:
         everything = new.read()                             # Split everything into separate structures:
         structures = everything.split('$$$$')[:-1]          # Correct number of structures
@@ -182,7 +180,7 @@ if opt == "restart":
                 dof.update_values(str3d.sdf_string)
                 setattr(dof, "initial_values", dof.values)
             str3d.send_to_new_blacklist(new_blacklist)
-            str3d.send_to_blacklist(blacklist)
+            # str3d.send_to_blacklist(blacklist)
     with open("backup_min_energy.dat") as inf:
         for line in inf:
             min_energy.append(eval(line))
@@ -202,16 +200,14 @@ if opt == "restart":
         #~ population.append(blacklist[temp_sorted[i][0]-1])      
     for i in range(len(population)):
         print_output('{:<15}{:>10.4f}'.format(population[i], float(population[i])))
-    if len(new_blacklist) > params['popsize']:
-        Calculated = len(new_blacklist)
-    elif len(population) <= params['popsize']:
-        Calculated = len(population)
     linked_params = run_util.find_linked_params(mol, params)
-    Structure.index = len(blacklist)
-    flag = adjusted_flag(blacklist)     # Need to be adjusted, because, we want to calculate at least one structure.
+    Calculated = max(calculated)
+    Structure.index = Calculated + 1
+    # flag = adjusted_flag(new_blacklist)     # Need to be adjusted, because, we want to calculate at least one structure.
     # print_output('Adjusted flag for checking for clashes inside the structures is: {}'.format(flag))
     print_output(" \n ___Reinitialization completed___")
-    remover_dir('{:04d}_structure'.format(Calculated+1))          # Removes dir with unfinished calculation
+    remover_dir('{:04d}_structure'.format(Calculated+1))      #
+    # Removes dir with unfinished calculation
     """ If initialization is not finished it should be finished"""
     if len(new_blacklist) < params['popsize']:
         # Calculated = 0
@@ -231,25 +227,25 @@ if opt == "restart":
                         sys.exit(0)  # Terminates the code
                 continue
             else:
-                if str3d not in blacklist:
+                if str3d not in BLACKLIST:
                 # if str3d not in blacklist and str3d not in shared_blacklist:
                     str3d.prepare_for_calculation(NumOfAtoms_sur, Periodic_sur, Path_sur)
-                    name = '{:04d}_structure'.format(Calculated + 1)
+                    name = '{:04d}_structure'.format(Calculated+1)
                     # Perform the local optimization
+                    print name
                     run_util.optimize(str3d, energy_function, params, name)
                     Calculated += 1
                     if run_util.check_for_not_converged(name):
                         continue
                     else:
-                        str3d.send_to_blacklist(blacklist)          # Blacklist
+                        str3d.send_to_blacklist(BLACKLIST)          # Blacklist
                         str3d.send_to_new_blacklist(new_blacklist)
                         population.append(str3d)
                         print_output('{:<15}{:>10.4f}'.format(str3d, float(str3d)))
                         run_util.relax_info(str3d)
                 else:
                     Trials += 1   # Geomerty is fine, but already known.
-            run_util.perform_backup(mol, population, blacklist, Calculated, min_energy, new_blacklist)
-            # shared_blacklist, visited_folders = run_util.update_shared_blacklist(shared_blacklist, visited_folders, str3d)
+            run_util.perform_backup(mol, population, BLACKLIST, Calculated, min_energy, new_blacklist)
         if Calculated == params['max_iter']:
             print_output("The allowed number of Trials for building the "
                          "population has been exceeded. The code terminates.")
@@ -263,8 +259,10 @@ if opt == "restart":
         for i in range(len(population)):
             print_output('{:<15}{:>10.4f}'.format(population[i], float(population[i])))
         min_energy.append(float('{:.3f}'.format(population[0].energy)))
-
+print Calculated
 """ Start the Genetic Operations routines """
+BLACKLIST, visited_folders = mol.UpdateBlacklist(
+    blacklist=BLACKLIST, folders=visited_folders)
 
 print_output('Start the Genetic Algorithm part!\n')
 while Calculated < params['max_iter']:
@@ -282,21 +280,23 @@ while Calculated < params['max_iter']:
         child.mutate(**linked_params)
         after_mutation = inter_info(child, after_mutation)
         if child.is_geometry_valid(flag=flag):
-            if child not in blacklist:
+            BLACKLIST, visited_folders = mol.UpdateBlacklist(
+                blacklist=BLACKLIST, folders=visited_folders)
+            if child not in BLACKLIST:
                 child.prepare_for_calculation(NumOfAtoms_sur, Periodic_sur, Path_sur)
                 child.index = Calculated+1
                 name = '{:04d}_structure'.format(Calculated + 1)
-                Structure.index = Calculated
+                Structure.index = Calculated+1
                 run_util.GeneticOperationsOutput(len(blacklist)+1, Calculated, parent1, parent2, after_crossover, after_mutation)
                 run_util.optimize(child, energy_function, params, name)
                 Trials+=1
                 Calculated+=1
-                if child not in blacklist:
+                if child not in BLACKLIST:
                     print_output('Child after relaxation: Added to Blacklist\n')
                     print_output('{:<15}{:>10.4f}'.format(child, float(child)))
                     run_util.relax_info(child)
                     print_output('------------------------------------------------------------\n')
-                    child.send_to_blacklist(blacklist)  # Blacklist
+                    child.send_to_blacklist(BLACKLIST)  # Blacklist
                     child.send_to_new_blacklist(new_blacklist)
                     population.append(child)
                     population.sort()
@@ -313,9 +313,13 @@ while Calculated < params['max_iter']:
                     run_util.CheckForConvergence(Trials, NotValid, Known, len(blacklist), run_util.TimeSpent(StartTime), Calculated, params, min_energy)
                     run_util.check_for_kill()
                 else:
+                    found_in_blacklist+=1
+                    print '{} found in blacklist'.format(found_in_blacklist)
                     print_output('Child after relaxation: Found in Blacklist')
                     continue
             else:
+                found_in_blacklist += 1
+                print '{} found in blacklist'.format(found_in_blacklist)
                 Trials+=1
                 Known+=1
                 continue

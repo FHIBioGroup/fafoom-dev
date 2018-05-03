@@ -131,6 +131,12 @@ def detect_energy_function(params):
         if params['energy_function'] in ['No', 'no', 'Random', 'random']:
             print_output("Local optimization will not be performed. Random structures will be produced")
             energy_function = "no"
+        elif params['energy_function'] in ['test', 'Test', 'TEST' 
+                                                           'Random_test',
+                                           'random_test']:
+            print_output("Local optimization will not be performed. Random "
+                         "input and output files will be produced")
+            energy_function = "random_test"
         elif params['energy_function'] in ['aims', 'FHI-aims', 'FHIaims']:
             print_output("Local optimization will be performed with FHI-aims.")
             energy_function = "aims"
@@ -153,10 +159,13 @@ def detect_energy_function(params):
             sys.exit(0)
         return energy_function
 
+
 def optimize(structure, energy_function, params, name=None):
     """Perform local optimization."""
     if energy_function == "no":
         structure.perform_random(params['sourcedir'], name)
+    if energy_function == "random_test":
+        structure.perform_random_test(params['sourcedir'], name)
     if energy_function == "aims":
         structure.perform_aims(params['sourcedir'], params['aims_call'], name)
     elif energy_function == "nwchem":

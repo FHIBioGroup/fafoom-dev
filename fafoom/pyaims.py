@@ -172,12 +172,16 @@ class AimsObject():
         calculation has been completed.
         """
         try:
+            shutil.copy('geometry.out', self.dirname)
+            shutil.copy('result.out', self.dirname)
+            shutil.copy('geometry_in.sdf', self.dirname)
+            shutil.copy('geometry_out.sdf', self.dirname)
             os.remove('geometry.in')
             os.remove('control.in')
-            shutil.copy('result.out', self.dirname)
+            os.remove('geometry_in.sdf')
+            os.remove('geometry_out.sdf')
             os.remove('result.out')
             remover_file('geometry.in.next_step')
-            shutil.copy('geometry.out', self.dirname)
             os.remove('geometry.out')
         except IOError:
             pass

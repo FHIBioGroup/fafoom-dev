@@ -27,10 +27,12 @@ from genetic_operations import crossover_single_point, crossover_random_points
 from pyaims import AimsObject
 from pynwchem import NWChemObject
 from pyorca import OrcaObject
+from pytest import TESTObject
 #from pyff import FFObject
 from pyforcefield import FFobject
 from deg_of_freedom import Centroid, Protomeric, NumberOfMolecules
 from measure import *
+import numpy as np
 
 
 class MoleculeDescription:
@@ -67,7 +69,8 @@ class MoleculeDescription:
                         'optimize_cistrans': False,
                         'optimize_centroid': False,
                         'optimize_orientation': False,
-                        'optimize_protomeric:': False,
+                        'optimize_protomeric': False,
+                        'sourcedir': 'adds',
                         'sdf_string_template': 'adds/mol.sdf',
                         'constrained_geometry_file': 'adds/geometry.in.constrained',
                         'right_order_to_assign': ['torsion', 'cistrans', 'centroid', 'orientation', 'protomeric'],
@@ -139,17 +142,16 @@ class MoleculeDescription:
         other_GAs = []
         shared_blacklist = blacklist
         visited_folders = folders
-        selfdirectory = os.getcwd().split('/')[-1]
         parent_directory = ('/').join(os.getcwd().split('/')[:-1])
         for i in os.listdir(parent_directory):
-            if 'GA' in i and os.path.isdir(os.path.join(parent_directory, i)) and i != selfdirectory:
+            if 'GARUN' in i and os.path.isdir(os.path.join(parent_directory, i)):
                 for calculated_structure in os.listdir(os.path.join(parent_directory, i)):
                     if calculated_structure != 'adds' and os.path.isdir(
                             os.path.join(parent_directory, i, calculated_structure)):
                         other_GAs.append(os.path.join(parent_directory, i, calculated_structure))
         for str_folder in other_GAs:
             print(str_folder)
-            if str_folder not in visited_folders and selfdirectory not in str_folder:
+            if str_folder not in visited_folders:
                 if os.path.exists(os.path.join(str_folder, 'geometry_out.sdf')):
                     with open(os.path.join(str_folder, 'geometry_out.sdf')) as sdf_out:
                         str3d = Structure(self)
@@ -169,6 +171,43 @@ class MoleculeDescription:
                         str3d.send_to_blacklist(shared_blacklist)
                     visited_folders.append(str_folder)
         return shared_blacklist, visited_folders
+
+    def UpdateBlacklist(self, blacklist=[], folders=[]):
+        other_GAs = []
+        shared_blacklist = blacklist
+        visited_folders = folders
+        parent_directory = ('/').join(os.getcwd().split('/')[:-1])
+        """Check all the folders"""
+        for i in os.listdir(parent_directory):
+            if 'GARUN' in i:
+                for calculated_structure in os.listdir(os.path.join(parent_directory, i)):
+                    if calculated_structure != 'adds' and os.path.isdir(
+                            os.path.join(parent_directory, i, calculated_structure)):
+                        other_GAs.append(os.path.join(parent_directory, i, calculated_structure))
+        """Visit new folders"""
+        for str_folder in other_GAs:
+            if str_folder not in visited_folders:
+                if os.path.exists(os.path.join(str_folder, 'geometry_out.sdf')):
+                    with open(os.path.join(str_folder, 'geometry_out.sdf')) as sdf_out:
+                        str3d = Structure(self)
+                        str3d.index = len(shared_blacklist)
+                        str3d.generate_structure()
+                        out_string = sdf_out.read()
+                        for dof in str3d.dof:
+                            dof.update_values(out_string)
+                        str3d.send_to_blacklist(shared_blacklist)
+                    with open(os.path.join(str_folder, 'geometry_in.sdf')) as sdf_out:
+                        str3d = Structure(self)
+                        str3d.index = len(shared_blacklist)
+                        str3d.generate_structure()
+                        in_string = sdf_out.read()
+                        for dof in str3d.dof:
+                            dof.update_values(in_string)
+                        str3d.send_to_blacklist(shared_blacklist)
+                    visited_folders.append(str_folder)
+        return shared_blacklist, visited_folders
+
+
 
     def create_template_sdf(self):
         """Assign new attribute (template_sdf_string) to the object."""
@@ -487,8 +526,21 @@ class Structure:
         aims_object = AimsObject(sourcedir)
         aims_object.generate_input(self.sdf_string)
         aims_object.build_storage(dirname)
-        self.energy = 0.00
+        self.energy = np.random.rand()
         self.initial_sdf_string = self.sdf_string
+
+    def perform_random_test(self, sourcedir, dirname):
+        """Stores random structures without futher calculations"""
+        test_object = TESTObject(sourcedir)
+        self.initial_sdf_string = self.sdf_string
+        test_object.generate_input(self.sdf_string)
+        self.generate_structure()
+        test_object.generate_output(self.sdf_string)
+        test_object.build_storage(dirname)
+        self.energy = np.random.rand()
+        for dof in self.dof:
+            dof.update_values(self.sdf_string)
+
 
     def perform_aims(self, sourcedir, execution_string, dirname):
         """Generate the FHI-aims input, run FHI-aims, store the output, assign
@@ -502,8 +554,10 @@ class Structure:
             aims_object.clean_and_store()
             self.energy = aims_object.get_energy()
             self.initial_sdf_string = self.sdf_string
+            string2file(self.initial_sdf_string, 'geometry_in.sdf')
             self.sdf_string = aims2sdf(aims_object.get_aims_string_opt(),
                                        self.mol_info.template_sdf_string)
+            string2file(self.sdf_string, 'geometry_out.sdf')
 
             for dof in self.dof:
                 setattr(dof, "initial_values", dof.values)

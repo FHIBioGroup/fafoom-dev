@@ -155,7 +155,7 @@ def align_to_axes(sdf_string, atom_1_indx, atom_2_indx):
 def quaternion_set(sdf_string, quaternion_to_set, atom_1_indx, atom_2_indx):
     coords_and_masses = coords_and_masses_from_sdf(sdf_string)
     center = get_centre_of_mass(coords_and_masses)
-    aligned = align_to_axes(coords_and_masses, atom_1_indx, atom_2_indx)
+    aligned = align_to_axes(sdf_string, atom_1_indx, atom_2_indx)
     first_rot = produce_quaternion(quaternion_to_set[0], np.array([0, 0, 1]))
     rotation_1 = Rotation(aligned[:, :3], center, first_rot)
     angle_2 = angle_between(np.array([0, 0, 1]), quaternion_to_set[1:])
