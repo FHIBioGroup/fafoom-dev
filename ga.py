@@ -15,7 +15,7 @@ parser.add_option("-r", "--random", dest="random", default=None, help="Generatin
 parser.add_option("-p", "--prerun", dest="prerun", default=None, help="Updating of the template.sdf file")
 (options, args) = parser.parse_args()
 if options.test is not None:
-    print('TESTMODE is ACTIVATED!!!')
+    print('TESTMODE is ACTIVATED but not properly working!!!')
     np.random.seed(0)
 np.set_printoptions(suppress=True)      # Correctly writes one-line blacklist
 opt = run_util.simple_or_restart()      # Decide for restart or a simple run.
