@@ -104,6 +104,35 @@ def produce_coords_and_masses(coords, masses):
     zeros[:, 3] = masses[:]
     return zeros
 
+def quaternion_measure_xyz(coords_and_masses, atom_1_indx, atom_2_indx):
+    orient_vec = unit_vector(coords_and_masses[atom_2_indx][:3] -
+                                      coords_and_masses[atom_1_indx][:3])
+    x_axis = np.array([1, 0, 0])
+    z_axis = np.array([0, 0, 1])
+    masses = coords_and_masses[:,3]                                     # Obtain masses of the atoms.
+    center = get_centre_of_mass(coords_and_masses)                      # Obtain center of mass of the molecule.
+    inertia_tensor = get_tensor_of_inertia(coords_and_masses)           # Obtain inertia tensor.
+    eigval_1 = get_eigens(inertia_tensor)[0]                            # Eigenvalues of the inertia tensor.
+    eigvec_1 = get_eigens(inertia_tensor)[1].T                          # Eigenvectors for inertia tensor. In column-like style!!! Have to be TRANSPOSED!!!
+    z_index = np.argmax(eigval_1)                                       # Choose index for eigenvector with highest eigenvalue. Will align it to z direction, so longest axes of molecule will be perependicular to z axis.
+    x_index = np.argmin(eigval_1)                                       # Choose index for eigenvector with lowest eigenvalue. Will align it to z direction, so longest axes of molecule will be perependicular to z axis.
+    if np.dot(unit_vector(eigvec_1[z_index]), orient_vec) < 0:
+        eigvec_1[z_index] = -eigvec_1[z_index]
+    ang_1 = angle_between(eigvec_1[z_index], z_axis)                    # Angle is in degrees!
+    vec_1 = np.cross(eigvec_1[z_index], z_axis)                         # Vector to rotate around.
+    quat_1 = produce_quaternion(ang_1, vec_1)                            # Produce unit quaternion for rotation, simply consists of angle and vector.
+    rotated_1 = Rotation(coords_and_masses[:,:3], center, quat_1)       # Coordinates of the molecule after aligning perpendicular to z axis.
+    new_coords = produce_coords_and_masses(rotated_1, masses)
+    orient_vec_2 = unit_vector(new_coords[atom_2_indx][:3] - new_coords[atom_1_indx][:3])
+    eigs_after = get_eigens(get_tensor_of_inertia(new_coords))[1].T
+    if np.dot(unit_vector(eigs_after[x_index]), orient_vec_2) < 0:
+        eigs_after[x_index] = -eigs_after[x_index]
+    angle_x = angle_between(eigs_after[x_index], x_axis)
+    if np.dot(np.cross(unit_vector(eigs_after[x_index]), x_axis), z_axis) > 0:
+        angle_x[0,0] = -angle_x[0,0]
+    quaternion_of_the_molecule = np.array([angle_x[0,0], eigvec_1[z_index, 0], eigvec_1[z_index, 1], eigvec_1[z_index, 2]])
+    return quaternion_of_the_molecule
+
 
 def quaternion_measure(sdf_string, atom_1_indx, atom_2_indx):
     coords_and_masses = coords_and_masses_from_sdf(sdf_string)

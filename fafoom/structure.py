@@ -27,7 +27,7 @@ from genetic_operations import crossover_single_point, crossover_random_points
 from pyaims import AimsObject
 from pynwchem import NWChemObject
 from pyorca import OrcaObject
-from pytest import TESTObject
+#from pytest import TESTObject
 #from pyff import FFObject
 from pyforcefield import FFobject
 from deg_of_freedom import Centroid, Protomeric, NumberOfMolecules
