@@ -206,7 +206,8 @@ if opt == "restart":
     # flag = adjusted_flag(new_blacklist)     # Need to be adjusted, because, we want to calculate at least one structure.
     # print_output('Adjusted flag for checking for clashes inside the structures is: {}'.format(flag))
     print_output(" \n ___Reinitialization completed___")
-    remover_dir('{:04d}_structure'.format(Calculated+1))      #
+    
+    remover_dir('{:04d}_structure'.format(Calculated))      
     # Removes dir with unfinished calculation
     """ If initialization is not finished it should be finished"""
     if len(new_blacklist) < params['popsize']:
