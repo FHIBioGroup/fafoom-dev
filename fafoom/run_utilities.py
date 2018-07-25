@@ -37,7 +37,7 @@ def simple_or_restart():
             opt = "simple"
     if opt == "simple":
         print_output("Cleaning up the directory")
-        for d in glob.glob("structure_*"):
+        for d in glob.glob("*_structure"):
             remover_dir(d)
         remover_dir("blacklist")
         for f in ["mol.sdf", "control.in", "geometry.in", "output.txt",
