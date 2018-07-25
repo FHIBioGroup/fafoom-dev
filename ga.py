@@ -202,20 +202,19 @@ if opt == "restart":
         print_output('{:<15}{:>10.4f}'.format(population[i], float(population[i])))
     linked_params = run_util.find_linked_params(mol, params)
     Calculated = max(calculated)
-    Structure.index = Calculated + 1
+    
     # flag = adjusted_flag(new_blacklist)     # Need to be adjusted, because, we want to calculate at least one structure.
     # print_output('Adjusted flag for checking for clashes inside the structures is: {}'.format(flag))
     print_output(" \n ___Reinitialization completed___")
-    
-    remover_dir('{:04d}_structure'.format(Calculated))      
-    # Removes dir with unfinished calculation
+    # Remove dir with unfinished calculation
+    remover_dir('{:04d}_structure'.format(Calculated))  
     """ If initialization is not finished it should be finished"""
+    Structure.index = Calculated
     if len(new_blacklist) < params['popsize']:
         # Calculated = 0
         generation_Trials = 0
         volume = mol.volume
         while len(population) < params['popsize'] and Calculated < params['max_iter']:
-            Structure.index = len(population)
             str3d = Structure(mol)
             str3d.generate_structure()
             if not str3d.is_geometry_valid(flag=flag):
@@ -231,7 +230,7 @@ if opt == "restart":
                 if str3d not in BLACKLIST:
                 # if str3d not in blacklist and str3d not in shared_blacklist:
                     str3d.prepare_for_calculation(NumOfAtoms_sur, Periodic_sur, Path_sur)
-                    name = '{:04d}_structure'.format(Calculated+1)
+                    name = '{:04d}_structure'.format(Calculated)
                     # Perform the local optimization
                     print name
                     run_util.optimize(str3d, energy_function, params, name)
