@@ -315,7 +315,8 @@ while Calculated < params['max_iter']:
                 else:
                     found_in_blacklist+=1
                     print '{} found in blacklist'.format(found_in_blacklist)
-                    print_output('Child after relaxation: Found in Blacklist')
+                    print_output('Child after relaxation: Found in Blacklist\n')
+                    print_output('{:<15}{:>10.4f}'.format(child, float(child)))
                     continue
             else:
                 found_in_blacklist += 1

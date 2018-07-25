@@ -328,7 +328,7 @@ def CheckForConvergence(Trials, NotValid, Known, Unique, TimeSpent, Calculations
 def GeneticOperationsOutput(Unique, Calculated, parent1, parent2, after_crossover, after_mutation):
     print_output('\n------------------------------------------------------------\n')
     print_output('Already calculated {} structures'.format(Calculated))
-    print_output('Try to find unique structure {}:\n'.format(Unique))
+    # ~ print_output('Try to find unique structure {}:\n'.format(Unique))
     print_output('Parent 1: {}'.format(parent1))
     relax_info(parent1)
     print_output('Parent 2: {}'.format(parent2))
