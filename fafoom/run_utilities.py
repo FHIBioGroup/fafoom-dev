@@ -20,6 +20,8 @@ import glob
 import os, sys, shutil, time
 import numpy as np
 from utilities import print_output, remover_file, remover_dir, backup
+import operator
+
 
 def simple_or_restart():
     """ Select the type of run. If the all backup files are present the run
@@ -119,6 +121,17 @@ def check_for_kill():
     else:
         print_output("Kill.dat file discovered. The code terminates")
         sys.exit(0)
+
+def extract_population(blacklist, size):
+    d, population={},[]
+    for i in blacklist:
+        d[i.index]=float(i.energy)
+    sorted_d = sorted(d.items(), key=operator.itemgetter(1))
+    for k in sorted_d[:size]:
+        for s in blacklist:
+            if k[0]==s.index:
+                population.append(s)
+    return population
 
 
 def detect_energy_function(params):
@@ -327,7 +340,7 @@ def CheckForConvergence(Trials, NotValid, Known, Unique, TimeSpent, Calculations
 
 def GeneticOperationsOutput(Unique, Calculated, parent1, parent2, after_crossover, after_mutation):
     print_output('\n------------------------------------------------------------\n')
-    print_output('Already calculated {} structures'.format(Calculated))
+    # ~ print_output('Already calculated {} structures'.format(Calculated))
     # ~ print_output('Try to find unique structure {}:\n'.format(Unique))
     print_output('Parent 1: {}'.format(parent1))
     relax_info(parent1)

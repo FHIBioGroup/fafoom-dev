@@ -100,7 +100,7 @@ if opt == "simple":
                 else:
                     found_in_blacklist+=1
                     print '{} found in blacklist'.format(found_in_blacklist)
-                    pass   # The already known structure was obtained after optimization
+                    continue   # The already known structure was obtained after optimization
             else:
                 found_in_blacklist += 1
                 print '{} found in blacklist'.format(found_in_blacklist)
@@ -129,17 +129,16 @@ Starting genetic algorithm: performing of selection, crossing over and mutation
 operations for structures in population pool. """
 # Flag for checking geometries should be valid for relaxed structures:
 # Flag cannot be less than 0.80
-flag = adjusted_flag(population)
+#flag = adjusted_flag(population)
 """ At least for now the flag for checking geometries is adjusted in the way
 that all the relaxed geometries are also sensible geometries."""
 # print_output('Adjusted flag for checking for clashes inside the structures is: {}'.format(flag))
-if Trials > 0:
-    run_util.AnalysisFafoom(Trials, NotValid, Calculated, Known, len(blacklist), run_util.TimeSpent(StartTime))
-Random_Trials, Random_NotValid, Random_Calculated, Random_Known, Random_Blacklist, Random_Time = Trials, NotValid, Calculated, Known, len(blacklist), run_util.TimeSpent(StartTime)
+#if Trials > 0:
+    #run_util.AnalysisFafoom(Trials, NotValid, Calculated, Known, len(blacklist), run_util.TimeSpent(StartTime))
+#Random_Trials, Random_NotValid, Random_Calculated, Random_Known, Random_Blacklist, Random_Time = Trials, NotValid, Calculated, Known, len(blacklist), run_util.TimeSpent(StartTime)
 
 
 if opt == "restart":
-
     flag = 1.0
     # Detect the desired application for energy evaluation.
     energy_function = run_util.detect_energy_function(params)
@@ -154,6 +153,11 @@ if opt == "restart":
     linked_params = run_util.find_linked_params(mol, params)
     BLACKLIST, visited_folders = mol.UpdateBlacklist(
         blacklist=BLACKLIST, folders=visited_folders)
+
+    with open("backup_min_energy.dat") as inf:
+        for line in inf:
+            min_energy.append(eval(line))
+
 
     """Check all the folders"""
     calculated = []
@@ -171,7 +175,7 @@ if opt == "restart":
                 if 'Energy = ' in lines:
                     en = re.search('(Energy = (.*?\d+\.\d+))', lines)
                     break
-            Structure.index = int(ind.group(2)) - 1
+            Structure.index = int(ind.group(2))-1
             str3d = Structure(mol)
             str3d.energy = float(en.group(2))
             str3d.sdf_string = '\n'.join(structure.splitlines()[header:])
@@ -179,37 +183,25 @@ if opt == "restart":
             for dof in str3d.dof:
                 dof.update_values(str3d.sdf_string)
                 setattr(dof, "initial_values", dof.values)
+            str3d.send_to_blacklist(blacklist)
             str3d.send_to_new_blacklist(new_blacklist)
-            # str3d.send_to_blacklist(blacklist)
-    with open("backup_min_energy.dat") as inf:
-        for line in inf:
-            min_energy.append(eval(line))
-    with open("backup_population.dat", 'r') as inf:
-        for line in inf:
-            population.append(eval(line))
-    # with open("backup_Calculated.dat") as inf:
-    #     Calculated_tmp = eval(inf.readline())
-    
-    #~ temp_dic = {}
-    #~ print blacklist.sort()
-    #~ for i in range(len(blacklist)):
-        #~ temp_dic[blacklist[i].index] = blacklist[i].energy
-    #~ temp_sorted = sorted(temp_dic.items(), key=lambda t: t[1])
-    #~ for k in blacklist.index:
-    #~ for i in range(min(len(blacklist), params['popsize'])):
-        #~ population.append(blacklist[temp_sorted[i][0]-1])      
+
+    population = run_util.extract_population(blacklist, params['popsize'])
     for i in range(len(population)):
         print_output('{:<15}{:>10.4f}'.format(population[i], float(population[i])))
     linked_params = run_util.find_linked_params(mol, params)
     Calculated = max(calculated)
     
-    # flag = adjusted_flag(new_blacklist)     # Need to be adjusted, because, we want to calculate at least one structure.
-    # print_output('Adjusted flag for checking for clashes inside the structures is: {}'.format(flag))
     print_output(" \n ___Reinitialization completed___")
     # Remove dir with unfinished calculation
-    remover_dir('{:04d}_structure'.format(Calculated))  
+    fol = '{:04d}_structure'.format(Calculated)
+    if not os.path.exists(os.path.join(fol, 'result.out')):
+        remover_dir('{:04d}_structure'.format(Calculated))
+        Calculated-=1
+        Structure.index = Calculated
+    else:
+        Structure.index = Calculated+1
     """ If initialization is not finished it should be finished"""
-    Structure.index = Calculated
     if len(new_blacklist) < params['popsize']:
         # Calculated = 0
         generation_Trials = 0
@@ -259,11 +251,11 @@ if opt == "restart":
         for i in range(len(population)):
             print_output('{:<15}{:>10.4f}'.format(population[i], float(population[i])))
         min_energy.append(float('{:.3f}'.format(population[0].energy)))
-print Calculated
+print_output('CHECK FOR ME Calculated structures: {}'.format(Calculated))
 """ Start the Genetic Operations routines """
 BLACKLIST, visited_folders = mol.UpdateBlacklist(
     blacklist=BLACKLIST, folders=visited_folders)
-
+#sys.exit(0)
 print_output('Start the Genetic Algorithm part!\n')
 while Calculated < params['max_iter']:
     (parent1, parent2, fitness) = selection(population, params['selection'],
