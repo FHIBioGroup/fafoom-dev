@@ -176,6 +176,7 @@ class AimsObject():
             shutil.copy('result.out', self.dirname)
             shutil.copy('geometry_in.sdf', self.dirname)
             shutil.copy('geometry_out.sdf', self.dirname)
+            shutil.copy('geometry_out.xyz', self.dirname)
             os.remove('geometry.in')
             os.remove('control.in')
             os.remove('geometry_in.sdf')

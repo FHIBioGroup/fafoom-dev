@@ -623,7 +623,7 @@ def sdf2xyz_string(sdf_string, comment):
     xyz_string+='{}\n'.format(numatoms)
     xyz_string+='{}\n'.format(comment)
     for i in xyz_list:
-        xyz_string += '{:<20}{:<20}{:<20}{:<20}\n'.format(i[0], i[1],i[2],i[3])
+        xyz_string += '{:<10}{:>20}{:>20}{:>20}\n'.format(i[0], i[1],i[2],i[3])
     return xyz_string
 
 
