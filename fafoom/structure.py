@@ -558,7 +558,8 @@ class Structure:
             self.sdf_string = aims2sdf(aims_object.get_aims_string_opt(),
                                        self.mol_info.template_sdf_string)
             string2file(self.sdf_string, 'geometry_out.sdf')
-
+            comment='{}  Energy  {}'.format(sourcedir, self.energy)
+            string2file(sdf2xyz_string(self.sdf_string, comment), 'geometry_out.xyz')
             for dof in self.dof:
                 setattr(dof, "initial_values", dof.values)
                 dof.update_values(self.sdf_string)

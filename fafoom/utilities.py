@@ -608,6 +608,24 @@ def sdf2xyz(sdf_string):
                             float(coords_found.group(4))])
     return xyz_list
 
+
+def sdf2xyz_string(sdf_string, comment):
+    """Convert a sdf_string to a xyz_list."""
+    for line in sdf_string.split('\n'):
+        coords_found = re.match(r'(\s*(.?\d+\.\d+)\s*(.?\d+\.\d+)\s*(.?\d+\.\d+)\s*(\w+)\s*?)', line)
+        if coords_found:
+            xyz_list.append([coords_found.group(5),
+                            float(coords_found.group(2)),
+                            float(coords_found.group(3)),
+                            float(coords_found.group(4))])
+    numatoms=len(xyz_list)
+    xyz_string+='{}\n'.format(numatoms)
+    xyz_string+='{}\n'.format(comment)
+    for i in xyz_list:
+        xyz_string += '{:<20}{:<20}{:<20}{:<20}\n'.format(i[0], i[1],i[2],i[3])
+    return xyz_string
+
+
 def sdf2coords_and_atomtypes(sdf_string):
     """Convert a sdf_string to a xyz_list."""
     xyz_list = []
