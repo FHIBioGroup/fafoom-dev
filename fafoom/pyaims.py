@@ -181,6 +181,7 @@ class AimsObject():
             os.remove('control.in')
             os.remove('geometry_in.sdf')
             os.remove('geometry_out.sdf')
+            os.remove('geometry_out.xyz')
             os.remove('result.out')
             remover_file('geometry.in.next_step')
             os.remove('geometry.out')

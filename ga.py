@@ -98,12 +98,12 @@ if opt == "simple":
                     min_energy.append(float('{:.3f}'.format(population[0].energy)))
                     run_util.perform_backup(mol, population, BLACKLIST, Calculated, min_energy, new_blacklist)
                 else:
+                    print_output('Structure {}{:>15.4f}: Found in Blacklist'.format(Calculated, float(str3d)))
+                    run_util.relax_info(str3d)
                     found_in_blacklist+=1
-                    print '{} found in blacklist'.format(found_in_blacklist)
                     continue   # The already known structure was obtained after optimization
             else:
                 found_in_blacklist += 1
-                print '{} found in blacklist'.format(found_in_blacklist)
                 Known += 1  # Geometry is fine, but already known.
                 continue
     if Calculated == params['max_iter']:
@@ -157,8 +157,6 @@ if opt == "restart":
     with open("backup_min_energy.dat") as inf:
         for line in inf:
             min_energy.append(eval(line))
-
-
     """Check all the folders"""
     calculated = []
     for i in os.listdir(os.getcwd()):
@@ -207,6 +205,7 @@ if opt == "restart":
         generation_Trials = 0
         volume = mol.volume
         while len(population) < params['popsize'] and Calculated < params['max_iter']:
+            Structure.index = Calculated
             str3d = Structure(mol)
             str3d.generate_structure()
             if not str3d.is_geometry_valid(flag=flag):
@@ -222,9 +221,8 @@ if opt == "restart":
                 if str3d not in BLACKLIST:
                 # if str3d not in blacklist and str3d not in shared_blacklist:
                     str3d.prepare_for_calculation(NumOfAtoms_sur, Periodic_sur, Path_sur)
-                    name = '{:04d}_structure'.format(Calculated)
+                    name = '{:04d}_structure'.format(Calculated+1)
                     # Perform the local optimization
-                    print name
                     run_util.optimize(str3d, energy_function, params, name)
                     Calculated += 1
                     if run_util.check_for_not_converged(name):
@@ -251,7 +249,7 @@ if opt == "restart":
         for i in range(len(population)):
             print_output('{:<15}{:>10.4f}'.format(population[i], float(population[i])))
         min_energy.append(float('{:.3f}'.format(population[0].energy)))
-print_output('CHECK FOR ME Calculated structures: {}'.format(Calculated))
+#print_output('CHECK FOR ME Calculated structures: {}'.format(Calculated))
 """ Start the Genetic Operations routines """
 BLACKLIST, visited_folders = mol.UpdateBlacklist(
     blacklist=BLACKLIST, folders=visited_folders)
@@ -306,9 +304,9 @@ while Calculated < params['max_iter']:
                     run_util.check_for_kill()
                 else:
                     found_in_blacklist+=1
-                    print '{} found in blacklist'.format(found_in_blacklist)
-                    print_output('Child after relaxation: Found in Blacklist\n')
-                    print_output('{:<15}{:>10.4f}'.format(child, float(child)))
+                    #print_output('Child after relaxation: Found in Blacklist\n')
+                    print_output('Structure {}{:>15.4f}: Found in Blacklist'.format(Calculated, float(child)))
+                    run_util.relax_info(child)
                     continue
             else:
                 found_in_blacklist += 1
