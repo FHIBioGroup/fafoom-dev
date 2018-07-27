@@ -611,6 +611,7 @@ def sdf2xyz(sdf_string):
 
 def sdf2xyz_string(sdf_string, comment):
     """Convert a sdf_string to a xyz_list."""
+    xyz_list=[]
     for line in sdf_string.split('\n'):
         coords_found = re.match(r'(\s*(.?\d+\.\d+)\s*(.?\d+\.\d+)\s*(.?\d+\.\d+)\s*(\w+)\s*?)', line)
         if coords_found:
