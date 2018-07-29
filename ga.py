@@ -253,7 +253,7 @@ if opt == "restart":
 """ Start the Genetic Operations routines """
 BLACKLIST, visited_folders = mol.UpdateBlacklist(
     blacklist=BLACKLIST, folders=visited_folders)
-#sys.exit(0)
+
 print_output('Start the Genetic Algorithm part!\n')
 while Calculated < params['max_iter']:
     (parent1, parent2, fitness) = selection(population, params['selection'],
@@ -298,7 +298,7 @@ while Calculated < params['max_iter']:
                     for i in range(len(population)):
                         print_output('{:<15}{:>10.4f}'.format(population[i], float(population[i])))
                     print_output("\nLowest energies in run: {}".format(min_energy))
-                    run_util.perform_backup(mol, population, blacklist, Calculated, min_energy, new_blacklist)
+                    run_util.perform_backup(mol, population, BLACKLIST, Calculated, min_energy, new_blacklist)
                     # shared_blacklist, visited_folders = run_util.update_shared_blacklist(shared_blacklist, visited_folders, child)
                     run_util.CheckForConvergence(Trials, NotValid, Known, len(blacklist), run_util.TimeSpent(StartTime), Calculated, params, min_energy)
                     run_util.check_for_kill()
@@ -336,6 +336,6 @@ else:
         print_output('{:<15}{:>10.4f}'.format(population[i], float(population[i])))
     print_output('\nTotal information:')
     run_util.AnalysisFafoom(Trials, NotValid, Calculated, Known, len(blacklist), run_util.TimeSpent(StartTime))
-    run_util.perform_backup(mol, population, blacklist, Calculated, min_energy, new_blacklist)
+    run_util.perform_backup(mol, population, BLACKLIST, Calculated, min_energy, new_blacklist)
     run_util.Goodbye()
     sys.exit(0)
