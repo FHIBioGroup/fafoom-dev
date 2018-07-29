@@ -811,9 +811,13 @@ class Structure:
             return vectors
         if NumOfAtoms_sur == 0:           # If the geometry.in.constrained file is empty:
             self.put_to_origin()          # Put the molecule in the origin for convenience.
-        elif NumOfAtoms_sur >= 1 and not Periodic_sur:   # Single Atom in the origin
+        elif NumOfAtoms_sur == 1 and not Periodic_sur:   # Single Atom in the origin
             # Always perform adjustment of the position with respect ot single Atom
             self.adjust_position_ion()
+        elif NumOfAtoms_sur >= 2 and not Periodic_sur:   # Single Atom in the origin
+            print 'This case'
+            # Always perform adjustment of the position with respect ot single Atom
+            self.adjust_position()
         elif NumOfAtoms_sur >= 1 and Periodic_sur:
             # Adjust height of the molecule
             self.adjust_position()
