@@ -59,15 +59,13 @@ if filter_smarts_torsion: #Filter particular torsions from all obtained previous
     custom = list(mol.GetSubstructMatches(pattern_custom))
     to_del_bef_custom = []
     for x in reversed(range(len(torsion))):
-	for y in reversed(range(len(custom))):
-	    ix1, ix2 = ig(1)(torsion[x]), ig(2)(torsion[x])
-	    iy1, iy2 = ig(1)(custom[y]), ig(2)(custom[y])
-	    if (ix1 == iy1 and ix2 == iy2) or (ix1 == iy2 and
-					       ix2 == iy1):
-		to_del_bef_custom.append(x)
+    for y in reversed(range(len(custom))):
+        ix1, ix2 = ig(1)(torsion[x]), ig(2)(torsion[x])
+        iy1, iy2 = ig(1)(custom[y]), ig(2)(custom[y])
+        if (ix1 == iy1 and ix2 == iy2) or (ix1 == iy2 and ix2 == iy1):
+        to_del_bef_custom.append(x)
     custom_torsion = copy(torsion)
-    custom_torsion = [v for i, v in enumerate(custom_torsion)
-		      if i not in set(to_del_bef_custom)]
+    custom_torsion = [v for i, v in enumerate(custom_torsion) if i not in set(to_del_bef_custom)]
     torsion = custom_torsion
 positions = cleaner(torsion) #Return list consist of tuples which contain 4-atoms define torsion angle
 
