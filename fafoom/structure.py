@@ -551,7 +551,6 @@ class Structure:
         aims_object.build_storage(dirname)
         success = aims_object.run_aims(execution_string)
         if success:
-            aims_object.clean_and_store()
             self.energy = aims_object.get_energy()
             self.initial_sdf_string = self.sdf_string
             string2file(self.initial_sdf_string, 'geometry_in.sdf')
@@ -560,6 +559,7 @@ class Structure:
             string2file(self.sdf_string, 'geometry_out.sdf')
             comment='{}  Energy  {}'.format(dirname, self.energy)
             string2file(sdf2xyz_string(self.sdf_string, comment), 'geometry_out.xyz')
+            aims_object.clean_and_store()
             for dof in self.dof:
                 setattr(dof, "initial_values", dof.values)
                 dof.update_values(self.sdf_string)
