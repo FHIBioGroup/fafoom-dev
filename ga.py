@@ -160,7 +160,7 @@ if opt == "restart":
     """Check all the folders"""
     calculated = []
     for i in os.listdir(os.getcwd()):
-        if '_structure' in i:
+        if '_structure' in i and os.path.isdir(i):
             calculated.append(int(i.split('_')[0]))
     with open("backup_new_blacklist.dat") as new:
         everything = new.read()                             # Split everything into separate structures:
