@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import os
 
 with open('all_structures.xyz', 'w') as all_struc:
