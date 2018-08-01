@@ -103,7 +103,7 @@ with open(os.path.join(os.getcwd(), 'parameters.txt'), 'w')  as params:
     params.write('energy_var=0.001\n')
     params.write('selection=\"roulette_wheel\"\n')
     params.write('fitness_sum_limit= 1.2\n')
-    params.write('popsize= 10\n')
+    params.write('popsize= 3\n')
     params.write('prob_for_crossing= 0.9\n')
     params.write('prob_for_mut_torsion= 0.1\n')
     params.write('prob_for_mut_cistrans= 0.1\n')
@@ -115,7 +115,7 @@ with open(os.path.join(os.getcwd(), 'parameters.txt'), 'w')  as params:
     params.write('energy_function = \"FHI-aims\"\n')
     params.write('sourcedir= \"adds\"\n')
     params.write('aims_call= \"aims.x\"\n')
-    params.write('max_iter= 100\n')
+    params.write('max_iter= 5\n')
     params.write('iter_limit_conv= 20\n')
     params.write('energy_diff_conv= 0.001\n')
 
