@@ -297,10 +297,10 @@ def AnalysisFafoom(Trials, NotValid, Calculated, Known, Unique, TimeSpent):
     print_output(' ')
     print_output('{:<30}{:>15}'.format('Total trials', Trials))
     print_output('{:<30}{:>15}'.format('Invalid geometries', NotValid))
-    print_output('{:<30}{:>15}'.format('Found in Blacklist', Known))
-    print_output('{:<30}{:>15}'.format('Total structures calculated', Calculated))
+    print_output('{:<30}{:>15}'.format('Found in Blacklist (Before and after relaxation)', Known))
+    print_output('{:<30}{:>15}'.format('Total structures calculated (max_iter)', Calculated))
     print_output(' ')
-    print_output('{:<30}{:>15}'.format('Unique structures found', Unique))
+    #print_output('{:<30}{:>15}'.format('Unique structures found', Unique))
     print_output('{:<30}{:>15.2f} s'.format('Time spent:', TimeSpent))
     print_output(' ')
 

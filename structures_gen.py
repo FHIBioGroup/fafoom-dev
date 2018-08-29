@@ -2,19 +2,38 @@
 import numpy as np
 import sys
 import os
+from os.path import join
 import re
 import shutil
-
+from fafoom.fileformats import testFormat, takeConnectivity, constructGraph
 from fafoom import *
-from fafoom import MoleculeDescription, Structure, selection, print_output,\
-    remover_dir, set_default, file2dict
-import fafoom.run_utilities as run_util
-from fafoom.measure import centroid_measure
-from fafoom.utilities import sdf2xyz, check_for_clashes
-from fafoom.connectivity import *
-parser = OptionParser()
-parser.add_option("-t", "--test", dest="test", default = None, help="Testing mode will turn on np.random.seed(0) and random number will be predictable and the same. For testing purposes.")
-(options, args) = parser.parse_args()
+
+
+testFolder = 'Structures_gen_test'
+if not os.path.exists(testFolder):
+    os.mkdir(testFolder)
+
+# Working path for testing:
+path = join(os.getcwd(), testFolder)
+
+# Default name of the molecule file
+molecule = os.path.join(path, 'mol.xyz')
+molFormat, coords = testFormat(molecule)
+# Currently works only with XYZ format
+# coords consist of What? Where? : ["N", [coords]]
+
+conn_list=takeConnectivity(coords)
+graph=constructGraph(conn_list)
+
+print conn_list
+print len(conn_list)
+
+
+sys.exit(0)
+
+
+
+
 
 if options.test is not None:
     np.random.seed(0)
