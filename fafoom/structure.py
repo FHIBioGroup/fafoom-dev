@@ -588,6 +588,8 @@ class Structure:
             # ~ print_output("The FHI-aims relaxation failed")
 
     def perform_FF(self, sourcedir, execution_string, dirname):
+
+
         FF_object = FFobject(sourcedir)
         FF_object.generate_input(self.sdf_string)
         FF_object.build_storage(dirname)

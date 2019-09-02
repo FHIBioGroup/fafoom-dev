@@ -14,7 +14,15 @@ parser.add_option("-t", "--test", dest="test", default=None,
                   help="Testing mode will turn on np.random.seed(0)")
 parser.add_option("-r", "--random", dest="random", default=None, help="Generating of random and unique structures")
 parser.add_option("-p", "--prerun", dest="prerun", default=None, help="Updating of the template.sdf file")
+parser.add_option("-c", "--clean", dest="clean", default=None, help="Clean the directory")
+
 (options, args) = parser.parse_args()
+
+# Cleaning up the directory if necessary
+if options.clean is not None:
+    cleanup(os.getcwd())
+    sys.exit(0)
+
 if options.test is not None:
     print('TESTMODE is ACTIVATED but not properly working!!!')
     np.random.seed(0)

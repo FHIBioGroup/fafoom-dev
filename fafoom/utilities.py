@@ -23,6 +23,7 @@ import shutil
 from operator import itemgetter
 np.set_printoptions(suppress=True)
 import ConfigParser
+import shutil
 # from rdkit import Chem
 # from rdkit.Chem import AllChem
 
@@ -52,6 +53,19 @@ VDW_radii = {"X": 1.5,  "H": 1.2,  "He": 1.4, "Li": 1.82, "Be": 2.0, "B": 2.0,
                 "Md": 2.0, "No": 2.0, "Lr": 2.0, "Rf": 2.0, "Db": 2.0, "Sg": 2.0, "Bh": 2.0, "Hs": 2.0,
                 "Mt": 2.0, "Ds": 2.0, "Rg": 2.0}
 bohrtoang = 1.0
+
+def cleanup(directory):
+    """ Clean up the directory"""
+
+    for fi in os.listdir(directory):
+        if os.path.isdir(os.path.join(directory, fi)):
+            if fi!='adds':
+                shutil.rmtree(os.path.join(directory, fi))
+        else:
+            if fi!='parameters.txt':
+                os.remove(os.path.join(directory, fi))
+
+
 def backup(filename, obj):
     """ Write the representation of an object (or objects) to a file."""
     with open(filename, 'w') as outf:
