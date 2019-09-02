@@ -7,6 +7,7 @@ from fafoom import *
 import fafoom.run_utilities as run_util
 import fafoom.utilities as util
 from optparse import OptionParser
+
 StartTime = time.time()
 parser = OptionParser()
 parser.add_option("-t", "--test", dest="test", default=None,
@@ -20,7 +21,7 @@ if options.test is not None:
 np.set_printoptions(suppress=True)      # Correctly writes one-line blacklist
 opt = run_util.simple_or_restart()      # Decide for restart or a simple run.
 """ If genetic algorithm was invoked without additional inputs
-fafoom will try to find parameters.txt file as default. """
+FAFOOM will try to find parameters.txt file as default. """
 if len(sys.argv) < 2:
     if os.path.exists(os.path.join(os.getcwd(), 'parameters.txt')):
         p_file = os.path.join(os.getcwd(), 'parameters.txt')
@@ -41,6 +42,7 @@ BLACKLIST, visited_folders = [], []
 # =======================================================================
 
 if opt == "simple":
+    # 
     run_util.HeadFafoom()
     # Detect the desired application for energy evaluation.
     energy_function = run_util.detect_energy_function(params)
@@ -330,7 +332,7 @@ else:
     print_output('------------------------------------------------------------\n')
     print_output('------------------------------------------------------------\n')
     print_output('------------------------------------------------------------\n')
-    print_output('\nAllowed nubmer of calculations has been exceed!\n')
+    print_output('\nAllowed number of calculations has been exceed!\n')
     population.sort()
     for i in range(len(population)):
         print_output('{:<15}{:>10.4f}'.format(population[i], float(population[i])))
