@@ -48,7 +48,6 @@ population, blacklist, min_energy, new_blacklist = [], [], [], []
 Trials, NotValid, Known, Calculated, found_in_blacklist = 0, 0, 0, 0, 0
 BLACKLIST, visited_folders = [], []
 # =======================================================================
-
 if opt == "simple":
     # 
     run_util.HeadFafoom()
@@ -68,20 +67,40 @@ if opt == "simple":
     print_output('\n___Initialization___\n')
     # Generate sensible and unique 3d structures.
     NumOfAtoms_sur, Periodic_sur, Path_sur = mol.analyze_constrained_geometry()
-    flag = 1.0
-    generation_Trials = 0
+    flag, generation_Trials = 1.0, 0
     BLACKLIST, visited_folders = mol.UpdateBlacklist(blacklist=BLACKLIST, folders=visited_folders)
 
     while len(population) < params['popsize'] and Calculated < params['max_iter']:
         Structure.index = Calculated
         str3d = Structure(mol)
         str3d.generate_structure()
+        if mol.number_of_molecules > 1:
+
+            for ens in range(1, 101):
+                ensemble = Ensemble(mol)
+                ensemble.create_ensemble(mol)
+                ensemble.write_to_separate_files()
+                if not ensemble.clashes_in_ensemble():
+                    ensemble.write_to_one_file()
+                    ensemble.merge_and_write(ens)
+                    ensemble.generate_input()
+                    # sys.exit(0)
+
+            sys.exit(0)
+
+        # if mol.conformations == 'same':
+        #     if str3d.is_geometry_valid(flag=flag):
+        #         for i in range(1, mol.number_of_molecules + 1):
+        #             STRUCTURES['structure_{}'.format(i)] = str3d
+        #     else:
+        #         continue
+
         Trials += 1
         """ In case if created structure is not sensible: """
         if not str3d.is_geometry_valid(flag=flag):
             NotValid+=1
             generation_Trials += 1          # Count number of Trials (allowed 100)
-            if generation_Trials == 10:    # After 100 Trials of failure to generate valid Structure
+            if generation_Trials == 10:     # After 100 Trials of failure to generate valid Structure
                 if flag >= 0.755:           # the criteria of geometry validation (flag) is decreased:
                     flag -= 0.005           # The lowest value of the flag is 0.80, if reached
                     generation_Trials = 0   # it is counted as bad Trials and Calculated += 1.

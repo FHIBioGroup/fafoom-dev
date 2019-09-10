@@ -34,6 +34,10 @@ from deg_of_freedom import Centroid, Protomeric, NumberOfMolecules
 from measure import *
 import numpy as np
 
+from pprint import pprint
+from utilities import sdf2xyz_string, sdf2coords_and_atomtypes
+import collections
+
 
 class MoleculeDescription:
     """Create the molecule."""
@@ -77,7 +81,10 @@ class MoleculeDescription:
                         'volume': (-10, 11, -10, 11, -10, 11),
                         'number_of_protons': 0,
                         'number_of_molecules': 1,
-                        'molecules': 'same',
+                        'conformations': 'same',
+                        'positions' : 'random',
+                        'orientations' : 'random',
+                        'symmetry': 'None',
                         'crossover_method': 'single_point'}
 
         params = set_default(params, dict_default)
@@ -588,8 +595,8 @@ class Structure:
             # ~ print_output("The FHI-aims relaxation failed")
 
     def perform_FF(self, sourcedir, execution_string, dirname):
-
-
+        """Generate the INTERFACE-FF input, run NAMD, assign new attributes and
+        update attribute values."""
         FF_object = FFobject(sourcedir)
         FF_object.generate_input(self.sdf_string)
         FF_object.build_storage(dirname)
@@ -826,3 +833,271 @@ class Structure:
             # FOR NOW put molecule at centre of slab
             self.adjust_xy(extract_lattice_vectors(Path_sur))
 
+class Ensemble:
+    """Create Ensemble out of structures from sdf template"""
+
+    def __init__(self, arg):
+
+        if isinstance(arg, MoleculeDescription):
+            self.mol_info = arg
+            # Structure.index += 1
+            self.index = Structure.index
+            dof = []
+            for i in self.mol_info.dof_names:
+                new_obj = create_dof_object(str(i), getattr(self.mol_info, i))
+                dof.append(new_obj)
+            setattr(self, "dof", dof)
+        else:
+            print_output("Initialization can't be performed. Check the input")
+
+        self.str3d = Structure(arg)
+        self.number_of_molecules = self.str3d.mol_info.number_of_molecules
+        self.conformations = self.str3d.mol_info.conformations
+        self.positions = self.str3d.mol_info.positions
+        self.orientations = self.str3d.mol_info.orientations
+
+
+    def clashes_in_ensemble(self):
+        """Checks if there is some clashes inside of ensemble"""
+        clash = False
+        #For now will check between two molecules
+        # Because I'm interested in symmetric structures.
+        xyz1 = sdf2xyz(self.structures['structure_1'].sdf_string)
+        xyz2 = sdf2xyz(self.structures['structure_2'].sdf_string)
+
+        for x in xyz1:
+            for y in xyz2:
+                coor1 = np.array([x[1], x[2], x[3]])
+                coor2 = np.array([y[1], y[2], y[3]])
+                if np.linalg.norm(coor1-coor2) < VDW_radii[x[0]]*bohrtoang \
+                        or np.linalg.norm(coor1-coor2) < VDW_radii[y[0]]*bohrtoang:
+                    clash = True
+        return clash
+
+
+    def circle_radial_symmetry(self, radius, center):
+
+        step = self.number_of_molecules+10
+        divisions = np.linspace(0, 4*np.pi, step+1)[:-1]
+        coordinates = [np.array([radius*np.cos(a)+center[0],
+                                 radius*np.sin(a)+center[1],
+                                 center[2]])
+                       for a in divisions]
+        return coordinates
+
+    def circle_angle_symmetry(self, Z):
+
+        step = self.number_of_molecules+10
+        divisions = np.linspace(0, 720, step+1)[:-1]
+        quaternion = [np.array([a, Z[0], Z[1], Z[2]])
+                       for a in divisions]
+        return quaternion
+
+    def update_ensemble_values(self, values={}):
+
+        new_values=collections.OrderedDict()
+        for i in range(1, self.number_of_molecules+1):
+            new_values['structure_{}'.format(i)] = collections.OrderedDict()
+            new_values['structure_{}'.format(i)]['centroid'] = values['centroid'][i]
+            new_values['structure_{}'.format(i)]['orientation'] = values['orientation'][i]
+            #Hard coded for now
+            for dofs in self.structures['structure_{}'.format(i)].dof:
+                if dofs.type=='torsion':
+                    new_values['structure_{}'.format(i)]['torsion'] = dofs.values
+
+        for structure in new_values:
+            new_string = deepcopy(self.structures[structure].sdf_string)
+            for dofs in self.structures[structure].dof:
+                new_string = dofs.apply_on_string(new_string, new_values[structure][dofs.type])
+            self.structures[structure].sdf_string = new_string
+            for dofs in self.structures[structure].dof:
+                dofs.update_values(self.structures[structure].sdf_string)
+
+        # Update values:
+        for i in range(1, self.number_of_molecules+1):
+            for dofs in self.structures['structure_{}'.format(i)].dof:
+                self.values['structure_{}'.format(i)][dofs.type] = dofs.values
+
+
+    def generate_input(self):
+        """ Copy files if necessary"""
+        sourcedir=os.path.join(os.getcwd(), 'adds', 'FF')
+
+        if not os.path.exists(os.path.join(os.getcwd(),'surf.pdb')):
+            shutil.copy(os.path.join(sourcedir, 'surf.pdb'), os.getcwd())
+        if not os.path.exists(os.path.join(os.getcwd(),'prepare_psf.run')):
+            shutil.copy(os.path.join(sourcedir, 'prepare_psf.run'), os.getcwd())
+        if not os.path.exists(os.path.join(os.getcwd(),'par_all22_prot_metals.inp')):
+            shutil.copy(os.path.join(sourcedir, 'par_all22_prot_metals.inp'), os.getcwd())
+        if not os.path.exists(os.path.join(os.getcwd(),'top_all22_prot_metals.inp')):
+            shutil.copy(os.path.join(sourcedir, 'top_all22_prot_metals.inp'), os.getcwd())
+        if not os.path.exists(os.path.join(os.getcwd(),'psfgen')):
+            shutil.copy(os.path.join(sourcedir, 'psfgen'), os.getcwd())
+            # if not os.path.exists(os.path.join(os.getcwd(),'par_all22_prot.prm')):
+            #     shutil.copy(os.path.join(self.sourcedir, 'par_all22_prot.prm'), os.getcwd())
+            # if not os.path.exists(os.path.join(os.getcwd(),'top_all22_prot.rtf')):
+            #     shutil.copy(os.path.join(self.sourcedir, 'top_all22_prot.rtf'), os.getcwd())
+
+
+        for num in range(1, self.number_of_molecules+1):
+            with open(os.path.join(os.getcwd(), 'mol_{}.sdf'.format(num)), 'w') as mol_sdf:
+                mol_sdf.write(self.structures['structure_{}'.format(num)].sdf_string)
+            """ Update coords in prepared mol.pdb file in the sourcedirectory. """
+            self.coords = [i[1:] for i in sdf2xyz(self.structures['structure_{}'.format(num)].sdf_string)]
+            """ Extract lines from pdb file for further updating """
+            pdb_file = []
+            with open(os.path.join(os.getcwd(), 'adds', 'mol.pdb'), 'r') as molfile:
+                lines = molfile.readlines()
+                for line in lines:
+                    pdb_line_found = re.match(r'((\w+\s+\d+\s+....?\s+\w\w\w\w?\s+.+)(\d+\s+)(.?\d+\.\d+\s+.?\d+\.\d+\s+.?\d+\.\d+)\s+(.?\d+\.\d+\s+.?\d+\.\d+\s+\w+\s+\w+))', line)
+                    if pdb_line_found:
+                        pdb_file.append([pdb_line_found.group(2),
+                                         pdb_line_found.group(3),
+                                         pdb_line_found.group(4),
+                                         pdb_line_found.group(5)])
+            """ Update coordinates for pdb file from sdf string"""
+            updated_pdb = [[pdb_file[k][0],
+                            pdb_file[k][0],
+                            self.coords[k][0],
+                            self.coords[k][1],
+                            self.coords[k][2],
+                            pdb_file[k][3]] for k in range(len(pdb_file))]
+            """Write to updated pdb file """
+            if os.path.exists(os.path.join(os.getcwd(), 'mol.pdb')):
+                os.remove(os.path.join(os.getcwd(), 'mol.pdb'))
+                create_file = open(os.path.join(os.getcwd(), 'mol_{}.pdb'.format(num)), 'w')
+                create_file.close()
+            else:
+                create_file = open(os.path.join(os.getcwd(), 'mol_{}.pdb'.format(num)), 'w')
+                create_file.close()
+            with open(os.path.join(os.getcwd(), 'mol_{}.pdb'.format(num)), 'a') as updated_file:
+                for line in updated_pdb:
+                    updated_file.write('{: <30}{:<4}{:>8.3f}{:>8.3f}{:>8.3f}{: >24}\n'.format(line[0],
+                                                                                              line[1],
+                                                                                              float(line[2]),
+                                                                                              float(line[3]),
+                                                                                              float(line[4]),
+                                                                                              line[5]))
+            # os.system('cd {} && chmod +x prepare_psf.run'.format(os.getcwd()))
+            # os.system('cd {} && ./prepare_psf.run'.format(os.getcwd()))
+
+
+
+    def create_ensemble(self, arg):
+        """Create set of structures"""
+
+        self.structures = collections.OrderedDict()
+        self.values = collections.OrderedDict()
+
+        if self.conformations == 'same':
+            Trials = 100
+            for trial in range(Trials):
+                self.str3d = Structure(arg)
+                self.str3d.generate_structure()
+                if not self.str3d.is_geometry_valid(flag=0.8) and trial<=100:
+                        continue
+                else:
+                    for i in range(1, self.number_of_molecules+1):
+                        copied_structure = deepcopy(self.str3d)
+                        self.structures['structure_{}'.format(i)] = copied_structure
+                        # self.structures['structure_{}'.format(i)] = self.str3d
+                        self.structures['structure_{}'.format(i)].index = i
+                        self.values['structure_{}'.format(i)] = collections.OrderedDict()
+                        # Record the values of DOF for the structure
+                        for dofs in self.structures['structure_{}'.format(i)].dof:
+                            self.values['structure_{}'.format(i)][dofs.type] = dofs.values
+
+
+        elif self.conformations == 'random':
+            Trials = 100
+            for i in range(1, self.number_of_molecules+1):
+                for trial in range(Trials):
+                    self.str3d = Structure(arg)
+                    self.str3d.generate_structure()
+                    if not self.str3d.is_geometry_valid(flag=0.8) and trial<=100:
+                            continue
+                    else:
+                        self.structures['structure_{}'.format(i)] = self.str3d
+                        self.values['structure_{}'.format(i)] = collections.OrderedDict()
+                        # Record the values of DOF for the structure
+                        for dofs in self.structures['structure_{}'.format(i)].dof:
+                            self.values['structure_{}'.format(i)][dofs.type] = dofs.values
+
+
+
+
+        values = {}
+        values['centroid'] = self.circle_radial_symmetry(10, np.array([26, 22, 14]))
+        values['orientation'] = self.circle_angle_symmetry([0,0,1])
+        self.update_ensemble_values(values=values)
+
+        # Test
+        # generate_input(self.structures['structure_1'].sdf_string)
+
+        if not self.clashes_in_ensemble():
+            print('No clashes!')
+        else:
+            pass
+
+        if self.positions == 'random':
+            # Assign positions to each structure
+            pass
+
+        elif self.positions == 'something_else':
+            # Assign positions to each structure
+            pass
+
+        if self.orientations == 'random':
+            # Assign orientations to each structure
+            pass
+
+        elif self.orientations == 'same':
+            # Assign orientations to each structure
+            pass
+
+
+
+
+
+
+
+
+
+
+    def write_to_separate_files(self):
+
+        for i in range(1, self.number_of_molecules + 1):
+            with open('structure_{}.sdf'.format(i), 'w') as f:
+                f.write(self.structures['structure_{}'.format(i)].sdf_string)
+
+    def write_to_one_file(self):
+
+        with open('all_structures.xyz', 'w') as f:
+            for i in range(1, self.number_of_molecules + 1):
+                f.write(sdf2xyz_string(self.structures['structure_{}'.format(i)].sdf_string, 'structure_{}'.format(i)))
+
+    def merge_and_write(self, ens):
+
+        num_of_atoms = (self.number_of_molecules)*self.structures['structure_1'].mol_info.atoms
+        with open('ensemble_{}.xyz'.format(str(ens)), 'w') as  f:
+            f.write('{}\nTest\n'.format(num_of_atoms))
+            for i in range(1, self.number_of_molecules + 1):
+                xyz_list, atomtypes = sdf2coords_and_atomtypes(
+                    self.structures['structure_{}'.format(i)].sdf_string)
+                for k in range(len(atomtypes)):
+                    f.write('{:<4}{:<20}{:<20}{:<20}\n'.format(atomtypes[k],
+                                                             xyz_list[k][0],
+                                                             xyz_list[k][1],
+                                                             xyz_list[k][2]))
+
+
+
+
+
+
+
+        # for structure in self.structures:
+        #     print structure
+        #     for dofs in self.structures[structure].dof:
+        #         print(dofs.values)
+        #         # print(structure, self.structures[structure].dof, self.structures[structure].dof.values)

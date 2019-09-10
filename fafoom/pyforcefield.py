@@ -9,6 +9,7 @@ import numpy as np
 from utilities import sdf2xyz
 #import matplotlib.pyplot as plt
 kjtoev = 0.01
+
 def natural_sort(l):
     convert = lambda text: int(text) if text.isdigit() else text.lower()
     alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
@@ -20,6 +21,7 @@ def produce_xyz(path, sorted_dict):
     	xyz.write('Comment\n')
     	for i in sorted_dict:
     	    xyz.write('{}   {}   {}   {}\n'.format(i[0].split(':')[-1], i[1][1][0], i[1][1][1], i[1][1][2]))
+
 def make_constrains(some_file):
     if os.path.exists(os.path.join(os.getcwd(), 'temp_file.pdb')):
         os.remove(os.path.join(os.getcwd(), 'temp_file.pdb'))

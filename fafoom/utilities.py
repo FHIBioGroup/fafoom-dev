@@ -56,7 +56,6 @@ bohrtoang = 1.0
 
 def cleanup(directory):
     """ Clean up the directory"""
-
     for fi in os.listdir(directory):
         if os.path.isdir(os.path.join(directory, fi)):
             if fi!='adds':
