@@ -79,7 +79,7 @@ if opt == "simple":
         lattice = ensemble.extract_lattice_vectors()
         ensemble.create_ensemble(mol)
         ensemble.write_to_separate_files()
-        if not ensemble.clashes_in_ensemble(periodicity=lattice, attempt=trial):lem
+        if not ensemble.clashes_in_ensemble(periodicity=lattice, attempt=trial):
             ensemble.write_to_aims(trial, lattice)
             population.append(ensemble)
         else:
