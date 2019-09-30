@@ -546,6 +546,16 @@ def aims2xyz_masses(aims_file):
     xyz_coords_array = np.array([ np.array([i[0], i[1], i[2], float(atom_masses[i[3]]) ]) for i in xyz_coords])
     return xyz_coords_array
 
+def aims2string_nolattice(aims_file):
+
+    string = ''
+    with open(aims_file, 'r') as aims:
+        lines = aims.readlines()
+        for line in lines:
+            if 'atom' in line:
+                string+=line
+    return string
+
 def aims2xyz(aims_file):
     xyz_coords = []
     with open(aims_file, 'r') as aims:
@@ -570,6 +580,20 @@ def aims2xyz_vdw(aims_file):
     xyz_coords_array = np.array([ np.array([VDW_radii[i[0]]*bohrtoang, i[1], i[2], i[3]]) for i in xyz_coords])
     return xyz_coords_array
 
+def aims2xyz_vdw_with_name(aims_file):
+    xyz_coords = []
+    atomnames = []
+    with open(aims_file, 'r') as aims:
+        lines = aims.readlines()
+        for line in lines:
+            atoms = re.match(r'(.*?atom\s*?(.\d+\.\d+)\s*?(.\d+\.\d+)\s*?(.\d+\.\d+)\s*?(\w+))', line)
+            if atoms:
+                atomnames.append(str(atoms.group(5)))
+                xyz_coords.append([str(atoms.group(5)), float(atoms.group(2)), float(atoms.group(3)), float(atoms.group(4))])
+    aims.close()
+    xyz_coords_array = np.array([ np.array([VDW_radii[i[0]]*bohrtoang, i[1], i[2], i[3]]) for i in xyz_coords])
+    return xyz_coords_array, atomnames
+
 def aims2xyz_extended(aims_file): # returns [coord_1, coord_2, coord_3, Atom_symbol, Atom_mass, Atom_VDW_radii]
     xyz_coords = []
     with open(aims_file, 'r') as aims:
@@ -593,6 +617,20 @@ def sdf2xyz_list(sdf_string):
                                     float(coords_found.group(3)),
                                     float(coords_found.group(4))]))
     return np.array(xyz_list)
+
+def sdf2xyz_list_with_name(sdf_string):
+    # Returns 5 column array with vdW radii at first place and coordinates at other place + atom name.
+    xyz_list = []
+    atomnames = []
+    for line in sdf_string.split('\n'):
+        coords_found = re.match(r'(\s*(.?\d+\.\d+)\s*(.?\d+\.\d+)\s*(.?\d+\.\d+)\s*(\w+)\s+)', line)
+        if coords_found:
+            xyz_list.append(np.array([float(VDW_radii[coords_found.group(5)]*bohrtoang),
+                                    float(coords_found.group(2)),
+                                    float(coords_found.group(3)),
+                                    float(coords_found.group(4))]))
+            atomnames.append(coords_found.group(5))
+    return np.array(xyz_list), atomnames
 
 def sdf2aims(sdf_string):
     """Convert a sdf string to a aims string."""
@@ -755,3 +793,13 @@ def NumberOfGoodStructures(*args):
             ValidStructures+=1
     return ValidStructures
 
+def xyz_list2aims(xyz_list, atomnames, lattice):
+    string = ''
+    for i in lattice:
+        string+='lattice_vector   {:<20}{:<20}{:<20}\n'.format(i[0], i[1], i[2])
+    for i in range(len(atomnames)):
+        string+='atom       {:<20}{:<20}{:<20}{:<20}\n'.format(xyz_list[i][1],
+                                                               xyz_list[i][2],
+                                                               xyz_list[i][3],
+                                                               atomnames[i])
+    return string

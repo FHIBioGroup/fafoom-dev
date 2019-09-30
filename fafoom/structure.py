@@ -16,27 +16,30 @@
 #   along with fafoom.  If not, see <http://www.gnu.org/licenses/>.
 ''' Handle the molecule and its 3D structures.'''
 from __future__ import division
+
+import collections
+import copy
+import os
 from copy import deepcopy
+
+import numpy as np
+from deg_of_freedom import Centroid, Protomeric, NumberOfMolecules
+from genetic_operations import crossover_single_point, crossover_random_points
 from get_parameters import (
     create_dof_object,
     get_atoms_and_bonds,
     get_positions,
     template_sdf
 )
-from genetic_operations import crossover_single_point, crossover_random_points
+from measure import *
+from measure import produce_quaternion
 from pyaims import AimsObject
+# from pytest import TESTObject
+# from pyff import FFObject
+from pyforcefield import FFobject
 from pynwchem import NWChemObject
 from pyorca import OrcaObject
-#from pytest import TESTObject
-#from pyff import FFObject
-from pyforcefield import FFobject
-from deg_of_freedom import Centroid, Protomeric, NumberOfMolecules
-from measure import *
-import numpy as np
-
-from pprint import pprint
 from utilities import sdf2xyz_string, sdf2coords_and_atomtypes
-import collections
 
 
 class MoleculeDescription:
@@ -69,7 +72,7 @@ class MoleculeDescription:
         dict_default = {'rmsd_type': "internal",
                         'rmsd_cutoff_uniq': 0.2,
                         'chiral': False,
-                        'optimize_torsion': True,
+                        'optimize_torsion': False,
                         'optimize_cistrans': False,
                         'optimize_centroid': False,
                         'optimize_orientation': False,
@@ -80,10 +83,11 @@ class MoleculeDescription:
                         'right_order_to_assign': ['torsion', 'cistrans', 'centroid', 'orientation', 'protomeric'],
                         'volume': (-10, 11, -10, 11, -10, 11),
                         'number_of_protons': 0,
-                        'number_of_molecules': 1,
+                        'number_of_molecules':1,
                         'conformations': 'same',
-                        'positions' : 'random',
-                        'orientations' : 'random',
+                        'positions': 'random',
+                        'z_value': 0,
+                        'orientations': 'random',
                         'symmetry': 'None',
                         'crossover_method': 'single_point'}
 
@@ -214,18 +218,18 @@ class MoleculeDescription:
                     visited_folders.append(str_folder)
         return shared_blacklist, visited_folders
 
-
-
     def create_template_sdf(self):
         """Assign new attribute (template_sdf_string) to the object."""
+
         self.template_sdf_string = template_sdf(self.sdf_string_template)  # Need to revise, looks very confusing.
 
     def get_parameters(self):
+        """Assign permanent attributes (number of atoms, number of bonds and
+        degrees of freedom related attributes) to the object."""
+
         with open(os.path.join(os.getcwd(), self.sdf_string_template), 'r') as sdf_file:
             self.sdf_string_template = sdf_file.read()
 
-        """Assign permanent attributes (number of atoms, number of bonds and
-        degrees of freedom related attributes) to the object."""
         self.atoms, self.bonds = get_atoms_and_bonds(self.sdf_string_template)
         self_copy = deepcopy(self)
         dof_names = []
@@ -243,20 +247,6 @@ class MoleculeDescription:
                 else:
                     print_output("The degree to optimize: " + str(type_of_dof) +
                                  " hasn't been found.")
-
-        geom_file = os.path.join(os.getcwd(), self.constrained_geometry_file)
-        if os.path.isfile(geom_file):
-            if len(aims2xyz(geom_file)) == 0:
-                if 'centroid' in dof_names:
-                    dof_names.remove('centroid')
-                if 'orientation' in dof_names:
-                    dof_names.remove('orientation')
-        else:
-            if 'centroid' in dof_names:
-                dof_names.remove('centroid')
-            if 'orientation' in dof_names:
-                dof_names.remove('orientation')
-            open(geom_file, 'w').close()
 
         updated_order = []
         for i in self.right_order_to_assign:
@@ -390,9 +380,11 @@ class Structure:
         """Generate a 3D structures. If no values are passed, a random
         structure will be generated (weights, associated with the degrees of
         freedom, will be taken into account)."""
+
         new_string = deepcopy(self.mol_info.template_sdf_string)
         for dof in self.dof:
             if dof.type in values.keys():
+                print(dof.type)
                 new_string = dof.apply_on_string(new_string, values[dof.type])
             else:
                 if hasattr(self.mol_info, "weights_" + str(dof.type)):
@@ -407,11 +399,13 @@ class Structure:
 
     def is_geometry_valid(self, flag):
         """Return True if the geometry is valid."""
+
         check = check_geo_sdf(self.sdf_string, flag=flag)
         return check
 
     def is_geometry_valid_after_crossover(self):
         """Return True if the geometry is valid."""
+
         check = check_geo_sdf_after_crossover(self.sdf_string)
         return check
 
@@ -435,7 +429,7 @@ class Structure:
 
         """ To VERIFY """
         # if hasattr(self, "initial_sdf_string"):
-            # obj1, obj2 = obj2, obj1
+        # obj1, obj2 = obj2, obj1
         # if hasattr(obj1, "initial_sdf_string"):
         #     raise Exception("Both structures are already relaxed.")
 
@@ -475,6 +469,7 @@ class Structure:
 
     def __cmp__(self, other):
         """Compare two object basing on their energy values."""
+
         return cmp(self.energy, other.energy)
 
     def send_to_blacklist(self, array):
@@ -488,6 +483,15 @@ class Structure:
 
         array.append(self)
 
+    def produce_header(sdf_string):
+        """Produce header for output file"""
+
+        all_lines = sdf_string.splitlines()
+        all_lines[0] = ' FAFOOM powered'
+        all_lines[1] = ' Index = {}'.format(self.index)
+        all_lines[2] = ' Energy = {}'.format(float(self))
+        return '\n'.join(all_lines)
+
     def send_to_new_blacklist(self, array):
         """Append the structure to dedicated array.
 
@@ -496,13 +500,6 @@ class Structure:
         Raise:
             NameError: if the array not defined
         """
-
-        def produce_header(sdf_string):
-            all_lines = sdf_string.splitlines()
-            all_lines[0] = ' FAFOOM powered'
-            all_lines[1] = ' Index = {}'.format(self.index)
-            all_lines[2] = ' Energy = {}'.format(float(self))
-            return '\n'.join(all_lines)
 
         updated_string = produce_header(self.sdf_string)
         structure_for_blacklist = '{}\n$$$$\n'.format(updated_string)
@@ -517,19 +514,13 @@ class Structure:
             NameError: if the array not defined
         """
 
-        def produce_header(sdf_string):
-            all_lines = sdf_string.splitlines()
-            all_lines[0] = ' FAFOOM powered'
-            all_lines[1] = ' Index = {}'.format(self.index)
-            all_lines[2] = ' Energy = {}'.format(0)
-            return '\n'.join(all_lines)
-
         updated_string = produce_header(self.sdf_string)
         structure_for_blacklist = '{}\n$$$$\n'.format(updated_string)
         array.append(structure_for_blacklist)
 
     def perform_random(self, sourcedir, dirname):
         """Stores random structures without futher calculations"""
+
         aims_object = AimsObject(sourcedir)
         aims_object.generate_input(self.sdf_string)
         aims_object.build_storage(dirname)
@@ -538,6 +529,7 @@ class Structure:
 
     def perform_random_test(self, sourcedir, dirname):
         """Stores random structures without futher calculations"""
+
         test_object = TESTObject(sourcedir)
         self.initial_sdf_string = self.sdf_string
         test_object.generate_input(self.sdf_string)
@@ -597,6 +589,7 @@ class Structure:
     def perform_FF(self, sourcedir, execution_string, dirname):
         """Generate the INTERFACE-FF input, run NAMD, assign new attributes and
         update attribute values."""
+
         FF_object = FFobject(sourcedir)
         FF_object.generate_input(self.sdf_string)
         FF_object.build_storage(dirname)
@@ -661,6 +654,7 @@ class Structure:
 
     def crossover(self, other, method='random_points'):
         """Perform the crossover."""
+
         child1 = Structure(self.mol_info)
         child2 = Structure(self.mol_info)
         for dof_par1, dof_par2, dof_child1, dof_child2 in zip(self.dof, other.dof,
@@ -695,6 +689,7 @@ class Structure:
 
     def mutate(self, **kwargs):
         """ Perform mutation """
+
         def call_mut(dof, max_mutations=None, weights=None):
             if max_mutations is not None:
                 if hasattr(self.mol_info, "weights_" + str(dof.type)):
@@ -756,6 +751,7 @@ class Structure:
 
     def adjust_position_ion(self):
         """ Adjust position of the molecule with respect to the single Atom  placed in the origin """
+
         def cart2sph(x, y, z):      # Cartesian to Spherical coordinates
             hxy = np.hypot(x, y)
             r = np.hypot(hxy, z)
@@ -799,6 +795,9 @@ class Structure:
                 dof.update_values(self.sdf_string)
 
     def adjust_xy(self, lat_vectors):
+        """Adjusting of the COM position and puts molecule into center
+        of the unit cell. Works well for rectangular unit cell"""
+
         x = lat_vectors[0][0]*0.5
         y = lat_vectors[1][1]*0.5
         com = get_centre_of_mass_from_sdf(self.sdf_string)
@@ -818,26 +817,26 @@ class Structure:
                     if 'lattice_vector' in line:
                         vectors.append([float(x) for x in line.split()[1:]])
             return vectors
-        if NumOfAtoms_sur == 0:           # If the geometry.in.constrained file is empty:
-            self.put_to_origin()          # Put the molecule in the origin for convenience.
-        elif NumOfAtoms_sur == 1 and not Periodic_sur:   # Single Atom in the origin
-            # Always perform adjustment of the position with respect ot single Atom
-            self.adjust_position_ion()
-        elif NumOfAtoms_sur >= 2 and not Periodic_sur:   # Single Atom in the origin
-            print 'This case'
-            # Always perform adjustment of the position with respect ot single Atom
-            self.adjust_position()
-        elif NumOfAtoms_sur >= 1 and Periodic_sur:
-            # Adjust height of the molecule
-            self.adjust_position()
-            # FOR NOW put molecule at centre of slab
-            self.adjust_xy(extract_lattice_vectors(Path_sur))
+        # if NumOfAtoms_sur == 0:           # If the geometry.in.constrained file is empty:
+        #     self.put_to_origin()          # Put the molecule in the origin for convenience.
+        # elif NumOfAtoms_sur == 1 and not Periodic_sur:   # Single Atom in the origin
+        #     # Always perform adjustment of the position with respect ot single Atom
+        #     self.adjust_position_ion()
+        # elif NumOfAtoms_sur >= 2 and not Periodic_sur:   # Single Atom in the origin
+        #     print 'This case'
+        #     # Always perform adjustment of the position with respect ot single Atom
+        #     self.adjust_position()
+        # elif NumOfAtoms_sur >= 1 and Periodic_sur:
+        #     # Adjust height of the molecule
+        #     self.adjust_position()
+        #     # FOR NOW put molecule at centre of slab
+        #     self.adjust_xy(extract_lattice_vectors(Path_sur))
+
 
 class Ensemble:
     """Create Ensemble out of structures from sdf template"""
 
     def __init__(self, arg):
-
         if isinstance(arg, MoleculeDescription):
             self.mol_info = arg
             # Structure.index += 1
@@ -855,27 +854,281 @@ class Ensemble:
         self.conformations = self.str3d.mol_info.conformations
         self.positions = self.str3d.mol_info.positions
         self.orientations = self.str3d.mol_info.orientations
+        self.fixedframe = self.str3d.mol_info.constrained_geometry_file
+        self.z_value = float(self.str3d.mol_info.z_value)
 
+    def clashes_in_ensemble(self, attempt, periodicity=[],):
+        """Checks if there is some clashes inside ensemble"""
 
-    def clashes_in_ensemble(self):
-        """Checks if there is some clashes inside of ensemble"""
-        clash = False
-        #For now will check between two molecules
-        # Because I'm interested in symmetric structures.
-        xyz1 = sdf2xyz(self.structures['structure_1'].sdf_string)
-        xyz2 = sdf2xyz(self.structures['structure_2'].sdf_string)
+        def clash_between_molecules(coords1, coords2, flag):
+            """Checking clashes between molecules"""
 
-        for x in xyz1:
-            for y in xyz2:
-                coor1 = np.array([x[1], x[2], x[3]])
-                coor2 = np.array([y[1], y[2], y[3]])
-                if np.linalg.norm(coor1-coor2) < VDW_radii[x[0]]*bohrtoang \
-                        or np.linalg.norm(coor1-coor2) < VDW_radii[y[0]]*bohrtoang:
+            clash = False
+            if len(coords1) != 0 and len(coords2)!=0:
+                for x in coords1:
+                    for y in coords2:
+                        dist = np.linalg.norm(x[1:] - y[1:])
+                        if dist < flag*(x[0] + y[0]):
+                            # print(dist, flag*(x[0] + y[0]), flag)
+                            clash = True
+                            break
+            else:
+                return clash
+            return clash
+
+        def clash_within_molecule_periodic(sdf_template, coordinates, periodicity, invert, positions):
+            """Check if there is clash within molecule with
+            periodic boundary conditions. Suitable also for one molecule"""
+
+            # Need to add dimension conditions like 2D and 3D
+            clash = False
+
+            # Check for clashes with periodic images
+            # Example: atoms can be in the different parts of one lattice vector
+            # so the test will be passed but the molecule will still ave clashes
+            # with periodic images of itself.
+
+            # Now we will produce periodic images in different directions and check
+            # if there are clashes between molecule and it's image:
+
+            # Need to be tested more, but looks like it is faster to
+            # check this first and try another molecule than map atoms back into unit
+            # cell first and only then check clashes with periodic images.
+
+            shift_1 = copy.deepcopy(coordinates)
+            shift_1[:, 1:] = shift_1[:, 1:] + periodicity[0]
+            if clash_between_molecules(coordinates, shift_1, flag=0.42):
+                clash = True
+                return clash
+
+            shift_2 = copy.deepcopy(coordinates)
+            shift_2[:, 1:] = shift_2[:, 1:] + periodicity[1]
+            if clash_between_molecules(coordinates, shift_2, flag=0.42):
+                clash = True
+                return clash
+
+            if positions != '2D_random':
+                shift_3 = copy.deepcopy(coordinates)
+                shift_3[:, 1:] = shift_3[:, 1:] + periodicity[2]
+                if clash_between_molecules(coordinates, shift_3, flag=0.42):
                     clash = True
-        return clash
+                    return clash
 
+            shift_12 = copy.deepcopy(coordinates)
+            shift_12[:, 1:] = shift_12[:, 1:] + periodicity[0]
+            shift_12[:, 1:] = shift_12[:, 1:] + periodicity[1]
+            if clash_between_molecules(coordinates, shift_12, flag=0.42):
+                clash = True
+                return clash
+
+            if positions != '2D_random':
+                shift_23 = copy.deepcopy(coordinates)
+                shift_23[:, 1:] = shift_23[:, 1:] + periodicity[1]
+                shift_23[:, 1:] = shift_23[:, 1:] + periodicity[2]
+                if clash_between_molecules(coordinates, shift_23, flag=0.42):
+                    clash = True
+                    return clash
+
+            if positions != '2D_random':
+                shift_123 = copy.deepcopy(coordinates)
+                shift_123[:, 1:] = shift_123[:, 1:] + periodicity[0]
+                shift_123[:, 1:] = shift_123[:, 1:] + periodicity[1]
+                shift_123[:, 1:] = shift_123[:, 1:] + periodicity[2]
+                if clash_between_molecules(coordinates, shift_123, flag=0.42):
+                    clash = True
+                    return clash
+
+            # Second we map all the atoms into unit cell and check
+            # for internal clashes. Take the connectivity into account
+
+            graph = construct_graph(sdf_template)
+            # Don't forget to transpose matrix back
+            # in order to map atoms into unit cell
+            fractional_coordinates = np.dot(coordinates[:, 1:], invert.T)
+
+            # For every fractional coordinate that exceeds 0 or 1
+            # atom is mapped back into the unit cell
+            for i in range(len(coordinates)):
+                for k in range(3):
+                    if fractional_coordinates[i][k] < 0:
+                        coordinates[i, 1:] = coordinates[i, 1:] + periodicity[k]
+                    elif fractional_coordinates[i][k] > 1:
+                        coordinates[i, 1:] = coordinates[i, 1:] - periodicity[k]
+
+            # Now check for all disconnected atoms if there is a clash between them:
+            for i in range(1, len(coordinates) + 1):
+                for k in range(1, len(coordinates) + 1):
+                    # graph[i] identifies the labels of atoms connected to atom i
+                    # we neglect them while checking for clashes
+                    if k > i and k not in graph[i]:
+                        dist = np.linalg.norm(coordinates[i - 1, 1:] - coordinates[k - 1, 1:])
+                        if dist < 0.45 * (coordinates[i - 1][0] + coordinates[k - 1][0]):
+                            clash = True
+                            return clash
+            return clash
+
+        def clash_between_molecules_periodic(coordinates1, coordinates2, periodicity, invert, positions):
+            """Check if there is clash between molecules with
+            periodic boundary conditions"""
+
+            clash = False
+            shift_1 = copy.deepcopy(coordinates1)
+            shift_1[:, 1:] = shift_1[:, 1:] + periodicity[0]
+            if clash_between_molecules(coordinates2, shift_1, flag=0.42):
+                clash = True
+                return clash
+
+            shift_2 = copy.deepcopy(coordinates1)
+            shift_2[:, 1:] = shift_2[:, 1:] + periodicity[1]
+            if clash_between_molecules(coordinates2, shift_2, flag=0.42):
+                clash = True
+                return clash
+
+
+            shift_12 = copy.deepcopy(coordinates1)
+            shift_12[:, 1:] = shift_12[:, 1:] + periodicity[0]
+            shift_12[:, 1:] = shift_12[:, 1:] + periodicity[1]
+            if clash_between_molecules(coordinates2, shift_12, flag=0.42):
+                clash = True
+                return clash
+
+            shift_1 = copy.deepcopy(coordinates1)
+            shift_1[:, 1:] = shift_1[:, 1:] - periodicity[0]
+            if clash_between_molecules(coordinates2, shift_1, flag=0.42):
+                clash = True
+                return clash
+
+            shift_2 = copy.deepcopy(coordinates1)
+            shift_2[:, 1:] = shift_2[:, 1:] - periodicity[1]
+            if clash_between_molecules(coordinates2, shift_2, flag=0.42):
+                clash = True
+                return clash
+
+            shift_12 = copy.deepcopy(coordinates1)
+            shift_12[:, 1:] = shift_12[:, 1:] - periodicity[0]
+            shift_12[:, 1:] = shift_12[:, 1:] - periodicity[1]
+            if clash_between_molecules(coordinates2, shift_12, flag=0.42):
+                clash = True
+                return clash
+
+            # shift_3 = coordinates[:,1:] + periodicity[2]
+            shift_12 = copy.deepcopy(coordinates1)
+            shift_12[:, 1:] = shift_12[:, 1:] + periodicity[0]
+            shift_12[:, 1:] = shift_12[:, 1:] - periodicity[1]
+            if clash_between_molecules(coordinates2, shift_12, flag=0.42):
+                clash = True
+                return clash
+
+            # shift_3 = coordinates[:,1:] + periodicity[2]
+            shift_12 = copy.deepcopy(coordinates1)
+            shift_12[:,1:] = shift_12[:, 1:] - periodicity[0]
+            shift_12[:, 1:] = shift_12[:, 1:] + periodicity[1]
+            if clash_between_molecules(coordinates2, shift_12, flag=0.42):
+                clash = True
+                return clash
+
+            fractional_coordinates1 = np.dot(coordinates1[:, 1:], invert.T)
+            fractional_coordinates2 = np.dot(coordinates2[:, 1:], invert.T)
+
+            for i in range(len(coordinates1)):
+                for k in range(3):
+                    if fractional_coordinates1[i][k] <= 0:
+                        coordinates1[i, 1:] = coordinates1[i, 1:] + periodicity[k]
+                    elif fractional_coordinates1[i][k] >= 1:
+                        coordinates1[i, 1:] = coordinates1[i, 1:] - periodicity[k]
+
+            for z in range(len(coordinates2)):
+                for g in range(3):
+                    if fractional_coordinates2[z][g] <= 0:
+                        coordinates2[z, 1:] = coordinates2[z, 1:] + periodicity[g]
+                    elif fractional_coordinates2[z][g] >= 1:
+                        coordinates2[z, 1:] = coordinates2[z, 1:] - periodicity[g]
+
+            # f = open('Trial_{}.in'.format(np.random.randint(10000000)), 'w')
+            # f.write(xyz_list2aims(coordinates2, Atomnames, periodicity))
+            # f.close()
+            # now we have one coordinate updated and placed within the box
+            # Next we calculate if there are clashes with other molecules in the box
+            clash = clash_between_molecules(coordinates1, coordinates2, flag = 0.5)
+            return clash
+
+        print('Trial number {}'.format(attempt))
+        invert = np.linalg.inv(np.array(periodicity).T)
+        ens_mapped_into = np.array([])
+        Atomnames=[]
+        for i in range(1, self.number_of_molecules + 1):
+            xyz_list, atomnames = sdf2xyz_list_with_name(self.structures['structure_{}'.format(i)].sdf_string)
+            # print(self.structures['structure_{}'.format(i)].sdf_string)
+            Atomnames += atomnames
+            length = len(xyz_list)
+            ens_mapped_into = np.append(ens_mapped_into, np.array(xyz_list))
+        # sys.exit(0)
+        # all_coords = ens_mapped_into.reshape(length*(self.number_of_molecules), 4)
+        # new_coords = all_coords
+        # coords_inside = coords_inside_the_box(all_coords[:,1:], periodicity, invert)
+        # new_coords[:,1:] = coords_inside
+        # clash = check_all_for_clashes(new_coords)
+        # print(xyz_list2aims(new_coords, periodicity))
+        # f = open('Trial_{}.in'.format(np.random.randint(10000000)), 'w')
+        # f.write(xyz_list2aims(all_coords, Atomnames, periodicity))
+        # f.close()
+        # sys.exit(0)
+        clash = False
+        xyz_ff, atomnames_ff = aims2xyz_vdw_with_name(self.fixedframe)
+        if self.number_of_molecules > 1:
+            for i in range(1, self.number_of_molecules+1):
+                for k in range(1, self.number_of_molecules+1):
+                    if k>i:
+                        # First value is VdW radii of the atom and next three are coordinates
+                        xyz_list1, atomnames1 = sdf2xyz_list_with_name(
+                            self.structures['structure_{}'.format(k)].sdf_string)
+                        xyz_list2, atomnames2 = sdf2xyz_list_with_name(
+                            self.structures['structure_{}'.format(i)].sdf_string)
+                        # This is gonna be suuuuuper slow!
+                        if not clash_between_molecules(xyz_list1, xyz_ff, flag=0.42):
+                            if not clash_between_molecules(xyz_list2, xyz_ff, flag=0.42):
+                                if not clash_between_molecules(xyz_list1, xyz_list2, flag=0.4):
+                                    if not clash_between_molecules_periodic(xyz_list1, xyz_list2, periodicity, invert, positions = self.positions):
+                                        if not clash_within_molecule_periodic(self.structures['structure_{}'.format(i)].sdf_string,
+                                                                          xyz_list2, periodicity, invert, positions=self.positions):
+                                            if not clash_within_molecule_periodic(
+                                                    self.structures['structure_{}'.format(k)].sdf_string,
+                                                    xyz_list1, periodicity, invert, positions=self.positions):
+                                                pass
+                                            else:
+                                                clash = True
+                                                break
+                                        else:
+                                            clash = True
+                                            break
+                                    else:
+                                        clash = True
+                                        break
+                                else:
+                                    clash = True
+                                    break
+                            else:
+                                clash = True
+                                break
+                        else:
+                            clash = True
+                            break
+            return clash
+        else:
+            xyz_list1, atomnames1 = sdf2xyz_list_with_name(self.structures['structure_1'].sdf_string)
+            if not clash_between_molecules(xyz_list1, xyz_ff, flag=0.6):
+                if not clash_within_molecule_periodic(self.structures['structure_{}'.format(i)].sdf_string,
+                                                   xyz_list1, periodicity, invert, positions = self.positions):
+                    pass
+                else:
+                    clash = True
+                    return clash
+            else:
+                clash = True
+                return clash
 
     def circle_radial_symmetry(self, radius, center):
+        """Updates COM positions of the conformers and puts them into circle"""
 
         step = self.number_of_molecules+10
         divisions = np.linspace(0, 4*np.pi, step+1)[:-1]
@@ -886,23 +1139,58 @@ class Ensemble:
         return coordinates
 
     def circle_angle_symmetry(self, Z):
+        """Updates orientations of the conformers to make nice circle"""
 
         step = self.number_of_molecules+10
         divisions = np.linspace(0, 720, step+1)[:-1]
-        quaternion = [np.array([a, Z[0], Z[1], Z[2]])
+        quaternions = [np.array([a, Z[0], Z[1], Z[2]])
                        for a in divisions]
-        return quaternion
+        return quaternions
+
+    def random_positions_within_lattice(self, periodicity=[]):
+        """Put molecules in random positions within the lattice vectors"""
+
+        if len(periodicity) == 0:
+            coordinates = [np.array(np.random.uniform(0, 10, size=3))
+                           for i in range(self.number_of_molecules)]
+        elif len(periodicity) != 0:
+            coordinates = [np.dot(np.array(periodicity).T, np.array(np.random.uniform(0, 1, size=3)))
+                           for i in range(self.number_of_molecules)]
+        return coordinates
+
+    def random_positions_2D(self, height, periodicity):
+        """Put molecules in random positions within the lattice vectors"""
+
+        coordinates = [np.dot(np.array(periodicity).T, np.array([np.random.uniform(0, 1),
+                                                                np.random.uniform(0, 1),
+                                                                 height]))
+                           for i in range(self.number_of_molecules)]
+        return coordinates
+
+    def assign_orientations(self, orientation=[]):
+        """Put molecules in random orientations"""
+
+        if len(orientation) == 0:
+            orientations = [produce_quaternion(np.random.randint(-179, 181, 1), [0, 0, 1])
+                           for i in range(self.number_of_molecules)]
+            # orientations = [produce_quaternion(np.random.randint(-179, 181, 1), np.random.uniform(0, 1, size=3))
+            #                for i in range(self.number_of_molecules)]
+        elif len(orientation) != 0:
+            # print(orientation)
+            orientations = [orientation for i in range(self.number_of_molecules)]
+        return orientations
 
     def update_ensemble_values(self, values={}):
+        """Updates ensemble values for all conformers"""
 
         new_values=collections.OrderedDict()
         for i in range(1, self.number_of_molecules+1):
             new_values['structure_{}'.format(i)] = collections.OrderedDict()
-            new_values['structure_{}'.format(i)]['centroid'] = values['centroid'][i]
-            new_values['structure_{}'.format(i)]['orientation'] = values['orientation'][i]
+            new_values['structure_{}'.format(i)]['centroid'] = values['centroid'][i-1]
+            new_values['structure_{}'.format(i)]['orientation'] = values['orientation'][i-1]
             #Hard coded for now
             for dofs in self.structures['structure_{}'.format(i)].dof:
-                if dofs.type=='torsion':
+                if dofs.type == 'torsion':
                     new_values['structure_{}'.format(i)]['torsion'] = dofs.values
 
         for structure in new_values:
@@ -917,27 +1205,27 @@ class Ensemble:
         for i in range(1, self.number_of_molecules+1):
             for dofs in self.structures['structure_{}'.format(i)].dof:
                 self.values['structure_{}'.format(i)][dofs.type] = dofs.values
-
+                # print(dofs.type, 'structure_{}'.format(i), self.values['structure_{}'.format(i)][dofs.type])
 
     def generate_input(self):
-        """ Copy files if necessary"""
+        """ Generates input for NAMD for further FF relaxation"""
+
         sourcedir=os.path.join(os.getcwd(), 'adds', 'FF')
 
-        if not os.path.exists(os.path.join(os.getcwd(),'surf.pdb')):
+        if not os.path.exists(os.path.join(os.getcwd(), 'surf.pdb')):
             shutil.copy(os.path.join(sourcedir, 'surf.pdb'), os.getcwd())
-        if not os.path.exists(os.path.join(os.getcwd(),'prepare_psf.run')):
+        if not os.path.exists(os.path.join(os.getcwd(), 'prepare_psf.run')):
             shutil.copy(os.path.join(sourcedir, 'prepare_psf.run'), os.getcwd())
-        if not os.path.exists(os.path.join(os.getcwd(),'par_all22_prot_metals.inp')):
+        if not os.path.exists(os.path.join(os.getcwd(), 'par_all22_prot_metals.inp')):
             shutil.copy(os.path.join(sourcedir, 'par_all22_prot_metals.inp'), os.getcwd())
-        if not os.path.exists(os.path.join(os.getcwd(),'top_all22_prot_metals.inp')):
+        if not os.path.exists(os.path.join(os.getcwd(), 'top_all22_prot_metals.inp')):
             shutil.copy(os.path.join(sourcedir, 'top_all22_prot_metals.inp'), os.getcwd())
-        if not os.path.exists(os.path.join(os.getcwd(),'psfgen')):
+        if not os.path.exists(os.path.join(os.getcwd(), 'psfgen')):
             shutil.copy(os.path.join(sourcedir, 'psfgen'), os.getcwd())
             # if not os.path.exists(os.path.join(os.getcwd(),'par_all22_prot.prm')):
             #     shutil.copy(os.path.join(self.sourcedir, 'par_all22_prot.prm'), os.getcwd())
             # if not os.path.exists(os.path.join(os.getcwd(),'top_all22_prot.rtf')):
             #     shutil.copy(os.path.join(self.sourcedir, 'top_all22_prot.rtf'), os.getcwd())
-
 
         for num in range(1, self.number_of_molecules+1):
             with open(os.path.join(os.getcwd(), 'mol_{}.sdf'.format(num)), 'w') as mol_sdf:
@@ -946,7 +1234,7 @@ class Ensemble:
             self.coords = [i[1:] for i in sdf2xyz(self.structures['structure_{}'.format(num)].sdf_string)]
             """ Extract lines from pdb file for further updating """
             pdb_file = []
-            with open(os.path.join(os.getcwd(), 'adds', 'mol.pdb'), 'r') as molfile:
+            with open(os.path.join(os.getcwd(), 'adds', 'mol.pdb')) as molfile:
                 lines = molfile.readlines()
                 for line in lines:
                     pdb_line_found = re.match(r'((\w+\s+\d+\s+....?\s+\w\w\w\w?\s+.+)(\d+\s+)(.?\d+\.\d+\s+.?\d+\.\d+\s+.?\d+\.\d+)\s+(.?\d+\.\d+\s+.?\d+\.\d+\s+\w+\s+\w+))', line)
@@ -981,105 +1269,98 @@ class Ensemble:
             # os.system('cd {} && chmod +x prepare_psf.run'.format(os.getcwd()))
             # os.system('cd {} && ./prepare_psf.run'.format(os.getcwd()))
 
-
-
     def create_ensemble(self, arg):
-        """Create set of structures"""
+            """Create set of structures"""
 
-        self.structures = collections.OrderedDict()
-        self.values = collections.OrderedDict()
+            self.structures = collections.OrderedDict()
+            self.values = collections.OrderedDict()
 
-        if self.conformations == 'same':
-            Trials = 100
-            for trial in range(Trials):
-                self.str3d = Structure(arg)
-                self.str3d.generate_structure()
-                if not self.str3d.is_geometry_valid(flag=0.8) and trial<=100:
-                        continue
-                else:
-                    for i in range(1, self.number_of_molecules+1):
-                        copied_structure = deepcopy(self.str3d)
-                        self.structures['structure_{}'.format(i)] = copied_structure
-                        # self.structures['structure_{}'.format(i)] = self.str3d
-                        self.structures['structure_{}'.format(i)].index = i
-                        self.values['structure_{}'.format(i)] = collections.OrderedDict()
-                        # Record the values of DOF for the structure
-                        for dofs in self.structures['structure_{}'.format(i)].dof:
-                            self.values['structure_{}'.format(i)][dofs.type] = dofs.values
-
-
-        elif self.conformations == 'random':
-            Trials = 100
-            for i in range(1, self.number_of_molecules+1):
+            if self.conformations == 'same':
+                Trials = 1000
                 for trial in range(Trials):
                     self.str3d = Structure(arg)
                     self.str3d.generate_structure()
-                    if not self.str3d.is_geometry_valid(flag=0.8) and trial<=100:
-                            continue
+                    if not self.str3d.is_geometry_valid(flag=0.8) and trial <= Trials:
+                        continue
                     else:
-                        self.structures['structure_{}'.format(i)] = self.str3d
-                        self.values['structure_{}'.format(i)] = collections.OrderedDict()
-                        # Record the values of DOF for the structure
-                        for dofs in self.structures['structure_{}'.format(i)].dof:
-                            self.values['structure_{}'.format(i)][dofs.type] = dofs.values
+                        for i in range(1, self.number_of_molecules+1):
+                            copied_structure = deepcopy(self.str3d)
+                            self.structures['structure_{}'.format(i)] = copied_structure
+                            # self.structures['structure_{}'.format(i)] = self.str3d
+                            self.structures['structure_{}'.format(i)].index = i
+                            self.values['structure_{}'.format(i)] = collections.OrderedDict()
+                            # Record the values of DOF for the structure
+                            for dofs in self.structures['structure_{}'.format(i)].dof:
+                                self.values['structure_{}'.format(i)][dofs.type] = dofs.values
+                    break
 
+            elif self.conformations == 'random':
+                Trials = 1000
+                for i in range(1, self.number_of_molecules+1):
+                    for trial in range(Trials):
+                        self.str3d = Structure(arg)
+                        self.str3d.generate_structure()
+                        if not self.str3d.is_geometry_valid(flag=0.8) and trial<=Trials:
+                            continue
+                        else:
+                            self.structures['structure_{}'.format(i)] = self.str3d
+                            self.values['structure_{}'.format(i)] = collections.OrderedDict()
+                            # Record the values of DOF for the structure
+                            for dofs in self.structures['structure_{}'.format(i)].dof:
+                                self.values['structure_{}'.format(i)][dofs.type] = dofs.values
+                        break
 
+            lattice = self.extract_lattice_vectors()
+            values = {}
+            if self.positions == 'random':
+                values['centroid'] = self.random_positions_within_lattice(periodicity=lattice)
 
+            elif self.positions == '2D_random':
+                values['centroid'] = self.random_positions_2D(periodicity=lattice, height=self.z_value)
 
-        values = {}
-        values['centroid'] = self.circle_radial_symmetry(10, np.array([26, 22, 14]))
-        values['orientation'] = self.circle_angle_symmetry([0,0,1])
-        self.update_ensemble_values(values=values)
+            if self.orientations == 'random':
+                values['orientation'] = self.assign_orientations(orientation=[])
 
-        # Test
-        # generate_input(self.structures['structure_1'].sdf_string)
+            elif self.orientations == 'same':
+                quaternion = produce_quaternion(np.random.randint(-179, 181, 1), [0,0,1])
+                values['orientation'] = self.assign_orientations(orientation=quaternion)
 
-        if not self.clashes_in_ensemble():
-            print('No clashes!')
-        else:
-            pass
+            self.update_ensemble_values(values=values)
 
-        if self.positions == 'random':
-            # Assign positions to each structure
-            pass
+    def extract_lattice_vectors(self):
+        """Extract lattice vectors
+        from geometry.constrained file"""
 
-        elif self.positions == 'something_else':
-            # Assign positions to each structure
-            pass
-
-        if self.orientations == 'random':
-            # Assign orientations to each structure
-            pass
-
-        elif self.orientations == 'same':
-            # Assign orientations to each structure
-            pass
-
-
-
-
-
-
-
-
-
+        vectors = []
+        with open(os.path.join(os.getcwd(), self.mol_info.constrained_geometry_file))\
+                as constrained:
+            lines = constrained.readlines()
+            for line in lines:
+                if 'lattice_vector' in line:
+                    vectors.append([float(x) for x in line.split()[1:]])
+        return vectors
 
     def write_to_separate_files(self):
+        """Writes different conformers to different sdf files.
+        Convenient for testing"""
 
         for i in range(1, self.number_of_molecules + 1):
             with open('structure_{}.sdf'.format(i), 'w') as f:
                 f.write(self.structures['structure_{}'.format(i)].sdf_string)
 
     def write_to_one_file(self):
+        """Writes all conformers to one XYZ file"""
 
         with open('all_structures.xyz', 'w') as f:
             for i in range(1, self.number_of_molecules + 1):
-                f.write(sdf2xyz_string(self.structures['structure_{}'.format(i)].sdf_string, 'structure_{}'.format(i)))
+                f.write(sdf2xyz_string(
+                    self.structures['structure_{}'.format(i)].sdf_string, 'structure_{}'.format(i)))
 
     def merge_and_write(self, ens):
+        """Writes generated enseble together with fixed frame to XYZ file"""
 
-        num_of_atoms = (self.number_of_molecules)*self.structures['structure_1'].mol_info.atoms
-        with open('ensemble_{}.xyz'.format(str(ens)), 'w') as  f:
+        num_of_atoms = self.number_of_molecules*self.structures['structure_1'].mol_info.atoms
+        with open('ensemble_{}.xyz'.format(str(ens)), 'w') as f:
             f.write('{}\nTest\n'.format(num_of_atoms))
             for i in range(1, self.number_of_molecules + 1):
                 xyz_list, atomtypes = sdf2coords_and_atomtypes(
@@ -1090,14 +1371,14 @@ class Ensemble:
                                                              xyz_list[k][1],
                                                              xyz_list[k][2]))
 
+    def write_to_aims(self, ens, lattice):
+        """Writes generated enseble together with fixed frame to aims file"""
 
+        with open('ensemble_{}.in'.format(str(ens)), 'w') as f:
+            for v in lattice:
+                f.write('lattice_vector {:<20}{:<20}{:<20}\n'.format(v[0], v[1], v[2]))
+            for i in range(1, self.number_of_molecules + 1):
+                f.write('{}'.format(sdf2aims(self.structures['structure_{}'.format(i)].sdf_string)))
+            if len(aims2string_nolattice(self.fixedframe)) != 0:
+                f.write(aims2string_nolattice(self.fixedframe))
 
-
-
-
-
-        # for structure in self.structures:
-        #     print structure
-        #     for dofs in self.structures[structure].dof:
-        #         print(dofs.values)
-        #         # print(structure, self.structures[structure].dof, self.structures[structure].dof.values)

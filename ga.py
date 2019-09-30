@@ -49,7 +49,6 @@ Trials, NotValid, Known, Calculated, found_in_blacklist = 0, 0, 0, 0, 0
 BLACKLIST, visited_folders = [], []
 # =======================================================================
 if opt == "simple":
-    # 
     run_util.HeadFafoom()
     # Detect the desired application for energy evaluation.
     energy_function = run_util.detect_energy_function(params)
@@ -70,23 +69,28 @@ if opt == "simple":
     flag, generation_Trials = 1.0, 0
     BLACKLIST, visited_folders = mol.UpdateBlacklist(blacklist=BLACKLIST, folders=visited_folders)
 
+    trial = 0
     while len(population) < params['popsize'] and Calculated < params['max_iter']:
+        trial += 1
         Structure.index = Calculated
         str3d = Structure(mol)
         str3d.generate_structure()
-        if mol.number_of_molecules > 1:
+        ensemble = Ensemble(mol)
+        lattice = ensemble.extract_lattice_vectors()
+        ensemble.create_ensemble(mol)
+        ensemble.write_to_separate_files()
+        if not ensemble.clashes_in_ensemble(periodicity=lattice, attempt=trial):lem
+            ensemble.write_to_aims(trial, lattice)
+            population.append(ensemble)
+        else:
+            continue
 
-            for ens in range(1, 101):
-                ensemble = Ensemble(mol)
-                ensemble.create_ensemble(mol)
-                ensemble.write_to_separate_files()
-                if not ensemble.clashes_in_ensemble():
-                    ensemble.write_to_one_file()
-                    ensemble.merge_and_write(ens)
-                    ensemble.generate_input()
+            # ensemble.write_to_one_file()
+            # ensemble.merge_and_write(ens)
+
                     # sys.exit(0)
 
-            sys.exit(0)
+            # sys.exit(0)
 
         # if mol.conformations == 'same':
         #     if str3d.is_geometry_valid(flag=flag):
@@ -95,46 +99,46 @@ if opt == "simple":
         #     else:
         #         continue
 
-        Trials += 1
-        """ In case if created structure is not sensible: """
-        if not str3d.is_geometry_valid(flag=flag):
-            NotValid+=1
-            generation_Trials += 1          # Count number of Trials (allowed 100)
-            if generation_Trials == 10:     # After 100 Trials of failure to generate valid Structure
-                if flag >= 0.755:           # the criteria of geometry validation (flag) is decreased:
-                    flag -= 0.005           # The lowest value of the flag is 0.80, if reached
-                    generation_Trials = 0   # it is counted as bad Trials and Calculated += 1.
-                else:
-                    sys.exit(0)   # Terminates the code
-            continue
-        else:
-            BLACKLIST, visited_folders = mol.UpdateBlacklist(
-                blacklist=BLACKLIST, folders=visited_folders)
-            if str3d not in BLACKLIST:
-                str3d.prepare_for_calculation(NumOfAtoms_sur, Periodic_sur, Path_sur)
-                name = '{:04d}_structure'.format(Calculated+1)
-                """ Perform the local optimization """
-                run_util.optimize(str3d, energy_function, params, name)
-                Calculated += 1
-                if str3d not in BLACKLIST:
-                    str3d.send_to_blacklist(BLACKLIST)
-                    str3d.send_to_new_blacklist(new_blacklist) #  Locally
-                    # calculated structures
-                    population.append(str3d)
-                    print_output('Structure {}{:>15.4f}'.format(Calculated, float(str3d)))
-                    run_util.relax_info(str3d)
-                    population.sort()
-                    min_energy.append(float('{:.3f}'.format(population[0].energy)))
-                    run_util.perform_backup(mol, population, BLACKLIST, Calculated, min_energy, new_blacklist)
-                else:
-                    print_output('Structure {}{:>15.4f}: Found in Blacklist'.format(Calculated, float(str3d)))
-                    run_util.relax_info(str3d)
-                    found_in_blacklist+=1
-                    continue   # The already known structure was obtained after optimization
-            else:
-                found_in_blacklist += 1
-                Known += 1  # Geometry is fine, but already known.
-                continue
+        # Trials += 1
+        # """ In case if created structure is not sensible: """
+        # if not str3d.is_geometry_valid(flag=flag):
+        #     NotValid+=1
+        #     generation_Trials += 1          # Count number of Trials (allowed 100)
+        #     if generation_Trials == 10:     # After 100 Trials of failure to generate valid Structure
+        #         if flag >= 0.755:           # the criteria of geometry validation (flag) is decreased:
+        #             flag -= 0.005           # The lowest value of the flag is 0.80, if reached
+        #             generation_Trials = 0   # it is counted as bad Trials and Calculated += 1.
+        #         else:
+        #             sys.exit(0)   # Terminates the code
+        #     continue
+        # else:
+        #     BLACKLIST, visited_folders = mol.UpdateBlacklist(
+        #         blacklist=BLACKLIST, folders=visited_folders)
+        #     if str3d not in BLACKLIST:
+        #         str3d.prepare_for_calculation(NumOfAtoms_sur, Periodic_sur, Path_sur)
+        #         name = '{:04d}_structure'.format(Calculated+1)
+        #         """ Perform the local optimization """
+        #         run_util.optimize(str3d, energy_function, params, name)
+        #         Calculated += 1
+        #         if str3d not in BLACKLIST:
+        #             str3d.send_to_blacklist(BLACKLIST)
+        #             str3d.send_to_new_blacklist(new_blacklist) #  Locally
+        #             # calculated structures
+        #             population.append(str3d)
+        #             print_output('Structure {}{:>15.4f}'.format(Calculated, float(str3d)))
+        #             run_util.relax_info(str3d)
+        #             population.sort()
+        #             min_energy.append(float('{:.3f}'.format(population[0].energy)))
+        #             run_util.perform_backup(mol, population, BLACKLIST, Calculated, min_energy, new_blacklist)
+        #         else:
+        #             print_output('Structure {}{:>15.4f}: Found in Blacklist'.format(Calculated, float(str3d)))
+        #             run_util.relax_info(str3d)
+        #             found_in_blacklist+=1
+        #             continue   # The already known structure was obtained after optimization
+        #     else:
+        #         found_in_blacklist += 1
+        #         Known += 1  # Geometry is fine, but already known.
+        #         continue
     if Calculated == params['max_iter']:
         print_output("The allowed number of Trials for building the "
                      "population has been exceeded. The code terminates.")
