@@ -1,5 +1,5 @@
 # fafoom-dev
-Continuing development of genetic algorithm for biomolecules in different environments
+Continuing development of genetic algorithm (GA) for biomolecules in different environments
 ﻿# Fafoom - Flexible Algorithm For Optimization Of Molecules 
 
 Fafoom is a tool for sampling the conformational space of organic molecules. Fafoom is intended to work with FHI-aims (Fritz Haber Institute ab initio molecular simulations package).
@@ -12,9 +12,9 @@ Fafoom is a tool for sampling the conformational space of organic molecules. Faf
 
 ## Requirements
 
-* functionality of the tool:
-  * Python (used for testing: 2.7.6)
-  * Numpy (used for testing: 1.8.2)
+* Functionality of the Fafoom depends on:
+  * Python 2.7 
+  * Numpy
 
 * first-principles methods:
   * FHI-aims (Fritz Haber Institute ab initio molecular simulations package)
@@ -22,19 +22,18 @@ Fafoom is a tool for sampling the conformational space of organic molecules. Faf
 ## How to use
 
 ##### 1) Clone the fafoom repository
+
 	git clone https://github.com/FHIBioGroup/fafoom-dev.git -b isolated-stable
 
-##### 2) Export the fafoom directory to you PYTHONPATH
+##### 2) Export the fafoom-dev/fafoom directory to you PYTHONPATH
 
-##### 3) In python:
+##### 3) Test in python terminal: 
 
     import fafoom
 
-## Example of usage
+##### 4) To execute GA algorithm and prepare your input files and perform structure search: 
 
-Depending on the used parameter file following genetic algorithm based searches can be run:
-
-* ga.py parameters.txt
+    ga.py parameters.txt
 
 Get familiar with the provided manual to learn more about the tool and the parameters. 
 
