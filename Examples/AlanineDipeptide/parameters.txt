@@ -1,7 +1,7 @@
 [Molecule]
 
 rmsd_type="internal_coord"
-rmsd_cutoff_uniq=0.1
+rmsd_cutoff_uniq=0.01
 optimize_torsion=True
 list_of_torsion  = [(1, 3, 4, 9), (9, 4, 5, 7), (0, 1, 3, 4), (4, 5, 7, 8)]
 
@@ -26,7 +26,7 @@ max_mutations_centroid=1
 
 energy_function = "FHI-aims"
 sourcedir= "adds"
-aims_call= "mpirun -n 4 aims.180704.scalapack.mpi.x"
+aims_call= "srun -n 32 aims.200118.scalapack.mpi.x"
 max_iter= 200
-iter_limit_conv= 7500
+iter_limit_conv= 100
 energy_diff_conv= 0.01

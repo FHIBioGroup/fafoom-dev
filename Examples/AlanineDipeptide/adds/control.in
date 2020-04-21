@@ -1,20 +1,23 @@
 # Physical settings
-  xc                 pbe
+  xc                 pw-lda
+  charge             0.0
   vdw_correction_hirshfeld
   
-
 # SCF settings
-  sc_accuracy_rho    2E-3
-  sc_accuracy_eev    2E-3
-  sc_accuracy_etot   1E-3
-  sc_accuracy_forces 2E-3
-  sc_iter_limit      1000
-  charge             0.0
-
-# relax geometry
+  sc_accuracy_rho    1E-3
+  sc_accuracy_forces 1E-3
+  sc_iter_limit      300
+  empty_states   10
+  mixer              pulay
+    n_max_pulay        10
+    charge_mix_param   0.1
+      
+# Relax geometry
   relax_geometry trm 5E-2
-  
-  
+
+# Amount of output  
+  output_level  MD_light 
+ 
 ################################################################################
 #
 #  FHI-aims code project
