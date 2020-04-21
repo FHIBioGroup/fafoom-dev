@@ -1,0 +1,32 @@
+[Molecule]
+
+rmsd_type="internal_coord"
+rmsd_cutoff_uniq=0.1
+optimize_torsion=True
+list_of_torsion  = [(1, 3, 4, 9), (9, 4, 5, 7), (0, 1, 3, 4), (4, 5, 7, 8)]
+
+
+[GA settings]
+
+energy_var=0.001
+selection="roulette_wheel"
+fitness_sum_limit= 1.2
+popsize= 10
+prob_for_crossing= 0.9
+prob_for_mut_torsion= 0.1
+prob_for_mut_cistrans= 0.1
+max_mutations_torsion= 3
+max_mutations_cistrans=1
+prob_for_mut_orientation= 0.1
+prob_for_mut_centroid= 0.1
+max_mutations_orientation= 3
+max_mutations_centroid=1
+
+[Run settings]
+
+energy_function = "FHI-aims"
+sourcedir= "adds"
+aims_call= "mpirun -n 4 aims.180704.scalapack.mpi.x"
+max_iter= 200
+iter_limit_conv= 7500
+energy_diff_conv= 0.01
