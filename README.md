@@ -25,7 +25,7 @@ Fafoom is a tool for sampling the conformational space of organic molecules. Faf
 ## How to use
 
 ##### 1) Clone the fafoom repository
-	git clone https://github.com/adrianasupady/fafoom
+	git clone https://github.com/FHIBioGroup/fafoom-dev.git -b isolated-stable
 
 ##### 2) Export the fafoom directory to you PYTHONPATH
 
