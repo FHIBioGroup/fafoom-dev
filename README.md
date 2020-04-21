@@ -1,6 +1,6 @@
 # fafoom-dev
 Continuing development of genetic algorithm for biomolecules in different environments
-﻿# Fafoom - Flexible algorithm for optimization of molecules 
+﻿# Fafoom - Flexible Algorithm For Optimization Of Molecules 
 
 Fafoom is a tool for sampling the conformational space of organic molecules. Fafoom is intended to work with FHI-aims (Fritz Haber Institute ab initio molecular simulations package).
 
@@ -8,19 +8,16 @@ Fafoom is a tool for sampling the conformational space of organic molecules. Faf
 
 * the paper "First-principles molecular structure search with a genetic algorithm" is now published in Journal of Chemical Information and Modeling; DOI: 10.1021/acs.jcim.5b00243
 
-* a new branch targeting the implementation of a further degree of freedom ('orientation') has been created
+* a new branch targeting of providing the stable version of FAFOOM for structure search of isolated molecule
 
 ## Requirements
 
 * functionality of the tool:
   * Python (used for testing: 2.7.6)
   * Numpy (used for testing: 1.8.2)
-  * RDKit (used for testing: Release_2015_03_1)
 
 * first-principles methods:
-  * (recommended) FHI-aims (Fritz Haber Institute ab initio molecular simulations package)
-  * (alternative) NWChem (NWChem: Open Source High-Performance Computational Chemistry)
-  * (alternative) ORCA (- An ab initio, DFT and semiempirical SCF-MO package -)
+  * FHI-aims (Fritz Haber Institute ab initio molecular simulations package)
 
 ## How to use
 
@@ -35,27 +32,11 @@ Fafoom is a tool for sampling the conformational space of organic molecules. Faf
 
 ## Example of usage
 
-An implementation of a genetic algorithm is provided in the examples folder.
 Depending on the used parameter file following genetic algorithm based searches can be run:
 
-* parameters_aims.txt for first-principles (FHI-aims required)
-* parameters_ff.txt for force fields (force fields accessed from RDKit)
-* parameters_nwchem.txt for first-principles via NWChem (NWChem required)
-* parameters_orca.txt for first-principles via ORCA (ORCA required)
+* ga.py parameters.txt
 
 Get familiar with the provided manual to learn more about the tool and the parameters. 
-
-## Outlook
-
-Development goals:
-
-* flexible formulation of the scoring function, e.g. allowing for optimizing a user-defined property
-* adding more kinds of degrees of freedom, e.g. orientation of a molecule
-* adding wrappers for different molecular simulations packages
-
-Comments, feedback or development contributions are always welcome! 
-
-
 
 ## License
 
